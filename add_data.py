@@ -11,6 +11,8 @@ our real data.
 https://docs.python.org/3/library/sqlite3.html
 """
 path2insert = '/home/alex/Git/Club/Utils'
+# the above code can be found @
+# https://github.com/alexKleider/Club_Utilities
 import os
 import sys
 sys.path.insert(0, path2insert)

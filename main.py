@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# File: query2.py
+# File: main.py
 
 import sqlite3
 import add_data
