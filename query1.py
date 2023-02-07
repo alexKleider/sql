@@ -2,7 +2,11 @@
 
 # File: query1.py
 
+import sys
+path2insert = '/home/alex/Git/Club/Utils'
+sys.path.insert(0, path2insert)
 import sqlite3
+import member
 
 db_file_name = "Sanitized/club.db"
 query = """
@@ -23,6 +27,14 @@ SELECT People.personID, first, last, Stati.text, Stati.key
     AND Stati.key = 'aw'
     ;
 """
+query_f = """
+SELECT Stati.key, first, last, Stati.text
+    FROM People, Person_Status, Stati
+    WHERE Person_Status.personID = People.personID 
+    AND Person_Status.statusID = Stati.statusID
+    AND Stati.key = '{}'
+    ;
+"""
 
 
 def execute(cursor, connection, command):
@@ -35,11 +47,24 @@ def execute(cursor, connection, command):
     connection.commit()
 
 
-def main():
+def get_stati(stati):
     con = sqlite3.connect(db_file_name)
     cur = con.cursor()
-    print(query)
-    print()
+    for status in stati:
+#       print("status is {}".format(status))
+        execute(cur,con,query_f.format(status))
+        fetched = cur.fetchall()
+#       print("Fetched:")
+#       print(fetched)
+        if fetched:
+            for sequence in fetched:
+                print('$', sequence)
+
+def get_aw():
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+#   print(query)
+#   print()
     execute(cur, con, query)
 #   print(cur.fetchall())
     for sequence in cur.fetchall():
@@ -50,4 +75,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    get_stati(member.STATI)
+#   get_aw()
