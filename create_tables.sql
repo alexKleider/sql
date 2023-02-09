@@ -59,7 +59,7 @@ CREATE TABLE Person_Status (
     personID INTEGER NOT NULL,
     statusID INTEGER NOT NULL
     );
-
+
 DROP TABLE IF EXISTS Attrition;
 CREATE TABLE Attrition (
     attritionID INTEGER PRIMARY KEY,
@@ -92,7 +92,7 @@ CREATE TABLE Dues (
 
 DROP TABLE IF EXISTS Kayak_Slots;
 CREATE TABLE Kayak_Slots (
-    ID INTEGER NOT NULL PRIMARY KEY,
+    ID INTEGER PRIMARY KEY,
     slot_code TEXT NOT NULL UNIQUE,
     slot_name TEXT NOT NULL UNIQUE,
     slot_cost NUMERIC DEFAULT 70,
@@ -101,7 +101,7 @@ CREATE TABLE Kayak_Slots (
 
 DROP TABLE IF EXISTS Moorings;
 CREATE TABLE Moorings (
-    mooringID INTEGER NOT NULL PRIMARY KEY,
+    mooringID INTEGER PRIMARY KEY,
     mooring_code TEXT NOT NULL UNIQUE,
     mooring_name TEXT NOT NULL UNIQUE,
     mooring_cost NUMERIC NOT NULL,

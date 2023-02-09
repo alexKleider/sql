@@ -23,7 +23,7 @@ import member
 import data
 import helpers
 
-## GLOBALS
+## file name GLOBALS
 db_file_name = "Sanitized/club.db"
 sql_commands_file = 'create_tables.sql'  # table creating commands
 membership_csv_file = "Sanitized/members.csv"
@@ -31,17 +31,14 @@ applicant_text_file = 'Sanitized/applicants.txt'
 sponsor_text_file = 'Sanitized/sponsors.txt'
 ## END of GLOBALS
 
-insert_template = """INSERT INTO {table} ({keys})
-    VALUES({values});"""
-pull_ID_query = """SELECT personID from People
-WHERE People.first = "{first}" AND People.last = "{last}" """
-
 
 def get_id_by_name(cur, con, first, last):
     """
     Returns People.personID for person with <first> <last> name
     """
-    query = pull_ID_query.format(first=first, last=last)
+    query = """SELECT personID from People
+            WHERE People.first = "{first}"
+            AND People.last = "{last}" """
 #   _ = input(query)
     execute(cur, con, query)
     res = cur.fetchall()
@@ -167,8 +164,9 @@ def populate_people(source, connection, cursor):
         keys = ', '.join([key for key in ret.keys()])
         values = [value for value in ret.values()]
         values = ', '.join([f"'{value}'" for value in ret.values()])
-        command = insert_template.format(
-                    table='People', keys=keys, values=values)
+        command = """INSERT INTO {table} ({keys})
+    VALUES({values});""".format(
+            table='People', keys=keys, values=values)
 #       _ = input(command)
         execute(cursor, connection, command)
 
@@ -269,7 +267,7 @@ def populate_applicant_data(applicant_data, valid_names,
         names.update(sponsors)  # adding sponsors
     if not set(valid_names).issuperset(names):
         print("Invalid names found...")
-#       _ = input(names.difference(set(valid_names)))
+        _ = input(names.difference(set(valid_names)))
     else:
         pass
 #       print(names)
@@ -282,33 +280,39 @@ def populate_applicant_data(applicant_data, valid_names,
 WHERE People.first = "{first}" AND People.last = "{last}" """
         execute(cur, con, query)
         query_result = cur.fetchall()
+#       _ = input(query_result)
         ids_by_name[name] = query_result[0][0]
 #   print(ids_by_name)
 
     # now ready to populate tables
-    applicant_insertion_template = """INSERT INTO
-                    Applicants (
-                    personID,
-                    app_rcvd, fee_rcvd,
-                    meeting1, meeting2, meeting3,
-                    inducted, dues_paid
-                    )
-                    VALUES (
-                    {personID},
-                    {app_rcvd},
-                    {fee_rcvd},
-                    {1st},
-                    {2nd},
-                    {3rd},
-                    {inducted},
-                    {dues_paid}
-                    );"""
     sponsor_insertion_template =  """INSERT INTO
                     Sponsors
                     (personID, sponsorID)
                     VALUES ({}, {});"""
     for applicant in applicant_data.keys():
         personID = ids_by_name[applicant]
+        keys = ('app_rcvd', 'fee_rcvd',
+                '1st', '2nd', '3rd',
+                'inducted', 'dues_paid')
+        headers = ['personID',]
+        values = [str(personID)]
+        for key in keys:
+            if key == '1st': new_key = 'meeting1'
+            elif key == '2nd': new_key = 'meeting2'
+            elif key == '3rd': new_key = 'meeting3'
+            else: new_key = key
+            value = applicant_data[applicant][key]
+            if not value:
+                break
+            headers.append(new_key)
+            values.append(str(value))
+        query =  """
+        INSERT INTO Applicants ({})
+            VALUES ({})
+           ;""".format(', '.join(headers), ', '.join(values))
+   
+        execute(cur,con,query)
+
         data = applicant_data[applicant]
         for sponsor in ('sponsor1', 'sponsor2',):
             sponsor_name = data[sponsor]
@@ -317,17 +321,7 @@ WHERE People.first = "{first}" AND People.last = "{last}" """
                 sponsorID = ids_by_name[name_key]
                 query = sponsor_insertion_template.format(
                         int(personID), int(sponsorID))
-#               _ = input(query)
                 execute(cur, con, query)
-        data['personID'] = personID
-        for key in data.keys():
-            if not data[key]:
-                data[key] = 'NULL'
-#       _ = input(data)
-        query = applicant_insertion_template.format(**data)
-#       print("query is ..")
-#       _ = input(query)
-        execute(cur, con, query)
 
 
 def get_table_names(cur):

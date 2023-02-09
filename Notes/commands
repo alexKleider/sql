@@ -7,7 +7,7 @@
     or..
     $ sqlite3 data.db
     
-    sqlite3> .help
+    sqlite3> .help  --> listing of all dot commands
     sqlite3> .databases  %show all databases currently connected%
     sqlite3> ATTACH DATABASE  %adds DATABASE to connections%
     sqlite3> .exit ?CODE?  % }  both the

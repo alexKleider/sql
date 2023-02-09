@@ -25,8 +25,7 @@ SELECT People.personID, first, last, Stati.text, Stati.key
     WHERE Person_Status.personID = People.personID 
     AND Person_Status.statusID = Stati.statusID
     AND Stati.key = 'aw'
-    ;
-"""
+    ; """
 query_f = """
 SELECT Stati.key, first, last, Stati.text
     FROM People, Person_Status, Stati
@@ -35,6 +34,8 @@ SELECT Stati.key, first, last, Stati.text
     AND Stati.key = '{}'
     ;
 """
+sponsor_query = """
+; """
 
 
 def execute(cursor, connection, command):
@@ -51,12 +52,12 @@ def get_stati(stati):
     con = sqlite3.connect(db_file_name)
     cur = con.cursor()
     for status in stati:
-#       print("status is {}".format(status))
         execute(cur,con,query_f.format(status))
         fetched = cur.fetchall()
 #       print("Fetched:")
 #       print(fetched)
-        if fetched:
+        if fetched and status != 'm':
+            print("status is {}".format(status))
             for sequence in fetched:
                 print('$', sequence)
 
