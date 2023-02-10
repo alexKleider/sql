@@ -3,9 +3,6 @@
 -- parsed by add_data.py to set up tables
 -- see associated specifications.txt file
 
--- first,last,phone,address,town,state,postal_code,country,
---           email,dues,dock,kayak,mooring,status
-
 DROP TABLE IF EXISTS People;
 CREATE TABLE People (
     personID INTEGER PRIMARY KEY,
@@ -21,16 +18,13 @@ CREATE TABLE People (
     email TEXT DEFAULT ''
     );
 
-DROP TABLE IF EXISTS Members;
-CREATE TABLE Members (
-    memberID INTEGER PRIMARY KEY,
-    personID UNIQUE
-    );
-
 DROP TABLE IF EXISTS Applicants;
+-- also in Stati table
+-- unitil > member
 CREATE TABLE Applicants (
     applicantID INTEGER PRIMARY KEY,
     personID INTEGER NOT NULL UNIQUE,
+        --foreign key
     app_rcvd TEXT NOT NULL,
     fee_rcvd TEXT DEFAULT '',
     meeting1 TEXT DEFAULT '',
@@ -42,9 +36,12 @@ CREATE TABLE Applicants (
     );
 
 DROP TABLE IF EXISTS Sponsors;
+--intersection table
 CREATE TABLE Sponsors (
     personID INTEGER NOT NULL,
+        --foreign key
     sponsorID INTEGER NOT NULL
+        --foreign key
     );
 
 DROP TABLE IF EXISTS Stati;
@@ -55,63 +52,61 @@ CREATE TABLE Stati (
     );
 
 DROP TABLE IF EXISTS Person_Status;
+--intersection table
 CREATE TABLE Person_Status (
     personID INTEGER NOT NULL,
     statusID INTEGER NOT NULL
     );
 
 DROP TABLE IF EXISTS Attrition;
+--keeping data in People table
 CREATE TABLE Attrition (
     attritionID INTEGER PRIMARY KEY,
-    oldID INTEGER NOT NULL,
-    first TEXT NOT NULL,
-    last TEXT NOT NULL,
-    phone TEXT DEFAULT '',
-    address TEXT DEFAULT '',
-    town TEXT DEFAULT '',
-    state TEXT DEFAULT '',
-    postal_code TEXT DEFAULT '',
-    country TEXT DEFAULT 'USA',
-    email TEXT DEFAULT '',
-    app_rcvd TEXT NOT NULL,
-    fee_rcvd TEXT DEFAULT '',
-    meeting1 TEXT DEFAULT '',
-    meeting2 TEXT DEFAULT '',
-    meeting3 TEXT DEFAULT '',
-    approved TEXT DEFAULT '',
-    inducted TEXT DEFAULT '',
-    sponsor1 TEXT DEFAULT '',
-    sponsor2 TEXT DEFAULT ''
+    personID INTEGER NOT NULL,
+        --foreign key
+    date TEXT DEFAULT '',
+    reason TEXT DEFAULT ''
     );
 
 DROP TABLE IF EXISTS Dues;
 CREATE TABLE Dues (
     personID INTEGER UNIQUE NOT NULL,
+        --foreign key
     dues_owed NUMERIC DEFAULT 100
     );
 
 DROP TABLE IF EXISTS Kayak_Slots;
 CREATE TABLE Kayak_Slots (
-    ID INTEGER PRIMARY KEY,
+    slotID INTEGER PRIMARY KEY,
+    personID TEXT,  --foreign key
+    -- unlikely but theoretically 
+    -- possible for one member to
+    -- have >1 kayak slot.
     slot_code TEXT NOT NULL UNIQUE,
     slot_name TEXT NOT NULL UNIQUE,
-    slot_cost NUMERIC DEFAULT 70,
-    occupant TEXT
+    -- probably need code or name
+    -- not both
+    slot_cost NUMERIC DEFAULT 70
     );
 
 DROP TABLE IF EXISTS Moorings;
 CREATE TABLE Moorings (
     mooringID INTEGER PRIMARY KEY,
+    personID TEXT, --foreign key
+    -- unlikely but theoretically 
+    -- possible for one member to
+    -- have >1 mooring.
     mooring_code TEXT NOT NULL UNIQUE,
     mooring_name TEXT NOT NULL UNIQUE,
-    mooring_cost NUMERIC NOT NULL,
-    occupant TEXT
+    mooring_cost NUMERIC NOT NULL
     );
 
 DROP TABLE IF EXISTS Dock_Privileges;
 CREATE TABLE Dock_Privileges (
-    member TEXT NOT NULL UNIQUE,
+    personID TEXT NOT NULL UNIQUE,
+    --no one will pay for >1 
+    --so no need for an
+    --auto generated PRIMARY KEY
     cost NUMERIC DEFAULT 75
     );
-
 
