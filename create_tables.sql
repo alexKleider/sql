@@ -75,32 +75,6 @@ CREATE TABLE Dues (
     dues_owed NUMERIC DEFAULT 100
     );
 
-DROP TABLE IF EXISTS Kayak_Slots;
-CREATE TABLE Kayak_Slots (
-    slotID INTEGER PRIMARY KEY,
-    personID TEXT,  --foreign key
-    -- unlikely but theoretically 
-    -- possible for one member to
-    -- have >1 kayak slot.
-    slot_code TEXT NOT NULL UNIQUE,
-    slot_name TEXT NOT NULL UNIQUE,
-    -- probably need code or name
-    -- not both
-    slot_cost NUMERIC DEFAULT 70
-    );
-
-DROP TABLE IF EXISTS Moorings;
-CREATE TABLE Moorings (
-    mooringID INTEGER PRIMARY KEY,
-    personID TEXT, --foreign key
-    -- unlikely but theoretically 
-    -- possible for one member to
-    -- have >1 mooring.
-    mooring_code TEXT NOT NULL UNIQUE,
-    mooring_name TEXT NOT NULL UNIQUE,
-    mooring_cost NUMERIC NOT NULL
-    );
-
 DROP TABLE IF EXISTS Dock_Privileges;
 CREATE TABLE Dock_Privileges (
     personID TEXT NOT NULL UNIQUE,
@@ -108,5 +82,29 @@ CREATE TABLE Dock_Privileges (
     --so no need for an
     --auto generated PRIMARY KEY
     cost NUMERIC DEFAULT 75
+    );
+
+DROP TABLE IF EXISTS Kayak_Slots;
+CREATE TABLE Kayak_Slots (
+    slotID INTEGER PRIMARY KEY,
+    personID TEXT,
+    -- foreign key
+    -- unlikely but theoretically 
+    -- possible for one member to
+    -- have >1 kayak slot.
+    slot_code TEXT NOT NULL UNIQUE,
+    slot_cost NUMERIC DEFAULT 70
+    );
+
+DROP TABLE IF EXISTS Moorings;
+CREATE TABLE Moorings (
+    mooringID INTEGER PRIMARY KEY,
+    personID TEXT,
+    -- foreign key
+    -- unlikely but theoretically 
+    -- possible for one member to
+    -- have >1 mooring.
+    mooring_code TEXT NOT NULL UNIQUE,
+    mooring_cost NUMERIC DEFAULT 0
     );
 

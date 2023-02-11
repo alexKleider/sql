@@ -26,10 +26,22 @@ import helpers
 ## file name GLOBALS
 db_file_name = "Sanitized/club.db"
 sql_commands_file = 'create_tables.sql'  # table creating commands
-membership_csv_file = "Sanitized/members.csv"
+membership_csv_file = "Sanitized/memlist.csv"
 applicant_text_file = 'Sanitized/applicants.txt'
 sponsor_text_file = 'Sanitized/sponsors.txt'
+db_file_name = "Secret/club.db"
+sql_commands_file = 'create_tables.sql'  # table creating commands
+membership_csv_file = "Secret/memlist.csv"
+applicant_text_file = 'Secret/applicants.txt'
+sponsor_text_file = 'Secret/sponsors.txt'
+dock_f = 'Secret/dock_list.txt'
+kayak_f = 'Secret/kayak_list.txt'
+mooring_f = 'Secret/mooring_list.txt'
 ## END of GLOBALS
+
+
+def retrieve_personID(con, cur, last_first_key):
+    pass
 
 
 def get_id_by_name(cur, con, first, last):
@@ -51,7 +63,12 @@ def get_id_by_name(cur, con, first, last):
     return res[0][0]
 
 
-def get_IDs_by_person(con, cur):
+def get_IDs_by_name_key(con, cur):
+    """
+    Returns personIDs as values in a dict
+    keyed by last,first names
+
+    """
     ret = dict()
     query = """
         SELECT personID, first, last 
@@ -77,11 +94,12 @@ def get_commands(sql_file):
         command = []
         for line in in_stream:
             line = line.strip()
-            if line.startswith('--'):
+            if (not line
+			or len(line) == 1
+            or line.startswith('--')):
                 continue
-            command.append(line.strip())
+            command.append(line)
             if line.endswith(';'):
-                line = line[:-1]
                 yield ' '.join(command)
                 command = []
 
@@ -163,7 +181,7 @@ def populate_people(source, connection, cursor):
         ret = shorten_rec(rec)
         keys = ', '.join([key for key in ret.keys()])
         values = [value for value in ret.values()]
-        values = ', '.join([f"'{value}'" for value in ret.values()])
+        values = ', '.join([f'"{value}"' for value in ret.values()])
         command = """INSERT INTO {table} ({keys})
     VALUES({values});""".format(
             table='People', keys=keys, values=values)
@@ -178,7 +196,7 @@ def get_applicant_data(applicant_source, sponsor_source):
     club = rbc.Club()
     club.applicant_spot = applicant_source
     club.sponsors_spot = sponsor_source
-    club.infile = 'Sanitized/members.csv'
+    club.infile = membership_csv_file
     data.populate_sponsor_data(club)
     data.populate_applicant_data(club)
 #   _ = input(club.applicant_data)
@@ -235,8 +253,8 @@ def fix_applicant_data(data):
     return ret
 
 
-def populate_applicant_data(applicant_data, valid_names,
-                                con, cur):
+def populate_applicant_data(con, cur,
+            applicant_data, valid_names):
     """
     <applicant_data> is a dict collected by get_applicant_data
     <valid_names> provided to ensure that all applicants and
@@ -359,12 +377,8 @@ def get_statusIDs_by_key(con, cur):
     return ret
 
 
-def retrieve_personID(con, cur, last_first_key):
-    pass
-
-
 def populate_Person_Status_table(con, cur,
-        IDs_by_person, statusIDs_by_key):
+        IDs_by_name_key, statusIDs_by_key):
     status_insertion_template = """INSERT INTO
                     Person_Status
                     (personID, statusID)
@@ -377,13 +391,38 @@ def populate_Person_Status_table(con, cur,
             stati = member.get_status_set(record)
             if member.is_member(record):
                 stati.add('m')
-            personID = IDs_by_person[
+            personID = IDs_by_name_key[
                 f"{last},{first}"]
             for status in stati:
                 statusID = statusIDs_by_key[status]
                 execute(cur, con,
                     status_insertion_template.format(
                     personID, statusID))
+
+
+def populate_dock_fees(con, cur, IDs_by_name_key, dock_f):
+    """
+    """
+    template = """INSERT INTO Dock_Privileges
+                (personID, cost)
+                VALUES ("{}", "{}");"""
+    with open(dock_f, 'r') as inf:
+        """
+        personID TEXT NOT NULL UNIQUE,
+        --no one will pay for >1 
+        --so no need for an
+        --auto generated PRIMARY KEY
+        cost NUMERIC DEFAULT 75
+        """
+        for line in inf:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            first_last, fee = line.split(':')
+            fee = int(fee)
+            first, last = first_last.split()
+            execute(cur, con, template.format(
+                IDs_by_name_key[f"{last},{first}"], fee))
 
 
 def main():
@@ -393,24 +432,25 @@ def main():
     cur = con.cursor()
     ## set up the tables (first deleting any that exist)
     for command in get_commands(sql_commands_file):
-#       print(command)
+        print(command)
         cur.execute(command)
 #   _ = input(f"Table Names: {get_table_names(cur)}")
     populate_people(membership_csv_file, con, cur)
     # collect a set of valid name keys (people_keys)
 #   key = get_id_by_name(cur, con, 'Bill', 'Smithers')
 #   sys.exit()
-    IDs_by_person = get_IDs_by_person(con, cur)
-    people_keys = IDs_by_person.keys()
+    IDs_by_name_key = get_IDs_by_name_key(con, cur)
+    people_keys = IDs_by_name_key.keys()
 
     applicant_data = get_applicant_data(applicant_text_file,
                                 sponsor_text_file)
 #   _ = input(applicant_data)
-    populate_applicant_data(
-            applicant_data, people_keys, con, cur)
+    populate_applicant_data(con, cur,
+            applicant_data, people_keys)
     populate_Stati_table(con, cur)
     populate_Person_Status_table(con, cur,
-            IDs_by_person, get_statusIDs_by_key(con, cur))
+            IDs_by_name_key, get_statusIDs_by_key(con, cur))
+    populate_dock_fees(con, cur, IDs_by_name_key, dock_f)
     con.close()
 
 if __name__ == '__main__':

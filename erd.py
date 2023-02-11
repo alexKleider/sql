@@ -3,10 +3,14 @@
 # File: erd.py  (Entity Relationship Diagram)
 
 """
-    Written to allow schema to be displayed on one page
+    Written to allow schema to be displayed on one page [1]
     to serve as an "Entity Relationship Diagram."
     Specifically, create a single file with two columns
-    from the schema defining source file.
+    from a schema defining source file.
+    There must be a form feed ('i\V\F' if using vim) 
+    in the input file to mark the end of the first column
+    and the beginning of the second.
+
     Usage:
         ./erd.py [inf [outf]]
 
@@ -14,6 +18,12 @@
     If not specified, defaults are provided.
 
     A header has also been added.
+
+    [1] The 'create_tables.sql' file is a bit less than
+    two pages long; this utility puts all the content 
+    onto one page in two columns.
+    It's expected that most sqlite3 db creating command
+    sequences will probably be of similar length.
 """
 
 import sys
