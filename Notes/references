@@ -71,7 +71,7 @@ SELECT column_Name1,column_name2,......
 
 
 TA: ID, name 
-TI: taID, tbID      -- mapping or intersection table
+TI: taID, tbID      -- mapping, link(er) or intersection table
 TB: ID, quality
 
 SELECT  TA.name, TB.quality
