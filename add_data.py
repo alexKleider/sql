@@ -425,6 +425,26 @@ def populate_dock_fees(con, cur, IDs_by_name_key, dock_f):
                 IDs_by_name_key[f"{last},{first}"], fee))
 
 
+def populate_kayak_fees(con, cur, IDs_by_name_key, kayak_f):
+    """
+    """
+    template = """INSERT INTO Kayak_Slots
+                (personID, slot_code, slot_cost)
+                VALUES ("{}", "{}", "{}");"""
+    with open(kayak_f, 'r') as inf:
+        """
+        """
+        for line in inf:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            code_first_last, fee = line.split(':')
+            fee = int(fee)
+            code, first, last = code_first_last.split()
+            execute(cur, con, template.format(
+                IDs_by_name_key[f"{last},{first}"], code, fee))
+
+
 def main():
     if os.path.exists(db_file_name):
         os.remove(db_file_name)
@@ -451,7 +471,9 @@ def main():
     populate_Person_Status_table(con, cur,
             IDs_by_name_key, get_statusIDs_by_key(con, cur))
     populate_dock_fees(con, cur, IDs_by_name_key, dock_f)
+    populate_kayak_fees(con, cur, IDs_by_name_key, kayak_f)
     con.close()
+
 
 if __name__ == '__main__':
     main()

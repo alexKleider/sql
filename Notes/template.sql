@@ -1,0 +1,18 @@
+SELECT 
+    
+FROM
+   
+INNER JOIN
+  
+ON
+ 
+INNER JOIN
+
+ON
+
+WHERE
+
+ORDER BY
+;
+
+
