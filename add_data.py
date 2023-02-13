@@ -445,6 +445,36 @@ def populate_kayak_fees(con, cur, IDs_by_name_key, kayak_f):
                 IDs_by_name_key[f"{last},{first}"], code, fee))
 
 
+def populate_mooring_fees(con, cur, IDs_by_name_key, mooring_f):
+    """
+    """
+    template = """INSERT INTO Moorings
+                (personID, mooring_code, mooring_cost)
+                VALUES ("{}", "{}", "{}");"""
+    with open(mooring_f, 'r') as inf:
+        """
+        """
+        for line in inf:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            comment = line.find('#')
+            if comment != -1:
+                line = line[:comment].strip()
+            data = line.split()
+            l = len(data)
+            code = data[0]
+            if l>=2: fee = data[1]
+            else: fee = 0
+            if l>=3:
+                first, last = data[2:]
+                personID = IDs_by_name_key[f"{last},{first}"]
+            else: personID = ''
+            fee = int(fee)
+            execute(cur, con, template.format(
+                personID, code, fee))
+
+
 def main():
     if os.path.exists(db_file_name):
         os.remove(db_file_name)
@@ -472,6 +502,7 @@ def main():
             IDs_by_name_key, get_statusIDs_by_key(con, cur))
     populate_dock_fees(con, cur, IDs_by_name_key, dock_f)
     populate_kayak_fees(con, cur, IDs_by_name_key, kayak_f)
+    populate_mooring_fees(con, cur, IDs_by_name_key, mooring_f)
     con.close()
 
 

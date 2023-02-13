@@ -87,24 +87,24 @@ CREATE TABLE Dock_Privileges (
 DROP TABLE IF EXISTS Kayak_Slots;
 CREATE TABLE Kayak_Slots (
     slotID INTEGER PRIMARY KEY,
-    personID TEXT,
+    slot_code TEXT NOT NULL UNIQUE,
+    slot_cost NUMERIC DEFAULT 70,
+    personID TEXT
     -- foreign key
     -- unlikely but theoretically 
     -- possible for one member to
     -- have >1 kayak slot.
-    slot_code TEXT NOT NULL UNIQUE,
-    slot_cost NUMERIC DEFAULT 70
     );
 
 DROP TABLE IF EXISTS Moorings;
 CREATE TABLE Moorings (
     mooringID INTEGER PRIMARY KEY,
-    personID TEXT,
+    mooring_code TEXT NOT NULL UNIQUE,
+    mooring_cost NUMERIC DEFAULT 0,
+    personID TEXT
     -- foreign key
     -- unlikely but theoretically 
     -- possible for one member to
     -- have >1 mooring.
-    mooring_code TEXT NOT NULL UNIQUE,
-    mooring_cost NUMERIC DEFAULT 0
     );
 
