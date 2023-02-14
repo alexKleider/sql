@@ -7,7 +7,6 @@ import sys
 from code import routines
 
 import sqlite3
-
 db_file_name = "Sanitized/club.db"
 db_file_name = "Secret/club.db"
 

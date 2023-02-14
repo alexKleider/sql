@@ -27,11 +27,18 @@
 """
 
 import sys
+import datetime
+today = datetime.datetime.today()
+date_template = "%b %d, %Y"
+date = datetime.datetime.strptime(
+        today.strftime(date_template),
+        date_template
+            ).strftime(date_template)
 
 source = 'Sql/create_tables.sql'
 destination = 'ERD.txt'
 preface_lines = ['',
-        '-- Data Base Schema',
+        '-- Data Base Schema  {}'.format(date),
         '-- AKA Entity Relationship Diagram (ERD)',
         ]
 

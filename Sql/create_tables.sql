@@ -39,9 +39,9 @@ DROP TABLE IF EXISTS Sponsors;
 --intersection table
 CREATE TABLE Sponsors (
     personID INTEGER NOT NULL,
-        --foreign key
-    sponsorID INTEGER NOT NULL
-        --foreign key
+    sponsorID INTEGER NOT NULL,
+    PRIMARY KEY (personID, sponsorID)
+    -- composite primary key
     );
 
 DROP TABLE IF EXISTS Stati;
@@ -55,7 +55,9 @@ DROP TABLE IF EXISTS Person_Status;
 --intersection table
 CREATE TABLE Person_Status (
     personID INTEGER NOT NULL,
-    statusID INTEGER NOT NULL
+    statusID INTEGER NOT NULL,
+    PRIMARY Key (personID, statusID)
+    -- composite primary key
     );
 
 DROP TABLE IF EXISTS Attrition;
@@ -63,7 +65,7 @@ DROP TABLE IF EXISTS Attrition;
 CREATE TABLE Attrition (
     attritionID INTEGER PRIMARY KEY,
     personID INTEGER NOT NULL,
-        --foreign key
+    -- foreign key
     date TEXT DEFAULT '',
     reason TEXT DEFAULT ''
     );
@@ -71,7 +73,8 @@ CREATE TABLE Attrition (
 DROP TABLE IF EXISTS Dues;
 CREATE TABLE Dues (
     personID INTEGER UNIQUE NOT NULL,
-        --foreign key
+    -- foreign key
+    -- only one entry per person
     dues_owed NUMERIC DEFAULT 100
     );
 
