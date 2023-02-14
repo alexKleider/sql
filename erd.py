@@ -28,7 +28,7 @@
 
 import sys
 
-source = 'create_tables.sql'
+source = 'Sql/create_tables.sql'
 destination = 'ERD.txt'
 preface_lines = ['',
         '-- Data Base Schema',
@@ -53,6 +53,14 @@ def split_file(source):
                     collector.append('\n')
                 else:
                     collector.append(line.rstrip())
+    l1 = len(collector1)
+    l2 = len(collector2)
+    if l1 > l2:
+        while len(collector2) < l1:
+            collector2.append('')
+    elif l2 > l1:
+        while len(collector1) < l2:
+            collector2.append('')
     return((collector1, collector2))
 
 

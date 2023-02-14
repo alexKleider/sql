@@ -2,22 +2,14 @@
 
 # File: main.py
 
+import os
+import sys
+from code import routines
+
 import sqlite3
-import add_data
 
 db_file_name = "Sanitized/club.db"
 db_file_name = "Secret/club.db"
-
-query_c = """
-SELECT first, last FROM People WHERE personID = {};
-"""
-
-query_get_nothing = """
-SELECT Person_Status.personID, Person_Status.statusID
-    FROM Person_Status
-    JOIN Stati
-        on Stati.statusID = 'aw'
-;"""
 
 query_1 = """
 SELECT People.personID, first, last, Stati.text, Stati.key
@@ -29,71 +21,54 @@ SELECT People.personID, first, last, Stati.text, Stati.key
 ;"""
 
 
-def get_people_fields_by_ID(fields):
-    """
-    Return the field values by PersonID in the People table.
-    """
-    ret = {}
-    query = """SELECT * FROM People;"""
-    con = sqlite3.connect(db_file_name)
-    cur = con.cursor()
-    execute(cur, con, query)
-    res = cur.fetchall()
-    for entry in res:
-        ret[entry[0]] = entry[1:]
-    return ret
-    
-
-def execute(cursor, connection, command):
-    try:
-        cursor.execute(command)
-    except (sqlite3.IntegrityError, sqlite3.OperationalError):
-        print("Unable to execute following query:")
-        print(command)
-        raise
-#   _ = input(command)
-    connection.commit()
-
-
 def main():
-    id_dict = get_people_fields_by_ID(())
+    id_dict = routines.get_people_fields_by_ID(
+            db_file_name, ('first', 'last'))
     con = sqlite3.connect(db_file_name)
     cur = con.cursor()
-    execute(cur, con, """
-SELECT statusID, key FROM Stati WHERE key LIKE 'a%';
-""")
+    query_statusIDs4applicants = """SELECT
+        statusID, key FROM Stati WHERE key LIKE 'a%';"""
+    routines.execute(cur, con, query_statusIDs4applicants)
     res = cur.fetchall()
-    _ = input(f"{res}")
-    applicant_dict = {}
-    for key, code in res:
-        applicant_dict[code] = [key, ]
-#   _ = input(f"applicant_dict: {applicant_dict}")
-    for key in applicant_dict.keys():
-        execute(cur,con, """SELECT personID
+#   _ = input(f"{res}")
+    statusID_by_key = {}
+    for statusID, key in res:
+        statusID_by_key[key] = statusID
+#   _ = input(f"statusID_by_key: {statusID_by_key}")
+    keys = statusID_by_key.keys()
+    print("KEY:  id list")
+    print("====  =======")
+    for key in keys:
+        routines.execute(cur,con, """SELECT personID
             FROM Person_Status WHERE statusID = "{}";
-            """.format(applicant_dict[key][0]))
+            """.format(statusID_by_key[key]))
         res = cur.fetchall()
         if res:
-            for r in res:  # r[0] is personID
-                print(f"{r[0]}:  {id_dict[r[0]]}")
-#               applicant_dict[key].append(r[0])
-#               print(applicant_dict[key])
-
-
-    return
-    for ID in IDs:
-        print(f"res of query_b: {repr(res)}")
-    if res:
-        ids = [item[0] for item in res]
-        for personID in ids:
-            execute(cur,con,query_c.format(personID))
-            res = cur.fetchall()
-            print(f"res of query_c: {repr(res)}")
-            if res:
-                first, last = res[0]
-                print(first, last)
+            print(f"{key}: {[id_dict[entry[0]] for entry in res]}")
 
 
 if __name__ == '__main__':
     main()
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+    query = """
+        SELECT
+            Stati.key,
+            People.first, People.last
+        FROM People
+        JOIN Person_Status
+            ON Person_Status.personID = People.personID
+        JOIN Stati
+            ON Stati.statusID = Person_Status.statusID
+        WHERE
+            Stati.key IN ("a-", "a" , "a0", "a1", "a2",
+                "a3", "ai", "ad", "av", "aw", "am")
+        ORDER BY Stati.key
+    ;"""
+
+    routines.execute(cur, con, query)
+    res = cur.fetchall()
+    print("\nSame but all with one query:")
+    for item in res:
+        print(item)
     

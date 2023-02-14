@@ -1,0 +1,59 @@
+
+-- Data Base Schema
+-- AKA Entity Relationship Diagram (ERD)
+                                         
+
+DROP TABLE IF EXISTS People;             DROP TABLE IF EXISTS Attrition;
+CREATE TABLE People (                    --keeping data in People table
+    personID INTEGER PRIMARY KEY,        CREATE TABLE Attrition (
+    first TEXT NOT NULL,                     attritionID INTEGER PRIMARY KEY,
+    last TEXT NOT NULL,                      personID INTEGER NOT NULL,
+    suffix TEXT DEFAULT '',                      --foreign key
+    phone TEXT DEFAULT '',                   date TEXT DEFAULT '',
+    address TEXT DEFAULT '',                 reason TEXT DEFAULT ''
+    town TEXT DEFAULT '',                    );
+    state TEXT DEFAULT '',               
+    postal_code TEXT DEFAULT '',         DROP TABLE IF EXISTS Dues;
+    country TEXT DEFAULT 'USA',          CREATE TABLE Dues (
+    email TEXT DEFAULT ''                    personID INTEGER UNIQUE NOT NULL,
+    );                                           --foreign key
+                                             dues_owed NUMERIC DEFAULT 100
+DROP TABLE IF EXISTS Applicants;             );
+-- also in Stati table                   
+-- unitil > member                       DROP TABLE IF EXISTS Dock_Privileges;
+CREATE TABLE Applicants (                CREATE TABLE Dock_Privileges (
+    applicantID INTEGER PRIMARY KEY,         personID TEXT NOT NULL UNIQUE,
+    personID INTEGER NOT NULL UNIQUE,        --no one will pay for >1
+        --foreign key                        --so no need for an
+    app_rcvd TEXT NOT NULL,                  --auto generated PRIMARY KEY
+    fee_rcvd TEXT DEFAULT '',                cost NUMERIC DEFAULT 75
+    meeting1 TEXT DEFAULT '',                );
+    meeting2 TEXT DEFAULT '',            
+    meeting3 TEXT DEFAULT '',            DROP TABLE IF EXISTS Kayak_Slots;
+    approved TEXT DEFAULT '',            CREATE TABLE Kayak_Slots (
+    inducted TEXT DEFAULT '',                slotID INTEGER PRIMARY KEY,
+    dues_paid TEXT DEFAULT ''                slot_code TEXT NOT NULL UNIQUE,
+    );                                       slot_cost NUMERIC DEFAULT 70,
+                                             personID TEXT
+DROP TABLE IF EXISTS Sponsors;               -- foreign key
+--intersection table                         -- unlikely but theoretically
+CREATE TABLE Sponsors (                      -- possible for one member to
+    personID INTEGER NOT NULL,               -- have >1 kayak slot.
+        --foreign key                        );
+    sponsorID INTEGER NOT NULL           
+        --foreign key                    DROP TABLE IF EXISTS Moorings;
+    );                                   CREATE TABLE Moorings (
+                                             mooringID INTEGER PRIMARY KEY,
+DROP TABLE IF EXISTS Stati;                  mooring_code TEXT NOT NULL UNIQUE,
+CREATE TABLE Stati (                         mooring_cost NUMERIC DEFAULT 0,
+    statusID INTEGER PRIMARY KEY,            personID TEXT
+    key TEXT NOT NULL,                       -- foreign key
+    text TEXT NOT NULL                       -- unlikely but theoretically
+    );                                       -- possible for one member to
+                                             -- have >1 mooring.
+DROP TABLE IF EXISTS Person_Status;          );
+--intersection table                     
+CREATE TABLE Person_Status (             
+    personID INTEGER NOT NULL,           
+    statusID INTEGER NOT NULL            
+    );                                   

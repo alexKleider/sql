@@ -25,7 +25,7 @@ import helpers
 
 ## file name GLOBALS
 db_file_name = "Sanitized/club.db"
-sql_commands_file = 'create_tables.sql'  # table creating commands
+sql_commands_file = 'Sql/create_tables.sql'  # table creating commands
 membership_csv_file = "Sanitized/memlist.csv"
 applicant_text_file = 'Sanitized/applicants.txt'
 sponsor_text_file = 'Sanitized/sponsors.txt'
