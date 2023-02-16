@@ -2,72 +2,75 @@
 
 # File: main.py
 
-import os
+"""
+Main driver of SQL version of
+             the
+    Bolinas Rod & Boat Club
+          Membership
+data management software.
+"""
+
 import sys
+import sqlite3
 from code import routines
 
-import sqlite3
-db_file_name = "Sanitized/club.db"
 db_file_name = "Secret/club.db"
 
-query_1 = """
-SELECT People.personID, first, last, Stati.text, Stati.key
-    FROM People
-    LEFT JOIN Person_Status
-        ON People.personID = Person_Status.personID
-    LEFT JOIN Stati
-        ON Person_Status.personID = Stati.statusID
-;"""
+
+def get_query(sql_source_file):
+    with open(sql_source_file, 'r') as source:
+        return source.read()
 
 
-def main():
-    id_dict = routines.get_people_fields_by_ID(
-            db_file_name, ('first', 'last'))
+def show_cmd():
     con = sqlite3.connect(db_file_name)
     cur = con.cursor()
-    query_statusIDs4applicants = """SELECT
-        statusID, key FROM Stati WHERE key LIKE 'a%';"""
-    routines.execute(cur, con, query_statusIDs4applicants)
+    routines.execute(cur, con,
+            get_query('Sql/show.sql'))
     res = cur.fetchall()
-#   _ = input(f"{res}")
-    statusID_by_key = {}
-    for statusID, key in res:
-        statusID_by_key[key] = statusID
-#   _ = input(f"statusID_by_key: {statusID_by_key}")
-    keys = statusID_by_key.keys()
-    print("KEY:  id list")
-    print("====  =======")
-    for key in keys:
-        routines.execute(cur,con, """SELECT personID
-            FROM Person_Status WHERE statusID = "{}";
-            """.format(statusID_by_key[key]))
-        res = cur.fetchall()
-        if res:
-            print(f"{key}: {[id_dict[entry[0]] for entry in res]}")
+    n = len(res)
+    _ = input(f"Number of members: {n}\n")
+    report = ["""FOR MEMBER USE ONLY
+
+THE TELEPHONE NUMBERS, ADDRESSES AND EMAIL ADDRESSES OF THE BOLINAS ROD &
+BOAT CLUB MEMBERSHIP CONTAINED HEREIN ARE NOT TO BE REPRODUCED OR DISTRIBUTED
+FOR ANY PURPOSE WITHOUT THE EXPRESS PERMISSION OF THE BOARD OF THE BRBC.
+""", ]
+    first_letter = 'A'
+    for item in res:
+        last_initial = item[1][:1]
+        if last_initial != first_letter:
+            first_letter = last_initial
+            report.append("")
+        report.append(
+        "{}, {} [{}] {}, {}, {} {} [{}]".format(*item))
+    return('\n'.join(report))
+
+
+def get_command():
+    choice = input("""Choose one of the following:
+0. Exit
+1. Show
+2. Not implemented
+...... """)
+    if choice == '0': sys.exit()
+    elif choice == '1': return show_cmd
+    elif choice == '2': print("Not implemented")
+    else: print("Not implemented")
 
 
 if __name__ == '__main__':
-    main()
-    con = sqlite3.connect(db_file_name)
-    cur = con.cursor()
-    query = """
-        SELECT
-            Stati.key,
-            People.first, People.last
-        FROM People
-        JOIN Person_Status
-            ON Person_Status.personID = People.personID
-        JOIN Stati
-            ON Stati.statusID = Person_Status.statusID
-        WHERE
-            Stati.key IN ("a-", "a" , "a0", "a1", "a2",
-                "a3", "ai", "ad", "av", "aw", "am")
-        ORDER BY Stati.key
-    ;"""
+    cmd = None
+    largs = len(sys.argv)
+    if largs > 1:
+        cmd = sys.argv[1]
+        if cmd == 'show': cmd = show_cmd
+        else: cmd = None
+    else: 
+        cmd = get_command()
+    if cmd: 
+        res = cmd()
+        outfile = input("Send result to file: ")
+        with open(outfile, 'w') as outstream:
+            outstream.write(res)
 
-    routines.execute(cur, con, query)
-    res = cur.fetchall()
-    print("\nSame but all with one query:")
-    for item in res:
-        print(item)
-    
