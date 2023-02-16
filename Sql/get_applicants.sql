@@ -1,20 +1,22 @@
+/* get_applicants.sql */
+
 SELECT 
-    People.first, People.last, People.phone,
-    Stati.key
+    P.first, P.last, P.phone,
+    St.text
 FROM
-    People
+    People AS P
 INNER JOIN
-    Person_Status
+    Person_Status AS PS
 ON
-    People.personID = Person_status.personID
+    P.personID = PS.personID
 INNER JOIN
-    Stati
+    Stati AS St
 ON
-    Stati.statusID = Person_Status.statusID
+    St.statusID = PS.statusID
 WHERE
-    Stati.key IN ("a-", "a" , "a0", "a1", "a2",
+    St.key IN ("a-", "a" , "a0", "a1", "a2",
         "a3", "ai", "ad", "av", "aw", "am")
-ORDER BY Stati.key
+ORDER BY St.key
 ;
 
 

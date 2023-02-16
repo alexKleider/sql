@@ -1,0 +1,37 @@
+
+Natural-SQL Language Bridge:
+1. what data base?
+2. what table?
+3. what fields?
+4. exclude, filter or omit any range or time period?
+5. what does the query do?
+
+/*
+CREATED BY: 
+CREATED ON:
+DESCRIPTION: -- item 5 above.
+*/
+
+Coding Convention
+=================
+* : all available fields; best practice to avoid!
+Indents & Spacing: Separate query into clauses.
+Clause: a subsection of an SQL statement beginning with a keyword.
+    ... it may include additional parameters and operators.
+    ORDER BY clause:  -- without it: as ordered in table
+        firstname DESC
+        lastname ASC --the default
+    LIMIT 10
+Operators: Comparison, Logical, Arithmetic
+    SELECT Total + 10
+    WHERE Total = 1.98
+    WHERE Total BETWEEN 1.98 AND 5.00
+    WHERE Total IN (1.98, 3.96)
+    WHERE BillingCity LIKE 'T%' -- '%T%: T anywhere in word.
+    --  % == 'whatever else'
+    DATE function p78
+    WHERE BillingCity LIKE 'p%' OR BillingCity LIKE 'd%'
+    WHERE Total > 1.98 AND  --parentheses to specify precidence
+            (BillingCity LIKE 'p%' OR BillingCity LIKE 'd%')
+    CASE statement p94
+

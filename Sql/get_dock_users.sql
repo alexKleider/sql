@@ -1,16 +1,16 @@
--- get_dock_users.sql
+/* get_dock_users.sql */
 
 SELECT 
-    People.first, People.last,
-    Dock_Privileges.cost
+    P.first, P.last,
+    D.cost
 FROM
-   People
+   People AS P
 INNER JOIN
-   Dock_Privileges
+   Dock_Privileges AS D
 ON
-    Dock_Privileges.personID = People.personID 
+    D.personID = P.personID 
 ORDER BY
-    People.last, People.first
+    P.last, P.first
 ;
 
 
