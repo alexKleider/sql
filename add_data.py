@@ -93,10 +93,11 @@ def get_commands(sql_file):
     with open(sql_file, 'r') as in_stream:
         command = []
         for line in in_stream:
+            parts = line.split('--')
+            line = parts[0]
             line = line.strip()
-            if (not line
-			or len(line) == 1
-            or line.startswith('--')):
+            if ((not line)
+            or (len(line) == 1)):
                 continue
             command.append(line)
             if line.endswith(';'):
@@ -303,13 +304,10 @@ WHERE People.first = "{first}" AND People.last = "{last}" """
 #   print(ids_by_name)
 
     # now ready to populate tables
-    sponsor_insertion_template =  """INSERT INTO
-                    Sponsors
-                    (personID, sponsorID)
-                    VALUES ({}, {});"""
     for applicant in applicant_data.keys():
         personID = ids_by_name[applicant]
-        keys = ('app_rcvd', 'fee_rcvd',
+        keys = ('sponsor1', 'sponsor2',
+                'app_rcvd', 'fee_rcvd',
                 '1st', '2nd', '3rd',
                 'inducted', 'dues_paid')
         headers = ['personID',]
@@ -320,6 +318,11 @@ WHERE People.first = "{first}" AND People.last = "{last}" """
             elif key == '3rd': new_key = 'meeting3'
             else: new_key = key
             value = applicant_data[applicant][key]
+            for n in range(1,3):
+                if key == f'sponsor{n}':
+                    value = applicant_data[applicant][key]
+                    if not value: value = 'not available'
+                    value = '"{}"'.format(value)
             if not value:
                 break
             headers.append(new_key)
@@ -331,15 +334,15 @@ WHERE People.first = "{first}" AND People.last = "{last}" """
    
         execute(cur,con,query)
 
-        data = applicant_data[applicant]
-        for sponsor in ('sponsor1', 'sponsor2',):
-            sponsor_name = data[sponsor]
-            if sponsor_name:
-                name_key = helpers.tofro_first_last(sponsor_name)
-                sponsorID = ids_by_name[name_key]
-                query = sponsor_insertion_template.format(
-                        int(personID), int(sponsorID))
-                execute(cur, con, query)
+#       data = applicant_data[applicant]
+#       for sponsor in ('sponsor1', 'sponsor2',):
+#           sponsor_name = data[sponsor]
+#           if sponsor_name:
+#               name_key = helpers.tofro_first_last(sponsor_name)
+#               sponsorID = ids_by_name[name_key]
+#               query = sponsor_insertion_template.format(
+#                       int(personID), int(sponsorID))
+#               execute(cur, con, query)
 
 
 def get_table_names(cur):

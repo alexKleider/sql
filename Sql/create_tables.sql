@@ -25,6 +25,8 @@ CREATE TABLE Applicants ( -- AS Ap
     applicantID INTEGER PRIMARY KEY,
     personID INTEGER NOT NULL UNIQUE,
         --foreign key
+    sponsor1 TEXT DEFAULT '',
+    sponsor2 TEXT DEFAULT '',
     app_rcvd TEXT NOT NULL,
     fee_rcvd TEXT DEFAULT '',
     meeting1 TEXT DEFAULT '',
@@ -33,15 +35,6 @@ CREATE TABLE Applicants ( -- AS Ap
     approved TEXT DEFAULT '',
     inducted TEXT DEFAULT '',
     dues_paid TEXT DEFAULT ''
-    );
-
-DROP TABLE IF EXISTS Sponsors;
---intersection table
-CREATE TABLE Sponsors ( -- AS Sp
-    personID INTEGER NOT NULL,
-    sponsorID INTEGER NOT NULL,
-    PRIMARY KEY (personID, sponsorID)
-    -- composite primary key
     );
 
 DROP TABLE IF EXISTS Stati;

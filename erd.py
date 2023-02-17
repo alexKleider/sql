@@ -67,7 +67,7 @@ def split_file(source):
             collector2.append('')
     elif l2 > l1:
         while len(collector1) < l2:
-            collector2.append('')
+            collector1.append('')
     return((collector1, collector2))
 
 
