@@ -1,6 +1,6 @@
 
 
-    File: ~/Git/Sql/README
+File: ~/Git/Sql/README
 
     This Sql directory is where I'm experimenting with code that
     might eventually lead to a transition to using a relational
@@ -9,4 +9,10 @@
 
     The Sanitized directory contains small 'dummy' data files
     mimicking the club's data files.
+
+Thu 16 Feb 2023 08:52:45 AM PST
+    Have moved to use of the Secret directory (which has current
+    club data in it.
+    Using main.py as driver.
+    So far have implemented the show_cmd ==> 4web.txt
 

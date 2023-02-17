@@ -1,14 +1,15 @@
 /* applicants.sql */
+
         SELECT
-            Stati.key,
-            People.first, People.last
-        FROM People
-        JOIN Person_Status
-            ON Person_Status.personID = People.personID
-        JOIN Stati
-            ON Stati.statusID = Person_Status.statusID
+            St.statusID, St.key, P.personID,
+            P.first, P.last
+        FROM People AS P
+        JOIN Person_Status AS PS
+            ON PS.personID = P.personID
+        JOIN Stati AS St
+            ON St.statusID = PS.statusID
         WHERE
-            Stati.key IN ("a-", "a" , "a0", "a1", "a2",
+            St.key IN ("a-", "a" , "a0", "a1", "a2",
                 "a3", "ai", "ad", "av", "aw", "am")
-        ORDER BY Stati.key
+        ORDER BY St.key
     ;
