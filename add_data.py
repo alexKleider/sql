@@ -416,6 +416,15 @@ def populate_dock_fees(con, cur, IDs_by_name_key, dock_f):
         --so no need for an
         --auto generated PRIMARY KEY
         cost NUMERIC DEFAULT 75
+        ? A better way to add data:
+        # This is the named style used with executemany():
+        data = (
+            {"name": "C", "year": 1972},
+            {"name": "Fortran", "year": 1957},
+            {"name": "Python", "year": 1991},
+            {"name": "Go", "year": 2009},
+        )
+        cur.executemany("INSERT INTO lang VALUES(:name, :year)", data)
         """
         for line in inf:
             line = line.strip()

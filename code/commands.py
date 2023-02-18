@@ -25,29 +25,8 @@ def get_command():
     else: print("Not implemented")
 
 
-def get_query(sql_source_file, formatting=None):
-    """
-    Reads a query from a file.
-    If <formatting> is provided: must consist of sequence of
-    length to match number of fields to be formatted.
-    """
-    with open(sql_source_file, 'r') as source:
-        ret = source.read()
-        if formatting:
-            ret = ret.format(*formatting)
-        return ret
-
-
-def fetch(query_source, db_file_name=db_file_name):
-    con = sqlite3.connect(db_file_name)
-    cur = con.cursor()
-    routines.execute(cur, con,
-            get_query(query_source))
-    return cur.fetchall()
-
-
 def show_cmd():
-    res = fetch('Sql/show.sql')
+    res = routines.fetch('Sql/show.sql')
     n = len(res)
 #   _ = input(f"Number of members: {n}\n")
     report = [f"""FOR MEMBER USE ONLY
@@ -70,4 +49,41 @@ There are currently {n} members in good standing:
 
 
 def appl_cmd():
-    pass
+    """
+('a0', 'Sandra', 'Buckley', '707/363-0754', '10 Canyon Rd. #57', 'Bolinas', 'CA', '94924-0057', 'sandrabuckley@att.net', 'Billy Cummings', 'Sandy Monteko-Sherman', '221221', '221221', '', '', '', '', '', '', 'Applicant (no meetings yet)')
+    """
+    keys = (
+    'St_key', 'first', 'last', 
+    'phone', 'address', 'town', 'state', 'postal_code', 'email',
+    'sponsor1', 'sponsor2',
+    'app_rcvd', 'fee_rcvd', 'meeting1', 'meeting2', 'meeting3',
+    'approved', 'inducted', 'dues_paid', 'St_text',)
+    meeting_keys = ('meeting1', 'meeting2', 'meeting3',)
+    sponsor_keys = ('sponsor1', 'sponsor2',)
+    res = routines.fetch('Sql/applicants.sql')
+    n = len(res)
+    report = [
+        f"There are currently {n} applicants.",
+         "===================================",
+         ]
+    header = ''
+    for entry in res:
+        d = routines.make_dict(keys, entry)
+        meeting_dates = [d[k] for k in meeting_keys if d[k]]
+        if not meeting_dates:
+            d['meeting_dates'] = 'no meetings yet'
+        else:
+            d['meeting_dates'] = ', '.join(meeting_dates)
+        sponsors = [d[k] for k in sponsor_keys if d[k]]
+        if not sponsors:
+            d['sponsors'] = 'not available'
+        else:
+            d['sponsors'] = ', '.join(sponsors)
+        if d['St_text'] != header:
+            header = d['St_text']
+            report.extend(['', header, '-' * len(header)])
+        report.append(
+"""{first}, {last} [{phone}] {address}, {town}, {state} {postal_code} [{email}]
+\tMeeting dates: {meeting_dates} 
+\tSponsors: {sponsors}""".format(**d))
+    return '\n'.join(report)

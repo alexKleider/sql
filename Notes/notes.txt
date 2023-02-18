@@ -35,3 +35,30 @@ Operators: Comparison, Logical, Arithmetic
             (BillingCity LIKE 'p%' OR BillingCity LIKE 'd%')
     CASE statement p94
 
+https://docs.python.org/3/library/sqlite3.html#tutorial
+
+sqlite3 Secret/club.db
+SQLite version 3.34.1 2021-01-20 14:10:07
+Enter ".help" for usage hints.
+sqlite> select name from sqlite_master;
+
+or
+import sqlite3
+con = sqlite3.connect(<db-file>)
+cur = con.cursor()
+cur.execute("CREATE TA...  # if haven't connected to a db already
+res = cur.execute("SELECT name FROM sqlite_master")
+res.fetchone()
+
+
+AVOID string formatting; USE place holders:
+https://docs.python.org/3/library/sqlite3.html#sqlite3-placeholders
+use the DB-API’s parameter substitution
+To insert a variable into a query string, use a placeholder in the
+string, and substitute the actual values into the query by providing
+them as a tuple or dict of values to the second argument of the
+cursor’s execute() method. (...or executemany() method.)
+Placeholders are of two types:
+qmark: question marks, number matching tuple length
+named: key words for a dict (extra keys in dict are OK)
+

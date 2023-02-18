@@ -2,9 +2,24 @@
 
 # File: code/routines.py
 
+"""
+Contains some 'helper' code to support data base management.
+"""
+
 import sqlite3
 
 db_file_name = '/home/alex/Git/Sql/Secret/club.db'
+
+
+def make_dict(keys, values):
+    """
+    Parameters are iterables of equal length.
+    A dict is returned.
+    """
+    ret = {}
+    for key, value in zip(keys, values):
+        ret[key] = value
+    return ret
 
 
 def execute(cursor, connection, command):
@@ -40,6 +55,27 @@ def get_people_fields_by_ID(db_file_name, fields=None):
         ret[entry[0]] = entry[1:]
     return ret
     
+
+def get_query(sql_source_file, formatting=None):
+    """
+    Reads a query from a file.
+    If <formatting> is provided: must consist of sequence of
+    length to match number of fields to be formatted.
+    """
+    with open(sql_source_file, 'r') as source:
+        ret = source.read()
+        if formatting:
+            ret = ret.format(*formatting)
+        return ret
+
+
+def fetch(query_source, db_file_name=db_file_name):
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+    execute(cur, con,
+            get_query(query_source))
+    return cur.fetchall()
+
 
 def main():
     id_dict = get_people_fields_by_ID(
