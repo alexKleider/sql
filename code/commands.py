@@ -92,18 +92,19 @@ def show_applicants():
     return '\n'.join(report)
 
 
-def for_angie():
+def for_angie(include_blanks=True):
     res = routines.fetch('Sql/forAngie.sql')
     report = []
     first_letter = 'A'
     for item in res:
         last_initial = item[1][:1]
-        if last_initial != first_letter:
+        if ((last_initial != first_letter)
+        and (include_blanks)):
             first_letter = last_initial
             report.append("")
         report.append(
         "{1}, {0}".format(*item))
-    return('\n'.join(report))
+    return report
 
 
 def show_cmd():
@@ -114,4 +115,11 @@ def show_cmd():
 
 
 if __name__ == "__main__":
+#   with open("4Angie.csv", 'w', newline='') as csvfile:
+#       fieldnames = ('last', 'first')
+#           writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+#           writer.writeheader()
+#           for entry in for_angie():
+#               writer.writerow(
+#                   {'last': entry[0], 'first': entry[1]})
     print(for_angie())
