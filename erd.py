@@ -45,6 +45,12 @@ preface_lines = ['',
 
 def split_file(source):
     """
+    Source is a file assumed to contain a line beginning with
+    the form feed character ('^L')  somewhere near its middle.
+    Returned is a tuple of two listings of the lines: those
+    before the form feed and those that follow. Both listings
+    are of the same length (having been padded with empty lines
+    as needed.
     """
     with open(source, 'r') as instream:
         donewithleadingcomments = False

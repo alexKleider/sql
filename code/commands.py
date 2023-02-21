@@ -7,7 +7,10 @@
 """
 
 import sqlite3
-from code import routines
+try:
+    from code import routines
+except ImportError:
+    import routines
 
 db_file_name = "Secret/club.db"
 
@@ -25,7 +28,7 @@ def get_command():
     else: print("Not implemented")
 
 
-def show_cmd():
+def show_members():
     res = routines.fetch('Sql/show.sql')
     n = len(res)
 #   _ = input(f"Number of members: {n}\n")
@@ -48,7 +51,7 @@ There are currently {n} members in good standing:
     return('\n'.join(report))
 
 
-def appl_cmd():
+def show_applicants():
     """
 ('a0', 'Sandra', 'Buckley', '707/363-0754', '10 Canyon Rd. #57', 'Bolinas', 'CA', '94924-0057', 'sandrabuckley@att.net', 'Billy Cummings', 'Sandy Monteko-Sherman', '221221', '221221', '', '', '', '', '', '', 'Applicant (no meetings yet)')
     """
@@ -87,3 +90,28 @@ def appl_cmd():
 \tMeeting dates: {meeting_dates} 
 \tSponsors: {sponsors}""".format(**d))
     return '\n'.join(report)
+
+
+def for_angie():
+    res = routines.fetch('Sql/forAngie.sql')
+    report = []
+    first_letter = 'A'
+    for item in res:
+        last_initial = item[1][:1]
+        if last_initial != first_letter:
+            first_letter = last_initial
+            report.append("")
+        report.append(
+        "{1}, {0}".format(*item))
+    return('\n'.join(report))
+
+
+def show_cmd():
+    members = show_members()
+    applicants = show_applicants()
+#   return members + "\n" + applicants
+    return "\n".join((members, "\n", applicants))
+
+
+if __name__ == "__main__":
+    print(for_angie())

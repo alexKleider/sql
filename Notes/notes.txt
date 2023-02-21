@@ -62,3 +62,19 @@ Placeholders are of two types:
 qmark: question marks, number matching tuple length
 named: key words for a dict (extra keys in dict are OK)
 
+
+https://pypapers.substack.com/p/how-to-work-with-a-database-using
+https://docs.python.org/3/library/sqlite3.html
+
+import sqlite3
+con = sqlite3.connect('library.db')
+# Must have a table with which to work:
+# CREATE TABLE table_name  -- error if columb exists
+# (column_one TEXT, column_2 TEXT, column_three TEXT)
+# Use convention of KEYWORDS IN UPPER-case,
+# identifiers in Mixed- or lower-case.
+cur = con.cursor()
+cur.execute("""CREATE TABLE table_name
+    (books TEXT, author TEXT, release_date TEXT,
+    publisher TEXT, book_type TEXT)
+    """)
