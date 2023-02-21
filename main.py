@@ -38,7 +38,7 @@ def main():
         else:
             outfile = input("Send result to file: ")
         with open(outfile, 'w') as outstream:
-            outstream.write(res)
+            outstream.write('\n'.join(res))
             print(f"Results sent to {outstream.name}.")
     else:
         print("No valid command provided.")

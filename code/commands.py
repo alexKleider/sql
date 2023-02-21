@@ -7,6 +7,13 @@
 """
 
 import sqlite3
+path2insert = '/home/alex/Git/Club/Utils'
+# the above code can be found @
+# https://github.com/alexKleider/Club_Utilities
+import os
+import sys
+sys.path.insert(0, path2insert)
+import helpers
 try:
     from code import routines
 except ImportError:
@@ -18,13 +25,18 @@ db_file_name = "Secret/club.db"
 def get_command():
     choice = input("""Choose one of the following:
 0. Exit
-1. Show
-2. Not implemented
+1. Show for web site
+2. Show applicants
+3. Show names as table
+4. Report
+5. Not implemented
 ...... """)
     if choice == '0': sys.exit()
     elif choice == '1': return show_cmd
-    elif choice == '2': return appl_cmd
-    elif choice == '3': print("Not implemented")
+    elif choice == '2': return show_applicants
+    elif choice == '3': return show_names
+    elif choice == '4': return report_cmd
+    elif choice == '5': print("Not implemented")
     else: print("Not implemented")
 
 
@@ -48,7 +60,7 @@ There are currently {n} members in good standing:
             report.append("")
         report.append(
         "{}, {} [{}] {}, {}, {} {} [{}]".format(*item))
-    return('\n'.join(report))
+    return report
 
 
 def show_applicants():
@@ -89,7 +101,7 @@ def show_applicants():
 """{first}, {last} [{phone}] {address}, {town}, {state} {postal_code} [{email}]
 \tMeeting dates: {meeting_dates} 
 \tSponsors: {sponsors}""".format(**d))
-    return '\n'.join(report)
+    return report
 
 
 def for_angie(include_blanks=True):
@@ -111,7 +123,19 @@ def show_cmd():
     members = show_members()
     applicants = show_applicants()
 #   return members + "\n" + applicants
-    return "\n".join((members, "\n", applicants))
+    return members + ["\n"] + applicants
+
+
+def show_names():
+    return helpers.tabulate(
+        for_angie(include_blanks=False),
+        max_width=102, separator='  ')
+
+
+def report_cmd():
+    ret = show_applicants()
+    ret.append("\nReport command is still under development.")
+    return ret
 
 
 if __name__ == "__main__":
