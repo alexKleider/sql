@@ -14,8 +14,10 @@ import sqlite3
 def get_query(sql_source_file, formatting=None):
     """
     Reads a query from a file.
-    If <formatting> is provided: must consist of sequence of
-    length to match number of fields to be formatted.
+    If <formatting> is provided: it must consist of either
+    a sequence of length to match number of qmark placeholders
+    or a dict containing all keys needed for named placeholders
+    each of which is prefaced by a colon. eg: (:key1, :key2).
     """
     with open(sql_source_file, 'r') as source:
         ret = source.read()

@@ -11,8 +11,8 @@ data management software.
 Support code found in the 'code' directory.
 'code/routines.py' contains helper functions.
 'code/commands.py': the commands themselves.
-    so far: just working on 'show_cmd'
-        which generates output for the web site.
+
+See code/commands/get_command() for what's so far implemented.
 """
 
 import sys
@@ -20,6 +20,9 @@ from code import commands
 
 
 def main():
+    """
+    Too complicated! needs debugging!!
+    """
     cmd = None
     args = []
     largs = len(sys.argv)
@@ -37,13 +40,27 @@ def main():
             outfile = args[0]
         else:
             outfile = input("Send result to file: ")
-        with open(outfile, 'w') as outstream:
-            outstream.write('\n'.join(res))
-            print(f"Results sent to {outstream.name}.")
+        if outfile:
+            with open(outfile, 'w') as outstream:
+                outstream.write('\n'.join(res))
+                print(f"Results sent to {outstream.name}.")
+        else: print('\n'.join(res))
     else:
         print("No valid command provided.")
 
 
 if __name__ == '__main__':
-    main()
+    cmd = commands.get_command()
+    if cmd: 
+        res = cmd()
+        outfile = input("Send result to file: ")
+        if outfile:
+            with open(outfile, 'w') as outstream:
+                outstream.write('\n'.join(res))
+                print(f"Results sent to {outstream.name}.")
+        else:
+            print("No file selected; output to stdout...")
+            print('\n'.join(res))
+    else:
+        print("No valid command provided.")
 

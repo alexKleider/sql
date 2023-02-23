@@ -22,15 +22,67 @@ def make_dict(keys, values):
     return ret
 
 
-def execute(cursor, connection, command):
+def execute_from_file(cursor, connection, sql_file, params=None):
     try:
-        cursor.execute(command)
+        if params:
+            cursor.execute(command, params)
+        else:
+            cursor.execute(command)
     except (sqlite3.IntegrityError, sqlite3.OperationalError):
         print("Unable to execute following query:")
         print(command)
         raise
 #   _ = input(command)
     connection.commit()
+
+
+def get_query(sql_source_file, values=None):
+    """
+    Reads a query from a file with option to bind values 
+    to place holders.
+    If <values> is provided: it must consist of either
+    a sequence of length to match number of qmark placeholders
+    or a dict containing all keys needed for named placeholders
+    each of which is prefaced by a colon. eg: (:key1, :key2).
+    """
+    with open(sql_source_file, 'r') as source:
+        ret = source.read()
+        if values:
+            ret = ret.format(*formatting)
+        return ret
+
+
+def execute(cursor, connection, command, params=None):
+    try:
+        if params:
+            cursor.execute(command, params)
+        else:
+            cursor.execute(command)
+    except (sqlite3.IntegrityError, sqlite3.OperationalError):
+        print("Unable to execute following query:")
+        print(command)
+        raise
+#   _ = input(command)
+    connection.commit()
+
+
+def get_ids_by_name(cur, con, first, last):
+    """
+    Returns People.personID (could be more than one!)
+    for anyone with <first> <last> name.
+    Returns a (possible empty) tuple.
+    Unlikely it'll ever be more than a tuple with one value
+    """
+    query = f"""SELECT personID from People
+            WHERE People.first = "{first}"
+            AND People.last = "{last}" """
+#   _ = input(query)
+    execute(cur, con, query)
+    res = cur.fetchall()
+    res= [item[0] for item in res]
+    if not res:
+        _ = input("No key for {} {}".format(first, last))
+    return res
 
 
 def get_people_fields_by_ID(db_file_name, fields=None):
@@ -77,7 +129,7 @@ def fetch(query_source, db_file_name=db_file_name):
     return cur.fetchall()
 
 
-def main():
+def exercise_get_people_fields_by_ID():
     id_dict = get_people_fields_by_ID(
             db_file_name, ('first', 'last'))
     for key in id_dict.keys():
@@ -85,5 +137,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+#   exercise_get_people_fields_by_ID()
+    pass
 

@@ -7,20 +7,18 @@
 """
 
 import sqlite3
-path2insert = '/home/alex/Git/Club/Utils'
-# the above code can be found @
-# https://github.com/alexKleider/Club_Utilities
-import os
 import sys
-sys.path.insert(0, path2insert)
-import helpers
 try:
     from code import routines
 except ImportError:
     import routines
+try:
+    from code import helpers
+except ImportError:
+    import helpers
 
 db_file_name = "Secret/club.db"
-
+ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 
 def get_command():
     choice = input("""Choose one of the following:
@@ -29,14 +27,18 @@ def get_command():
 2. Show applicants
 3. Show names as table
 4. Report
-5. Not implemented
+5. yet2bNamed
+6. Not implemented
+7. Not implemented
 ...... """)
     if choice == '0': sys.exit()
     elif choice == '1': return show_cmd
     elif choice == '2': return show_applicants
     elif choice == '3': return show_names
     elif choice == '4': return report_cmd
-    elif choice == '5': print("Not implemented")
+    elif choice == '5': return yet2bNamed
+    elif choice == '6': print("Not implemented")
+    elif choice == '7': print("Not implemented")
     else: print("Not implemented")
 
 
@@ -133,9 +135,77 @@ def show_names():
 
 
 def report_cmd():
-    ret = show_applicants()
-    ret.append("\nReport command is still under development.")
+    res = routines.fetch('Sql/show.sql')
+    n = len(res)
+    report = []
+    helpers.add_header2list("Membership Report (prepared {})"
+                            .format(helpers.date),
+                            report, underline_char='=')
+    report.append('')
+    report.append('Club membership currently stands at {}.'
+                  .format(n))
+    report.extend(show_applicants())
+    try:
+        with open(ADDENDUM2REPORT_FILE, 'r') as fobj:
+            addendum = fobj.read()
+            if addendum:
+                print('Appending addendum as found in file: {}'
+                        .format(fobj.name))
+                report.append("")
+                report.append(addendum)
+            else:
+                print("No addendum found in file: {}"
+                        .format(fobj.name))
+    except FileNotFoundError:
+        print('No addendum (file: {}) found.'
+                .format(ADDENDUM2REPORT_FILE))
+    report.extend(
+        ['',
+         "Respectfully submitted by...\n\n",
+         "Alex Kleider, Membership Chair,",
+         "for presentation to the Executive Committee on {}"
+         .format(helpers.next_first_friday(exclude=True)),
+         "(or at their next meeting, which ever comes first.)",
+         ])
+    report.extend(
+        ['',
+         'PS Zoom ID: 527 109 8273; Password: 999620',
+        ])
+    return report
+
+
+def change_status(personID, status2remove, status2add):
+    """
+
+    """
+    pass
+
+
+def yet2bNamed():
+    """
+    John Maalis
+    """
+    ret = ["'yet2bNamed' still being implemented...", ]
+    query = """SELECT St.key FROM 
+        Stati AS St
+        JOIN Person_Status AS PS
+        ON PS.statusID = ST.statusID
+        WHERE PS.personID = ?; """
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+
+    res = routines.get_ids_by_name(cur, con, 'John', 'Maalis')
+    for personID in res:
+        line = [str(personID)+':',]
+        cur.execute(query, (personID,))
+        stati = cur.fetchall()
+#       _ = input(f"stati: {stati}") # stati: [('a3',)]
+        line.extend([status[0] for status in stati])
+        line = ' '.join(line)
+        ret.append(line)
+    _ = input(repr(ret))
     return ret
+
 
 
 if __name__ == "__main__":
