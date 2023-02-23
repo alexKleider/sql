@@ -22,7 +22,11 @@ def make_dict(keys, values):
     return ret
 
 
-def execute_from_file(cursor, connection, sql_file, params=None):
+def execute_from_file(sql_file,
+        db=db_file_name,
+        params=None, commit=False):
+    connection = sqlite.connection(db)
+    cursor = connection.cursor()
     try:
         if params:
             cursor.execute(command, params)
@@ -33,7 +37,10 @@ def execute_from_file(cursor, connection, sql_file, params=None):
         print(command)
         raise
 #   _ = input(command)
-    connection.commit()
+    ret = cursor.fetchall()
+    if commit:
+        connection.commit()
+    return ret
 
 
 def get_query(sql_source_file, values=None):
@@ -119,6 +126,32 @@ def get_query(sql_source_file, formatting=None):
         if formatting:
             ret = ret.format(*formatting)
         return ret
+
+
+def get_commands(sql_file):
+    """
+    Assumes <in_file> contains valid SQL commands.
+    i.e. could be read by sqlite> .read <in_file>
+    Yeilds the commands one at a time.
+    Usage:
+        con = sqlite3.connect("sql.db")
+        cur = con.cursor()
+        for command in get_commands(sql_commands_file):
+            cur.execute(command)
+    """
+    with open(sql_file, 'r') as in_stream:
+        command = []
+        for line in in_stream:
+            parts = line.split('--')
+            line = parts[0]
+            line = line.strip()
+            if ((not line)
+            or (len(line) == 1)):
+                continue
+            command.append(line)
+            if line.endswith(';'):
+                yield ' '.join(command)
+                command = []
 
 
 def fetch(query_source, db_file_name=db_file_name):

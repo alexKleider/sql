@@ -28,8 +28,9 @@ def get_command():
 3. Show names as table
 4. Report
 5. yet2bNamed
-6. Not implemented
+6. No email
 7. Not implemented
+8. Not implemented
 ...... """)
     if choice == '0': sys.exit()
     elif choice == '1': return show_cmd
@@ -37,8 +38,9 @@ def get_command():
     elif choice == '3': return show_names
     elif choice == '4': return report_cmd
     elif choice == '5': return yet2bNamed
-    elif choice == '6': print("Not implemented")
+    elif choice == '6': return no_email_cmd
     elif choice == '7': print("Not implemented")
+    elif choice == '6': print("Not implemented")
     else: print("Not implemented")
 
 
@@ -206,6 +208,24 @@ def yet2bNamed():
     _ = input(repr(ret))
     return ret
 
+
+def no_email_cmd():
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+    for command in routines.get_commands("Sql/no_email.sql"):
+        # only expect one command from this query
+        cur.execute(command)
+        res = cur.fetchall()
+        n = len(res)
+#       _ = input(res)
+        ret = [
+         "Member ID, First & Last Names of {} without email"
+         .format(n),
+         "=================================================",
+         ]
+        for line in res:
+            ret.append("{:>3}: {} {} {} {} {} {}".format(*line))
+    return ret
 
 
 if __name__ == "__main__":
