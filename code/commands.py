@@ -8,6 +8,7 @@
 
 import sqlite3
 import sys
+import csv
 try:
     from code import routines
 except ImportError:
@@ -219,10 +220,25 @@ def no_email_cmd():
         n = len(res)
 #       _ = input(res)
         ret = [
-         "Member ID, First & Last Names of {} without email"
+         "Member ID, Names and Demographics of {} without email"
          .format(n),
-         "=================================================",
+         "=====================================================",
          ]
+        csv_file = input(
+            "Name of csv file (return if not needed): ")
+        if csv_file:
+            fieldnames = ["personID", "first", "last",
+                "address", "town", "state", "postal_code"]
+            with open(csv_file, 'w', newline='') as outstream:
+                writer = csv.DictWriter(outstream,
+                        fieldnames=fieldnames)
+                writer.writeheader()
+                for line in res:
+                    pairs = zip(fieldnames, line)
+                    row = {}
+                    for key, value in pairs:
+                        row[key] = value
+                    writer.writerow(row)
         for line in res:
             ret.append("{:>3}: {} {} {} {} {} {}".format(*line))
     return ret

@@ -50,17 +50,21 @@ def main():
 
 
 if __name__ == '__main__':
-    cmd = commands.get_command()
-    if cmd: 
-        res = cmd()
-        outfile = input("Send result to file: ")
-        if outfile:
-            with open(outfile, 'w') as outstream:
-                outstream.write('\n'.join(res))
-                print(f"Results sent to {outstream.name}.")
+    while True:
+        cmd = commands.get_command()
+        if cmd: 
+            res = cmd()
+            outfile = input("Send result to file: ")
+            if outfile:
+                with open(outfile, 'w') as outstream:
+                    outstream.write('\n'.join(res))
+                    print(f"Results sent to {outstream.name}.")
+            else:
+                print("No file selected; output to stdout...")
+                print('\n'.join(res))
         else:
-            print("No file selected; output to stdout...")
-            print('\n'.join(res))
-    else:
-        print("No valid command provided.")
+            print("No valid command provided.")
+        response = input("Continue? ..")
+        if response and response[0] in 'nN':
+            break
 
