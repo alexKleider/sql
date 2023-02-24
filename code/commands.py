@@ -30,7 +30,7 @@ def get_command():
 4. Report
 5. yet2bNamed
 6. No email
-7. Not implemented
+7. Get stati
 8. Not implemented
 ...... """)
     if choice == '0': sys.exit()
@@ -40,7 +40,7 @@ def get_command():
     elif choice == '4': return report_cmd
     elif choice == '5': return yet2bNamed
     elif choice == '6': return no_email_cmd
-    elif choice == '7': print("Not implemented")
+    elif choice == '7': return get_stati_cmd
     elif choice == '6': print("Not implemented")
     else: print("Not implemented")
 
@@ -177,11 +177,26 @@ def report_cmd():
     return report
 
 
-def change_status(personID, status2remove, status2add):
+def get_stati_cmd():
     """
-
+    personID, status2remove, status2add
     """
-    pass
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+    for command in routines.get_commands("Sql/get_non_member_stati.sql"):
+        # only expect one command from this query
+        cur.execute(command)
+        res = cur.fetchall()
+        n = len(res)
+        ret = [
+         "People with special (other than member) stati",
+         "=============================================",
+         ]
+        for item in res:
+            ret.append('{:>15} {:<15} {}'.format(*item))
+        return ret
+        csv_file = input(
+            "Name of csv file (return if not needed): ")
 
 
 def yet2bNamed():

@@ -146,7 +146,8 @@ def get_commands(sql_file):
             line = parts[0]
             line = line.strip()
             if ((not line)
-            or (len(line) == 1)):
+            or ((len(line) == 1)
+                and (not line[0] in ';)'))):
                 continue
             command.append(line)
             if line.endswith(';'):

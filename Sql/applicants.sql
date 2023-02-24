@@ -8,14 +8,18 @@ SELECT
     approved, inducted, dues_paid, St.text
 FROM Applicants AS Ap
 
-JOIN People AS P
-    ON Ap.personID = P.personID
+JOIN 
+    People AS P
+ON Ap.personID = P.personID
 
-JOIN Person_Status AS PS
+JOIN
+    Person_Status AS PS
 ON P.personID = PS.personID
     
-JOIN Stati as St
+JOIN
+    Stati as St
 ON St.statusID = PS.statusID
+
 WHERE
     St.key IN ("a-", "a" , "a0", "a1", "a2",
         "a3", "ai", "ad", "av", "aw", "am")
