@@ -23,15 +23,16 @@ ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 
 def get_command():
     choice = input("""Choose one of the following:
-0. Exit
-1. Show for web site
-2. Show applicants
-3. Show names as table
-4. Report
-5. yet2bNamed
-6. No email
-7. Get stati
-8. Not implemented
+ 0. Exit
+ 1. Show for web site
+ 2. Show applicants
+ 3. Show names as table
+ 4. Report
+ 5. yet2bNamed
+ 6. No email
+ 7. Get stati
+ 8. Update Status
+ 9. Not implemented
 ...... """)
     if choice == '0': sys.exit()
     elif choice == '1': return show_cmd
@@ -41,7 +42,8 @@ def get_command():
     elif choice == '5': return yet2bNamed
     elif choice == '6': return no_email_cmd
     elif choice == '7': return get_stati_cmd
-    elif choice == '6': print("Not implemented")
+    elif choice == '8': return update_status_cmd
+    elif choice == '9': print("Not implemented")
     else: print("Not implemented")
 
 
@@ -193,7 +195,7 @@ def get_stati_cmd():
          "=============================================",
          ]
         for item in res:
-            ret.append('{:>15} {:<15} {}'.format(*item))
+            ret.append('{:>3}{:>10} {:<15} {}'.format(*item))
         return ret
         csv_file = input(
             "Name of csv file (return if not needed): ")
@@ -257,6 +259,28 @@ def no_email_cmd():
         for line in res:
             ret.append("{:>3}: {} {} {} {} {} {}".format(*line))
     return ret
+
+
+def get_status_key(status):
+    query = f"""SELECT    statusID, key
+                FROM Stati
+                WHERE key = '{status}'"""
+    ret = routines.connect_and_get_data(query)
+
+
+def update_status_cmd():
+    personID = input("personID who's status to change: ")
+    status2remove = input("Existing status to remove: ")
+    status2add = input("New status: ")
+    _ = input("Entries are.." +
+        f"{personID}, {status2remove}, {status2add}")
+    key2remove = get_status_key(status2remove)
+    key2add = get_status_key(status2add)
+    return ['Not yet implemented',
+            f"personID: '{personID}'",
+            f"key to remove: '{key2remove}'",
+            f"key to insert: '{key2add}'",
+            ]
 
 
 if __name__ == "__main__":

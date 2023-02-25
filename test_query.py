@@ -9,21 +9,7 @@ Returns the result of the query.
 
 import sys
 import sqlite3
-
-
-def get_query(sql_source_file, formatting=None):
-    """
-    Reads a query from a file.
-    If <formatting> is provided: it must consist of either
-    a sequence of length to match number of qmark placeholders
-    or a dict containing all keys needed for named placeholders
-    each of which is prefaced by a colon. eg: (:key1, :key2).
-    """
-    with open(sql_source_file, 'r') as source:
-        ret = source.read()
-        if formatting:
-            ret = ret.format(*formatting)
-        return ret
+from code import routines
 
 
 if not len(sys.argv) > 1:
@@ -31,16 +17,14 @@ if not len(sys.argv) > 1:
     sys.exit()
 else:
     query_file = sys.argv[1]
+if len(sys.argv) > 2:
+    format = sys.argv[2]
 
-con = sqlite3.connect('Secret/club.db')
-cur = con.cursor()
+ret = routines.get_query(query_file)
+print(ret)
 
-cur.execute(get_query(query_file))
-
-while True:
-#   print()
-    res = cur.fetchone()
-    if not res: break
-    print(res)
+ret = routines.get_query_result(query_file, params=('z5_d_odd',))
+for line in ret:
+    print(line)
 
 

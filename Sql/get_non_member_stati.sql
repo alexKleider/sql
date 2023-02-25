@@ -1,7 +1,7 @@
 /* File: Sql/get_non_member_stati.sql */
 
 SELECT
-    P.first, P.last, St.key
+    P.personID, P.first, P.last, St.key
 FROM 
     People AS P
 JOIN

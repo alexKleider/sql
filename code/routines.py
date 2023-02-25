@@ -11,6 +11,31 @@ import sqlite3
 db_file_name = '/home/alex/Git/Sql/Secret/club.db'
 
 
+def get_query_result(sql_source_file, db=db_file_name,
+                        params=None, data=None):
+    """
+    Executes a query read from a file on the specified db.
+    Only one (if any) of the following should be provided:
+        <params> must be an iterable of length to match number
+            of qmark placeholders in the query.
+        <data> must be a dict with all keys necessary to match all
+        place holders in the query. Remember place holder names
+        are prefaced by a colon in the query eg: (:key1, :key2).
+    """
+    with open(sql_source_file, 'r') as source:
+        query = source.read()
+    con = sqlite3.connect(db)
+    cur = con.cursor()
+    if data:
+        cur.executemany(query, data)
+    else:
+        if params:
+            cur.execute(query, params)
+        else:
+            cur.execute(query)
+        return cur.fetchall()
+
+
 def make_dict(keys, values):
     """
     Parameters are iterables of equal length.
@@ -71,6 +96,20 @@ def execute(cursor, connection, command, params=None):
         raise
 #   _ = input(command)
     connection.commit()
+
+
+def connect_and_get_data(command, db=db_file_name):
+    con = sqlite.connection(db)
+    cur = con.cursor()
+    cur.execute(command)
+    return cur.fetchall()
+
+
+def connect_and_set_data(command, db=db_file_name):
+    con = sqlite.connection(db)
+    cur = con.cursor()
+    cur.execute(command)
+    con.commit()
 
 
 def get_ids_by_name(cur, con, first, last):
