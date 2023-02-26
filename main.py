@@ -64,7 +64,7 @@ if __name__ == '__main__':
                 print('\n'.join(res))
         else:
             print("No valid command provided.")
-        response = input("Continue? ..")
-        if response and response[0] in 'nN':
-            break
+        response = input("....continue? ")
+#       if response and response[0] in 'nN':
+#           break
 

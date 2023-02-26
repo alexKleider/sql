@@ -12,7 +12,7 @@ db_file_name = '/home/alex/Git/Sql/Secret/club.db'
 
 
 def get_query_result(sql_source_file, db=db_file_name,
-                        params=None, data=None):
+                    params=None, data=None, commit=False):
     """
     Executes a query read from a file on the specified db.
     Only one (if any) of the following should be provided:
@@ -24,16 +24,23 @@ def get_query_result(sql_source_file, db=db_file_name,
     """
     with open(sql_source_file, 'r') as source:
         query = source.read()
+#   _ = input(f"### Query begins next line\n{query}")
     con = sqlite3.connect(db)
     cur = con.cursor()
     if data:
         cur.executemany(query, data)
     else:
         if params:
+#           _ = input(f"params set to '{params}'")
             cur.execute(query, params)
         else:
             cur.execute(query)
-        return cur.fetchall()
+    ret = cur.fetchall()
+#   _ = input(
+#       f"get_query_result returning the following:\n {ret}")
+    if commit:
+        con.commit()
+    return ret
 
 
 def make_dict(keys, values):
@@ -44,27 +51,6 @@ def make_dict(keys, values):
     ret = {}
     for key, value in zip(keys, values):
         ret[key] = value
-    return ret
-
-
-def execute_from_file(sql_file,
-        db=db_file_name,
-        params=None, commit=False):
-    connection = sqlite.connection(db)
-    cursor = connection.cursor()
-    try:
-        if params:
-            cursor.execute(command, params)
-        else:
-            cursor.execute(command)
-    except (sqlite3.IntegrityError, sqlite3.OperationalError):
-        print("Unable to execute following query:")
-        print(command)
-        raise
-#   _ = input(command)
-    ret = cursor.fetchall()
-    if commit:
-        connection.commit()
     return ret
 
 
@@ -95,18 +81,19 @@ def execute(cursor, connection, command, params=None):
         print(command)
         raise
 #   _ = input(command)
-    connection.commit()
+    if commit:
+        connection.commit()
 
 
 def connect_and_get_data(command, db=db_file_name):
-    con = sqlite.connection(db)
+    con = sqlite3.connect(db)
     cur = con.cursor()
     cur.execute(command)
     return cur.fetchall()
 
 
 def connect_and_set_data(command, db=db_file_name):
-    con = sqlite.connection(db)
+    con = sqlite3.connect(db)
     cur = con.cursor()
     cur.execute(command)
     con.commit()

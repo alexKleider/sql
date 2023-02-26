@@ -1,5 +1,5 @@
-/* File: Sql/get_non_member_stati.sql */
-
+/*  File: Sql/get_non_member_stati.sql */
+/*  Used by code.commands.get_stati_cmd */
 SELECT
     P.personID, P.first, P.last, St.key
 FROM 

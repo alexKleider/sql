@@ -22,7 +22,8 @@ db_file_name = "Secret/club.db"
 ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 
 def get_command():
-    choice = input("""Choose one of the following:
+    while True:
+        choice = input("""Choose one of the following:
  0. Exit
  1. Show for web site
  2. Show applicants
@@ -34,17 +35,17 @@ def get_command():
  8. Update Status
  9. Not implemented
 ...... """)
-    if choice == '0': sys.exit()
-    elif choice == '1': return show_cmd
-    elif choice == '2': return show_applicants
-    elif choice == '3': return show_names
-    elif choice == '4': return report_cmd
-    elif choice == '5': return yet2bNamed
-    elif choice == '6': return no_email_cmd
-    elif choice == '7': return get_stati_cmd
-    elif choice == '8': return update_status_cmd
-    elif choice == '9': print("Not implemented")
-    else: print("Not implemented")
+        if choice == '0': sys.exit()
+        elif choice == '1': return show_cmd
+        elif choice == '2': return show_applicants
+        elif choice == '3': return show_names
+        elif choice == '4': return report_cmd
+        elif choice == '5': return yet2bNamed
+        elif choice == '6': return no_email_cmd
+        elif choice == '7': return get_stati_cmd
+        elif choice == '8': return update_status_cmd
+        elif choice == '9': print("Not implemented")
+        else: print("Not implemented")
 
 
 def show_members():
@@ -179,26 +180,44 @@ def report_cmd():
     return report
 
 
-def get_stati_cmd():
-    """
-    personID, status2remove, status2add
-    """
+def get_stati():
     con = sqlite3.connect(db_file_name)
     cur = con.cursor()
-    for command in routines.get_commands("Sql/get_non_member_stati.sql"):
+    for command in routines.get_commands(
+            "Sql/get_non_member_stati.sql"):
         # only expect one command from this query
         cur.execute(command)
         res = cur.fetchall()
-        n = len(res)
-        ret = [
-         "People with special (other than member) stati",
-         "=============================================",
-         ]
+        index = 0
+        ret = {}
         for item in res:
-            ret.append('{:>3}{:>10} {:<15} {}'.format(*item))
+#           ret[index] = '{:>3}{:>10} {:<15} {}'.format(*item))
+            ret[index] = item
+            index += 1
         return ret
-        csv_file = input(
-            "Name of csv file (return if not needed): ")
+
+
+def get_stati_cmd():  # get_non_member_stati.sql
+    """
+    Returns a header followed by a listing of all
+    people with a status OTHER THAN 'm':
+    Use for presentation only.
+    """
+    res = get_stati()
+    n = len(res)
+    ret = [
+     "People with non member stati (indexed)",
+     "======================================",
+     ]
+    for key in res.keys():
+        # each item: P.personID, P.first, P.last, St.key
+        entry = '{:>3}{:>10} {:<15} {}'.format(*res[key])
+        ret.append(f'{key:>3}: {entry}')
+    csv_file = input(
+        "Name of csv file (return if not needed): ")
+    if csv_file:
+        print("Creation of csv not yet implemented.")
+    return ret
 
 
 def yet2bNamed():
@@ -261,25 +280,43 @@ def no_email_cmd():
     return ret
 
 
-def get_status_key(status):
-    query = f"""SELECT    statusID, key
-                FROM Stati
-                WHERE key = '{status}'"""
-    ret = routines.connect_and_get_data(query)
+def get_status_ID(status_key):
+#   _ = input(status_key)
+    return routines.get_query_result(
+            'Sql/get_status_id.sql',
+            params=(status_key,)
+            )
 
 
 def update_status_cmd():
-    personID = input("personID who's status to change: ")
+    print('\n'.join(get_stati_cmd()))
+    personID = int(input("personID who's status to change: "))
     status2remove = input("Existing status to remove: ")
     status2add = input("New status: ")
-    _ = input("Entries are.." +
-        f"{personID}, {status2remove}, {status2add}")
-    key2remove = get_status_key(status2remove)
-    key2add = get_status_key(status2add)
-    return ['Not yet implemented',
+#   _ = input("Entries are.." +
+#       f"{personID}, {status2remove}, {status2add}")
+    id2remove = id2add = ''
+#   /* Sql/drop_person_status.sql *)
+#   /* requires a 2 tuple (personID, statusID)
+#   DELETE FROM Person_Status
+#   WHERE personID = ? AND statusID = ?;
+    ret = []
+    if status2remove:
+        id2remove = get_status_ID(status2remove,)
+        id2remove = id2remove[0][0]
+        res = routines.get_query_result(
+                "Sql/drop_person_status.sql",
+                params=(personID, id2remove, ),
+                commit=True)
+#       _ = input(f"res: {res}")
+        ret.append(f"Dropped ")
+        
+    if status2add:
+        id2add = get_status_ID(status2add,)
+    return [
             f"personID: '{personID}'",
-            f"key to remove: '{key2remove}'",
-            f"key to insert: '{key2add}'",
+            f"ID & key of status to remove: '{id2remove}'",
+            f"ID & key of status to insert: '{id2add}'",
             ]
 
 
