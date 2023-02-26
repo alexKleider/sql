@@ -289,7 +289,12 @@ def get_status_ID(status_key):
 
 
 def update_status_cmd():
+    # First give user a look at what stati there are to change
     print('\n'.join(get_stati_cmd()))
+    # ...Then present oportunity to pick a name not listed.
+    names = input("Enter 'first last' if you need a personID: ")
+    if names:
+        print(routines.get_ids_by_name(*names.split()))
     personID = int(input("personID who's status to change: "))
     status2remove = input("Existing status to remove: ")
     status2add = input("New status: ")

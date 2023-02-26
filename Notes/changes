@@ -1,0 +1,12 @@
+Sat 25 Feb 2023 07:26:20 PM PST
+Have begun to change data:
+    so far have removed
+        JF from z6_d_even
+        KL from z1_pres
+
+Still to do:
+    remove MD from z1_vp
+    add MD to z1_pres
+    remove JMcP from ? z6_d_odd
+    add JMcP to z1_vp
+    add IMacL to  z6_d_odd

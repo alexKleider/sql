@@ -81,8 +81,8 @@ def execute(cursor, connection, command, params=None):
         print(command)
         raise
 #   _ = input(command)
-    if commit:
-        connection.commit()
+#   if commit:
+#       connection.commit()
 
 
 def connect_and_get_data(command, db=db_file_name):
@@ -99,20 +99,22 @@ def connect_and_set_data(command, db=db_file_name):
     con.commit()
 
 
-def get_ids_by_name(cur, con, first, last):
+def get_ids_by_name(first, last, db=db_file_name):
     """
     Returns People.personID (could be more than one!)
     for anyone with <first> <last> name.
     Returns a (possible empty) tuple.
     Unlikely it'll ever be more than a tuple with one value
     """
-    query = f"""SELECT personID from People
+
+    query = f"""SELECT personID, first, last, suffix from People
             WHERE People.first = "{first}"
             AND People.last = "{last}" """
 #   _ = input(query)
+    con = sqlite3.connect(db)
+    cur = con.cursor()
     execute(cur, con, query)
     res = cur.fetchall()
-    res= [item[0] for item in res]
     if not res:
         _ = input("No key for {} {}".format(first, last))
     return res
