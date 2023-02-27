@@ -282,10 +282,11 @@ def no_email_cmd():
 
 def get_status_ID(status_key):
 #   _ = input(status_key)
-    return routines.get_query_result(
+    status_id = routines.get_query_result(
             'Sql/get_status_id.sql',
-            params=(status_key,)
-            )
+            params=(status_key,))
+    _ = input(status_id)
+    return status_id
 
 
 def update_status_cmd():
@@ -294,7 +295,10 @@ def update_status_cmd():
     # ...Then present oportunity to pick a name not listed.
     names = input("Enter 'first last' if you need a personID: ")
     if names:
-        print(routines.get_ids_by_name(*names.split()))
+        names = names.split()
+        ids_by_name = routines.get_ids_by_name(*names)
+        for row in ids_by_name:
+            print(row)
     personID = int(input("personID who's status to change: "))
     status2remove = input("Existing status to remove: ")
     status2add = input("New status: ")
@@ -318,6 +322,11 @@ def update_status_cmd():
         
     if status2add:
         id2add = get_status_ID(status2add,)
+        id2add = id2add[0][0]
+        query = """ INSERT INTO Person_Status VALUES (?, ?) ;"""
+        res = routines.get_query_result(query,
+                params=(personID, id2add), from_file=False,
+                commit=True)
     return [
             f"personID: '{personID}'",
             f"ID & key of status to remove: '{id2remove}'",

@@ -11,10 +11,13 @@ import sqlite3
 db_file_name = '/home/alex/Git/Sql/Secret/club.db'
 
 
-def get_query_result(sql_source_file, db=db_file_name,
-                    params=None, data=None, commit=False):
+def get_query_result(sql_source, db=db_file_name,
+                    params=None, data=None,
+                    from_file=True, commit=False):
     """
-    Executes a query read from a file on the specified db.
+    <sql_source> must be a string: either the name of a file
+    containing a valid sqlite3 query or (if <from_file> is set
+    to False) the query itself. The query is executed on the <db>.
     Only one (if any) of the following should be provided:
         <params> must be an iterable of length to match number
             of qmark placeholders in the query.
@@ -22,9 +25,11 @@ def get_query_result(sql_source_file, db=db_file_name,
         place holders in the query. Remember place holder names
         are prefaced by a colon in the query eg: (:key1, :key2).
     """
-    with open(sql_source_file, 'r') as source:
-        query = source.read()
-#   _ = input(f"### Query begins next line\n{query}")
+    if from_file:
+        with open(sql_source, 'r') as source:
+            query = source.read()
+#       _ = input(f"### Query begins next line\n{query}")
+    else: query = sql_source
     con = sqlite3.connect(db)
     cur = con.cursor()
     if data:
@@ -154,6 +159,15 @@ def get_query(sql_source_file, formatting=None):
         if formatting:
             ret = ret.format(*formatting)
         return ret
+
+def get_command(sql_file, ):
+    """
+    Assumes that sql_file could be '.read' by sqlite3
+
+    and that it is in a format that could be .read
+    by sqlite3
+    """
+    pass
 
 
 def get_commands(sql_file):
