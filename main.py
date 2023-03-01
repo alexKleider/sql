@@ -54,7 +54,8 @@ if __name__ == '__main__':
         cmd = commands.get_command()
         if cmd: 
             res = cmd()
-            outfile = input("Send result to file: ")
+            outfile = input(
+            "Send result to file (blank if to StdOut:) ")
             if outfile:
                 with open(outfile, 'w') as outstream:
                     outstream.write('\n'.join(res))
@@ -64,7 +65,5 @@ if __name__ == '__main__':
                 print('\n'.join(res))
         else:
             print("No valid command provided.")
-        response = input("....continue? ")
-#       if response and response[0] in 'nN':
-#           break
+        response = input("...any key to continue... ")
 

@@ -30,6 +30,7 @@ def get_query_result(sql_source, db=db_file_name,
             query = source.read()
 #       _ = input(f"### Query begins next line\n{query}")
     else: query = sql_source
+#   print(query)
     con = sqlite3.connect(db)
     cur = con.cursor()
     if data:

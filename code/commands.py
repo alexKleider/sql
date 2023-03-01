@@ -24,16 +24,17 @@ ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 def get_command():
     while True:
         choice = input("""Choose one of the following:
- 0. Exit
- 1. Show for web site
- 2. Show applicants
- 3. Show names as table
- 4. Report
- 5. yet2bNamed
- 6. No email
- 7. Get stati
- 8. Update Status
- 9. Not implemented
+  0. Exit
+  1. Show for web site
+  2. Show applicants
+  3. Show names as table
+  4. Report
+  5. yet2bNamed
+  6. No email
+  7. Get stati
+  8. Update Status
+  9. Find ID by name
+ 10. Not implemented
 ...... """)
         if choice == '0': sys.exit()
         elif choice == '1': return show_cmd
@@ -44,8 +45,41 @@ def get_command():
         elif choice == '6': return no_email_cmd
         elif choice == '7': return get_stati_cmd
         elif choice == '8': return update_status_cmd
-        elif choice == '9': print("Not implemented")
+        elif choice == '9': return id_by_name
+        elif choice == '10': print("Not implemented")
         else: print("Not implemented")
+
+
+def id_by_name():
+    """
+    Prompts for first letter(s) of first &/or last
+    name(s) and returns a listing of matching entries
+    from the 'People' table (together with IDs.)
+    If both are blank, none will be returned!
+    """
+    query = """
+    SELECT personID, first, last, suffix
+    FROM People
+    WHERE first LIKE ? OR last LIKE ? 
+    ;
+    """
+    print("Looking for people:")
+    print("Narrow the search, use * to eliminate a blank...")
+    first = input("First name (partial or blank): ")
+    last = input("Last name (partial or blank): ")
+    params = [name+'%' if name else name for name in (first, last,)]
+#   print(params)
+    ret = routines.get_query_result(
+                query,
+#               db=db_file_name,
+                params=params,
+                data=None,
+                from_file=False,
+                commit=False
+                )
+    ret = ["{:3>} {} {} {}".format(*entry) for entry in ret]
+#   _ = input(ret)
+    return ret
 
 
 def show_members():
@@ -247,6 +281,9 @@ def yet2bNamed():
 
 
 def no_email_cmd():
+    """
+    Provides a listing of _members_ without email.
+    """
     con = sqlite3.connect(db_file_name)
     cur = con.cursor()
     for command in routines.get_commands("Sql/no_email.sql"):
@@ -285,7 +322,7 @@ def get_status_ID(status_key):
     status_id = routines.get_query_result(
             'Sql/get_status_id.sql',
             params=(status_key,))
-    _ = input(status_id)
+#   _ = input(status_id)
     return status_id
 
 
@@ -317,7 +354,7 @@ def update_status_cmd():
                 "Sql/drop_person_status.sql",
                 params=(personID, id2remove, ),
                 commit=True)
-#       _ = input(f"res: {res}")
+        _ = input(f"res: {res}")
         ret.append(f"Dropped ")
         
     if status2add:
