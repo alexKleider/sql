@@ -22,3 +22,6 @@ people_keys = (
         "country",
         "email"
         )
+
+yearly_dues = 200
+

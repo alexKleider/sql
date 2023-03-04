@@ -38,7 +38,8 @@ def get_command():
   9. Find ID by name
  10. Populate Payables
  11. Update people demographics
- 12. Not implemented
+ 12. Add Dues
+ 13. Not implemented
 ...... """)
         if choice  ==   '0': sys.exit()
         elif choice ==  '1': return show_cmd
@@ -52,11 +53,29 @@ def get_command():
         elif choice ==  '9': return id_by_name
         elif choice == '10': return populate_payables
         elif choice == '11': return update_people_cmd
-        elif choice == '12': print("Not implemented")
+        elif choice == '12': return add2dues_cmd
+        elif choice == '13': return ["Not implemented", ]
         else: print("Not implemented")
 
 # for add_dues:
 # UPDATE table SET value = value + 5 WHERE id = 1;
+
+
+def add2dues_cmd():
+    """
+    UPDATE Dues SET dues_owed = dues_owed + 100
+    -- WHERE id = 1
+    ;
+    """
+    # Add same to every entry since all are members.
+    query = """
+        UPDATE Dues SET dues_owed = dues_owed + 100;
+        """
+    con = sqlite3.connect(club.db_file_name)
+    cur = con.cursor()
+    cur.execute(query)
+    con.commit()
+    return ['executed:', query]
 
 
 def update_people_cmd():
