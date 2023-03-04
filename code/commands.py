@@ -58,6 +58,7 @@ def get_command():
 # for add_dues:
 # UPDATE table SET value = value + 5 WHERE id = 1;
 
+
 def update_people_cmd():
     """
     """
@@ -115,25 +116,21 @@ def update_people_cmd():
         """.format(values, personID)
         print()
         print(query)
-        _ = input("OK to execute above query? (y/n) ")
+        response = input("OK to execute above query? (y/n) ")
         if response and response[0] in 'yY':
-            ret = routines.get_query_result(
-                query,
-    #           db=club.db_file_name,
-                params=None,
-                data=None,
-                from_file=False,
-                commit=True
-                )
-        ret
-        print(ret)
-        return ['\nExecuted following query:',
-                    query,
-                    "Result was:",
-                    repr(ret)]
+            con = sqlite3.connect(club.db_file_name)
+            cur = con.cursor()
+            cur.execute(query)
+            con.commit()
+            ret = ['\nExecuted following query:',
+                        query,
+                        ]
+        else:
+            ret = ['Nothing done', ]
+        return ret
     else: 
         print("not accepting new values")
-        sys.exit()
+        ret = ['Nothing done', ]
 
 
 def populate_payables():
