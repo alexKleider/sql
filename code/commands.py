@@ -3,7 +3,8 @@
 # File: code/commands.py
 
 """
-
+Most of the code is here.
+Driver of the code is main.py
 """
 
 import sqlite3
@@ -17,9 +18,10 @@ try:
     from code import helpers
 except ImportError:
     import helpers
-
-db_file_name = "Secret/club.db"
-ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
+try:
+    from code import club
+except ImportError:
+    import club
 
 def get_command():
     while True:
@@ -34,20 +36,150 @@ def get_command():
   7. Get stati
   8. Update Status
   9. Find ID by name
- 10. Not implemented
+ 10. Populate Payables
+ 11. Update people demographics
+ 12. Not implemented
 ...... """)
-        if choice == '0': sys.exit()
-        elif choice == '1': return show_cmd
-        elif choice == '2': return show_applicants
-        elif choice == '3': return show_names
-        elif choice == '4': return report_cmd
-        elif choice == '5': return yet2bNamed
-        elif choice == '6': return no_email_cmd
-        elif choice == '7': return get_stati_cmd
-        elif choice == '8': return update_status_cmd
-        elif choice == '9': return id_by_name
-        elif choice == '10': print("Not implemented")
+        if choice  ==   '0': sys.exit()
+        elif choice ==  '1': return show_cmd
+        elif choice ==  '2': return show_applicants
+        elif choice ==  '3': return show_names
+        elif choice ==  '4': return report_cmd
+        elif choice ==  '5': return yet2bNamed
+        elif choice ==  '6': return no_email_cmd
+        elif choice ==  '7': return get_stati_cmd
+        elif choice ==  '8': return update_status_cmd
+        elif choice ==  '9': return id_by_name
+        elif choice == '10': return populate_payables
+        elif choice == '11': return update_people_cmd
+        elif choice == '12': print("Not implemented")
         else: print("Not implemented")
+
+# for add_dues:
+# UPDATE table SET value = value + 5 WHERE id = 1;
+
+def update_people_cmd():
+    """
+    """
+    # whom to update?
+    print("Whom to update?  ", end='')
+    print('\n'.join(id_by_name()))
+    personID = int(input("Enter your choice: "))
+
+    # display data as it is currently:
+    query = """SELECT * FROM People
+        WHERE personID = ?;"""
+    ret = routines.get_query_result(
+            query,
+#           db=club.db_file_name,
+            params=(personID,),
+            data=None,
+            from_file=False,
+            commit=False
+            )
+    ret = ret[0]
+#   print(ret)
+    original = [item for item in ret[1:]]
+    ret = [item for item in ret[1:]]
+    people_dict = {key: value for key, value in
+            zip(club.people_keys, ret)}
+
+    # provide user option to change values:
+    while True:
+        n = 1
+        print("  0 to Quit")
+        for key, value in people_dict.items():
+            print(f"{n:>3}: {key}: {value}")
+            n += 1
+        response = int(input(
+            "Enter index of field to change (or 0 to Quit:) "))
+        if response == 0:
+            break
+        index = response - 1
+        key = club.people_keys[index]
+        new_value = input(f"Change {people_dict[key]} to: ")
+        people_dict[key] = new_value
+    sequence = [f"{key} = '{value}'" for key, value in
+            people_dict.items()]
+    for item in sequence:
+        print(item)
+    yes_no = input("Accept above values? (y/n): ")
+    if yes_no and yes_no[0] in 'yY':
+        values = ',\n'.join(sequence)
+        query = """
+            UPDATE People
+            SET 
+                {}
+            WHERE
+                personID = {};
+        """.format(values, personID)
+        print()
+        print(query)
+        _ = input("OK to execute above query? (y/n) ")
+        if response and response[0] in 'yY':
+            ret = routines.get_query_result(
+                query,
+    #           db=club.db_file_name,
+                params=None,
+                data=None,
+                from_file=False,
+                commit=True
+                )
+        ret
+        print(ret)
+        return ['\nExecuted following query:',
+                    query,
+                    "Result was:",
+                    repr(ret)]
+    else: 
+        print("not accepting new values")
+        sys.exit()
+
+
+def populate_payables():
+    """
+    begin with a listing of all member IDs:
+    for each of these, collect their dues and fees
+        ==> a 'statement' for each ID
+    For each of these, prepare either an email or letter
+    File letters (into MailingDir) and
+    store emails (=> emails.json)
+    """
+    query = """SELECT P.personID
+            FROM 
+                People AS P,
+                Person_Status AS PS,
+                Stati AS S
+            WHERE
+                PS.personID = P.personID 
+            AND PS.statusID = S.statusID
+            AND S.key = 'm'
+            ;
+    """
+    ret = routines.get_query_result(
+                query,
+#               db=club.db_file_name,
+                params=None,
+                data=None,
+                from_file=False,
+                commit=False
+                )
+    memIDs = [str(entry[0]) for entry in ret]
+    l = len(memIDs)
+#   print(res)  # a list of all member IDs
+#   res.append(f"There are {l} members")
+    query4dues = """ -- add dues
+    """
+    query4dock = """ -- add docking fee
+    """
+    query4kayak = """  -- add kayak storage fee
+    """
+    query4mooring = """  -- add mooring fee
+    """
+    for memID in memIDs:  # currently listed as strings (not int)
+        pass
+
+    return res
 
 
 def id_by_name():
@@ -71,7 +203,7 @@ def id_by_name():
 #   print(params)
     ret = routines.get_query_result(
                 query,
-#               db=db_file_name,
+#               db=club.db_file_name,
                 params=params,
                 data=None,
                 from_file=False,
@@ -140,7 +272,7 @@ def show_applicants():
             header = d['St_text']
             report.extend(['', header, '-' * len(header)])
         report.append(
-"""{first}, {last} [{phone}] {address}, {town}, {state} {postal_code} [{email}]
+"""{first} {last} [{phone}] {address}, {town}, {state} {postal_code} [{email}]
 \tMeeting dates: {meeting_dates} 
 \tSponsors: {sponsors}""".format(**d))
     return report
@@ -186,7 +318,7 @@ def report_cmd():
                   .format(n))
     report.extend(show_applicants())
     try:
-        with open(ADDENDUM2REPORT_FILE, 'r') as fobj:
+        with open(club.ADDENDUM2REPORT_FILE, 'r') as fobj:
             addendum = fobj.read()
             if addendum:
                 print('Appending addendum as found in file: {}'
@@ -198,7 +330,7 @@ def report_cmd():
                         .format(fobj.name))
     except FileNotFoundError:
         print('No addendum (file: {}) found.'
-                .format(ADDENDUM2REPORT_FILE))
+                .format(club.ADDENDUM2REPORT_FILE))
     report.extend(
         ['',
          "Respectfully submitted by...\n\n",
@@ -215,7 +347,7 @@ def report_cmd():
 
 
 def get_stati():
-    con = sqlite3.connect(db_file_name)
+    con = sqlite3.connect(club.db_file_name)
     cur = con.cursor()
     for command in routines.get_commands(
             "Sql/get_non_member_stati.sql"):
@@ -264,7 +396,7 @@ def yet2bNamed():
         JOIN Person_Status AS PS
         ON PS.statusID = ST.statusID
         WHERE PS.personID = ?; """
-    con = sqlite3.connect(db_file_name)
+    con = sqlite3.connect(club.db_file_name)
     cur = con.cursor()
 
     res = routines.get_ids_by_name(cur, con, 'John', 'Maalis')
@@ -284,7 +416,7 @@ def no_email_cmd():
     """
     Provides a listing of _members_ without email.
     """
-    con = sqlite3.connect(db_file_name)
+    con = sqlite3.connect(club.db_file_name)
     cur = con.cursor()
     for command in routines.get_commands("Sql/no_email.sql"):
         # only expect one command from this query

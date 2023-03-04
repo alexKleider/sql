@@ -41,11 +41,11 @@ def get_query_result(sql_source, db=db_file_name,
             cur.execute(query, params)
         else:
             cur.execute(query)
-    ret = cur.fetchall()
 #   _ = input(
 #       f"get_query_result returning the following:\n {ret}")
     if commit:
         con.commit()
+    ret = cur.fetchall()
     return ret
 
 

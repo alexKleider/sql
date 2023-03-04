@@ -31,6 +31,7 @@ applicant_text_file = 'Sanitized/applicants.txt'
 sponsor_text_file = 'Sanitized/sponsors.txt'
 db_file_name = "Secret/club.db"
 sql_commands_file = 'Sql/create_tables.sql'  # table creating commands
+sql_DKM_file ='Sql/redo_DKM_tables.sql'
 membership_csv_file = "Secret/memlist.csv"
 applicant_text_file = 'Secret/applicants.txt'
 sponsor_text_file = 'Secret/sponsors.txt'
@@ -487,7 +488,31 @@ def populate_mooring_fees(con, cur, IDs_by_name_key, mooring_f):
                 personID, code, fee))
 
 
+def redo_DKM_tables():
+    """
+    recreate the Dock, Kayak and Mooring tables
+    setting personID to be an integer vs text
+    """
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+    ## set up the 3 (DKM) tables (first deleting)
+    for command in get_commands(sql_DKM_file):
+        print(command)
+        cur.execute(command)
+#   _ = input(f"Table Names: {get_table_names(cur)}")
+    IDs_by_name_key = get_IDs_by_name_key(con, cur)
+
+    populate_dock_fees(con, cur, IDs_by_name_key, dock_f)
+    populate_kayak_fees(con, cur, IDs_by_name_key, kayak_f)
+    populate_mooring_fees(con, cur, IDs_by_name_key, mooring_f)
+    con.close()
+
+
 def main():
+    """
+    creates a brand new data base
+    expect to never use it again
+    """
     if os.path.exists(db_file_name):
         os.remove(db_file_name)
     con = sqlite3.connect(db_file_name)
@@ -512,6 +537,8 @@ def main():
     populate_Stati_table(con, cur)
     populate_Person_Status_table(con, cur,
             IDs_by_name_key, get_statusIDs_by_key(con, cur))
+
+
     populate_dock_fees(con, cur, IDs_by_name_key, dock_f)
     populate_kayak_fees(con, cur, IDs_by_name_key, kayak_f)
     populate_mooring_fees(con, cur, IDs_by_name_key, mooring_f)
@@ -519,4 +546,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    redo_DKM_tables()
