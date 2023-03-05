@@ -500,6 +500,8 @@ def update_status_cmd():
         id2remove = id2remove[0][0]
         res = routines.get_query_result(
                 "Sql/drop_person_status.sql",
+#DELETE FROM Person_Status
+#WHERE personID = ? AND statusID = ?;
                 params=(personID, id2remove, ),
                 commit=True)
         _ = input(f"res: {res}")
