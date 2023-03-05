@@ -12,6 +12,9 @@
 # set up the database and cursor
 import sys
 import sqlite3
+from code import club
+from code import routines
+
 dbpath = "/home/alex/Git/Sql/Secret/"
 club_db = "club.db"
 
@@ -31,6 +34,33 @@ def initDB(path):
     return db, theClub
 
 # commands
+
+def id_by_name(cursor):
+    """
+    Prompts for first letter(s) of first &/or last
+    name(s) and returns a listing of matching entries
+    from the 'People' table (together with IDs.)
+    If both are blank, none will be returned!
+    """
+    query = """
+    SELECT personID, first, last, suffix
+    FROM People
+    WHERE first LIKE ? OR last LIKE ? 
+    ;
+    """
+    print("Looking for people:")
+    print("Narrow the search, use * to eliminate a blank...")
+    first = input("First name (partial, blank or '*'): ")
+    last = input("Last name (partial, blank or '*'): ")
+    params = [
+        name+'%' if name else name for name in (first, last,)]
+#   print(params)
+    cursor.execute(query, params)
+    ret = cursor.fetchall()
+    ret = ["{:3>} {} {} {}".format(*entry) for entry in ret]
+#   _ = input(ret)
+    return ret
+
 
 def show_members():
     query = """ SELECT first, last, phone,
@@ -151,8 +181,145 @@ def removeEntry(book):
        print( "Remove failed" )
        raise
     return None
+
+def get_sponsor_ids(theClub):
+    print("Finding sponsor IDs")
+    sponsorIDs = []
+    while len(sponsorIDs) < 2:
+        print('\n'.join(id_by_name(theClub)))
+        id = input("Enter sponsor's ID: ")
+        if id: sponsorIDs.append(id)
+    return sponsorIDs
+
+
+def addNewApplicant(theClub):
+    ## collect applicant's demographics:
+    ret = ['Within addNewApplicant',]
+    print("provide entries for each of the following:")
+    entries = dict()
+    for key in club.people_keys:
+        entries[key] = input(f"{key}: ")
+    while True:
+        key = input(
+          "Enter key of field to fix or hit <Enter> if all OK: ")
+        if not key: break
+        if not (key in club.people_keys):
+            print(f"'{key}' is an invalid key.")
+            continue
+        entries[key] = input(f"{key}: ")
+    table = 'People'
+    print(f"table: {table}")
+    keys = ', '.join([key for key in entries.keys()])
+    print(f"keys: {keys}")
+    values = ', '.join(
+            [f'"{value}"' for value in entries.values()])
+    print(f"values: {values}")
+
+    ## send applicant demographics to People table
+    query = """INSERT INTO {table} ({keys})
+                VALUES({values});""".format(
+                    table='People',
+                    keys=keys,
+                    values=values)
+    try:
+        theClub.execute(query)
+        result = theClub.fetchall()
+#       for entry in result:
+#           print(repr(entry))
+    except sqlite3.OperationalError: 
+       print(
+       "Sorry, new applicant insertion into People table failed")
+       raise
+    else:
+        if result:
+           for line in result:
+               ret.append( repr(line) )
+        else: ret.append("Nothing returned after insersion.")
+
+    ## retrieve the personID of the entry just made.
+    query = """
+    SELECT personID FROM People WHERE
+    first = ? AND last = ? AND suffix = ? ;
+    """
+    params = [entries[key] for key in ('first', 'last', 'suffix')]
+    try:
+        theClub.execute(query, params)
+        result = theClub.fetchall()
+#       for entry in result:
+#           print(repr(entry))
+    except sqlite3.OperationalError: 
+       ret.append( "Sorry search for personID failed" )
+       raise
+    else:
+        if result:
+            personID = result[0][0]
+            print(f"'personId' of new entry is {personID}")
+#           for line in result:
+#               ret.append( repr(line) )
+        else: ret.append("personID not retrieved.")
+
+    ## collect sponsors and get their IDs
+    sponsorIDs = get_sponsor_ids(theClub)
+    ret.append("sponsor ids are: {} & {}"
+                    .format(*sponsorIDs))
+
+    ## Setup:
+    keys = ('sponsor1', 'sponsor2',
+            'app_rcvd', 'fee_rcvd',
+            'meeting1', 'meeting2', 'meeting3',
+            'inducted', 'dues_paid')
+    headers = ['personID', ]
+    ap_data = [str(personID), ]
+    for index in range(2):
+        headers.append[keys[index]]
+        ap_data.append('"{}"'.format(sponsorIDs[index]))
+
+    # collect dates
+    for key in keys[2:]:
+        date = input(f"{key}: ")
+        if not date: break
+        headers.append(key)
+        ap_data.append('"{}"'.format(str(date)))
+
+    ## Add entry to Applicants table
+    query =  """
+    INSERT INTO Applicants ({})
+        VALUES ({})
+       ;""".format(', '.join(headers), ', '.join(ap_data))
+    try:
+        theClub.execute(query)
+        result = theClub.fetchall()
+#       for entry in result:
+#           print(repr(entry))
+    except sqlite3.OperationalError: 
+       print( "Sorry Applicants table insertion failed" )
+       raise
+    else:
+        if result:
+           for line in result:
+               ret.append( repr(line) )
+        else: ret.append(
+            "Nothing returned after Applicant table insersion.")
+
+    return ret
+
+
+def updateApplicant(theClub):
+    """
+    Use each time an applicant's status changes.
+    """
+    print("Look for applicants personID...")
+    choices = findPerson(theClub)
+    for choice in findPerson(theClub):
+        print(choice)
+    personID = input("personID of applicant to update: ")
+    print(personID)
+    ret = [f"personID of applicant is {personID}", ]
     
 def findPerson(theClub):
+    """
+    Working under new system.
+    """
     ret = []
     fieldnames = ["personID", "first", "last",
         "address", "town", "state", "postal_code"]
@@ -218,6 +385,10 @@ def main():
      12. Add Dues
      13. Not implemented
      22. Find person
+     33. Add new applicant
+     44. Search for an ID
+     55. Get sponsor IDs
+     66. Update applicant
      99. Quit and save
     ...... """
 
@@ -237,8 +408,12 @@ def main():
             elif choice == '4' or choice.upper() == 'T':
                testDB(theClub)
             elif choice == '22': ret = findPerson(theClub)
+            elif choice == '33': ret = addNewApplicant(theClub)
+            elif choice == '44': ret = id_by_name(theClub)
+            elif choice == '55': ret = get_sponsor_ids(theClub)
+            elif choice == '66': ret = updateApplicant(theClub)
             else: print( "Invalid choice, try again" )
-            if not ret: print("No results")
+            if not ret: print("No results from Menu")
             else:
                 response = input(
                     "Send to file? (blank if to stdout): ")
@@ -246,10 +421,11 @@ def main():
                     with open(response, 'w') as outf:
                         outf.write('\n'.join(response))
                 else:
-                    print('\n'.join(ret))
+                    _ = input('\n'.join(ret))
 
     except sqlite3.OperationalError:
-        print( "Database error, exiting program." )
+        print(
+        "Database error raised in <main>, exiting program.")
         # raise
     finally: 
         closeDB(theDB,theClub)

@@ -182,7 +182,6 @@ def populate_people(source, connection, cursor):
     for rec in data_generator(source):
         ret = shorten_rec(rec)
         keys = ', '.join([key for key in ret.keys()])
-        values = [value for value in ret.values()]
         values = ', '.join([f'"{value}"' for value in ret.values()])
         command = """INSERT INTO {table} ({keys})
     VALUES({values});""".format(
