@@ -23,5 +23,20 @@ people_keys = (
         "email"
         )
 
+applicant_keys = (
+    "applicantID",
+    "personID",
+    "sponsor1",
+    "sponsor2",
+    "app_rcvd",
+    "fee_rcvd",
+    "meeting1",
+    "meeting2",
+    "meeting3",
+    "approved",
+    "inducted",
+    "dues_paid",
+        )
+
 yearly_dues = 200
 

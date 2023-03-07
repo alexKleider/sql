@@ -169,18 +169,6 @@ def addEntry(book):
        raise
     return None
 
-def removeEntry(book):
-    name  = input("Enter a name: ")
-    names = name.split()
-    first = names[0]; last = names[-1]
-    try:
-       book.execute('''DELETE FROM Address 
-                    WHERE First LIKE ? 
-                    AND Last LIKE ?''',(first,last))
-    except sqlite3.OperationalError: 
-       print( "Remove failed" )
-       raise
-    return None
 
 def get_sponsor_ids(theClub):
     print("Finding sponsor IDs")
@@ -308,13 +296,100 @@ def updateApplicant(theClub):
     """
     Use each time an applicant's status changes.
     """
+    ret = []
     print("Look for applicants personID...")
-    choices = findPerson(theClub)
-    for choice in findPerson(theClub):
-        print(choice)
-    personID = input("personID of applicant to update: ")
-    print(personID)
-    ret = [f"personID of applicant is {personID}", ]
+    while True:
+#       choices = findPerson(theClub)
+        for choice in findPerson(theClub):
+            print(choice)
+        personID = input("personID of applicant to update: ")
+        response = input(
+                f"Procede with personID '{personID}'? ")
+        if response: break
+    print(f"Updating {personID}...")
+    ret = [
+      f"personID of applicant to be updated is {personID}", ]
+
+    ## display and gather data..
+    query = """SELECT * FROM Applicants
+                WHERE personID = ?;"""
+    try:
+        theClub.execute(query, (personID,))
+        result = theClub.fetchall()
+    except sqlite3.OperationalError:
+        print("Sorry, Applicant data retrieval failed")
+        raise
+    else:
+        if result:
+            # expect only one line
+            res = result[0]
+            for line in result:
+                ret.append(repr(line))
+        else: 
+            ret.append(
+                "Nothing returned by Applicant retrieval")
+            return ret
+    key_value_pairs = zip(club.applicant_keys[2:], res[2:])
+    finished = False
+    query_template = """
+        UPDATE Applicants SET {} = '{}'
+        WHERE personID = {}
+           ;"""
+    while not finished:
+        for key, value in key_value_pairs:
+            response = input(
+                f"Change {key}: {value}? (Q for Quit) ")
+            if response:
+                if response[0] == 'Q':
+                    finished = True
+                    break
+                if response[0] in 'yY':
+                    new_value = input(
+                        f"New value for '{key}': ")
+                    query = query_template.format(
+                            key, f"{new_value}", personID)
+                    _ = input(query)
+                    try:
+                        theClub.execute(query)
+                        result = theClub.fetchall()
+                    except sqlite3.OperationalError:
+                        print("Sorry, Applicant data update failed")
+                        raise
+                    else:
+                        print("Applicant data updated??")
+                        if result:
+                            ret.append(
+                    "(update: INSERT INTO Applicants.. returned:")
+                            for line in result:
+                                ret.append(repr(line))
+                        else: 
+                            ret.append(
+                        "Nothing returned by Applicant update")
+                        print(
+                        f"Added/changed (key: value) {key}: {new_value}")
+                        discover_query = """
+                            SELECT personID, statusID FROM Stati
+                            WHERE personID =
+                            {}""".format(int(personID))
+                        try:
+                            theClub.execute(discover_query)
+                            result = theClub.fetchall()
+                        except sqlite3.OperationalError:
+                            print("Sorry, Stati discover_query failed")
+                            raise
+                        else:
+                            if result:
+                                ret.append(
+                        "(Stati discover_query.. returned:")
+                                for line in result:
+                                    ret.append(repr(line))
+                                    print(line)
+                            else: 
+                                ret.append(
+                        "Nothing returned by Applicant update")
+                        pass
+    return ret
+
     
 def findPerson(theClub):
     """
@@ -325,7 +400,10 @@ def findPerson(theClub):
         "address", "town", "state", "postal_code"]
     field = input("Enter a search field: ")
     value = input("Enter a search value: ")
+    field = field.strip()
+    value = value.strip()
     value = value + '%'
+    _ = input(f"field set to {field}, value set to {value}")
     if field in fieldnames:
         query = f"""SELECT personID, first, last, suffix,
                 address, town, state, postal_code 
