@@ -166,10 +166,12 @@ def initDB(path):
 def try_query(cursor, query):
     try:
         cursor.execute(query)
+        ret = cursor.fetchall()
     except sqlite3.OperationalError:
         print(f"The following query failed:\n{query}\n======")
+        return None
         raise
-    return None
+    return ret
 
 def closeDB(database, theClub):
     try:
@@ -228,8 +230,8 @@ def show_appl_dict_by_id(applicant_dict_by_id):
         value = [value for value in applicant_dict_by_id[key].values()]
         print(f"{key:>3}: {value}")
 
-def get_nonmember_stati_in_use(stati_in_use=stati_in_use):
-    """
+def get_nonmember_stati_in_use():
+    query2get_nonmember_stati_in_use = """
     SELECT P.personID, P.first, P.last, P.suffix, S.key
     FROM People AS P
     JOIN Person_Status as PS
@@ -237,19 +239,70 @@ def get_nonmember_stati_in_use(stati_in_use=stati_in_use):
     WHERE P.personID = PS.personID
     AND PS.statusID = S.statusID
     AND NOT S.key = 'm';  -- exclusive of members
+        -- otherwise result is too long!
+        -- NOTE: includes members with stati other than 'm'.
     """
+    res = """
+(29, 'Sandra', 'Buckley', '', 'a1')
+(34, 'Angie', 'Calpestri', '', 'z4_treasurer')
+(35, 'Ralph', 'Camiccia', '', 'z5_d_odd')
+(46, 'Jake', 'Cortez', '', 'a1')
+(58, 'Kingston', 'Dixon', '', 'a3')
+(64, 'Jay', 'Eickenhorst', '', 'i')
+(70, 'Rudi', 'Ferris', '', 'z5_d_odd')
+(91, 'Eric', 'Joost', '', 'a0')
+(119, 'John', 'Maalis', '', 'a3')
+(120, 'Bob', 'MacDonald', '', 'z6_d_even')
+(124, 'Ed', 'Mann', '', 'z3_sec')
+(135, 'Jeff', 'McPhail', '', 'z5_d_odd')
+(143, 'Lorelei', 'Morris', '', 'a3')
+(144, 'Don', 'Murch', '', 'z5_d_odd')
+(151, 'Caleb', 'Norton', '', 'a3')
+(159, 'Kenny', 'Paasch', '', 'ba')
+(171, 'Lorin', 'Rich', '', 'a3')
+(179, 'Peter', 'Sandmann', '', 'i')
+(205, 'Kirsten', 'Walker', '', 'z6_d_even')
+(62, 'Mark', 'Dolen', '', 'z1_pres')
+(135, 'Jeff', 'McPhail', '', 'z2_vp')
+(109, 'Paul', 'Krohn', '', 'zzz')
+"""
     ### Note: 'm' for member, not included! ###
-    ret = dict()
-    for line in stati_in_use.split('\n'):
-        if line:
-            personID, first, last, suffix, status = line.split('|')
-            _ = ret.setdefault(status, [])
-            ret[status].append(f"{personID:>3} {first} {last}")
+    db, cursor = initDB(dbpath+club_db)
+    try:
+        cursor.execute(query2get_nonmember_stati_in_use )
+    except sqlite3.OperationalError:
+        print("'query2get_nonmember_stati_in_use' failed")
+        raise
+    res = cursor.fetchall()
+    ret = {}
+    keys = (  # not used
+        'personID', 'first', 'last', 'suffix', 'status_key',)
+    for line in res:
+        key = line[-1]
+        _ = ret.setdefault(key,[])
+        ret[key].append(line[:-1])
     return ret
 
 
+def get_appl_stati_from_Stati():
+    pass
+
+
+
 if __name__ == '__main__':
-    res = show_appl_dict_by_id(applicant_dict_by_id())
+#   print(
+#   "Running 'show_appl_dict_by_id(applicant_dict_by_id())':")
+#   show_appl_dict_by_id(applicant_dict_by_id())
+    print("\nRunning 'get_nonmember_stati_in_use()'")
+    ret = get_nonmember_stati_in_use()
+#   _ = input(ret)
+    print("and printing key: value for")
+    print("each item of the returned dict:")
+    keys = sorted(ret.keys())
+    for key in keys:
+        print(f"\n{key:>12}:")
+        for item in ret[key]:
+            print(item)
 #   db, cursor = initDB(dbpath+club_db)
 #   app_by_id = applicant_dict_by_id()
 #   appl_stati(app_by_id )

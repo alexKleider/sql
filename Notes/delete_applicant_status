@@ -1,0 +1,13 @@
+
+sqlite> select personID, statusID from Person_Status where personID = 159 and statusID = 13;
+159|13
+sqlite> select personID, first, last, suffix from People where personID = 159;
+159|Kenny|Paasch|
+sqlite> select statusID, key from Stati where key = 'ba';
+13|ba
+sqlite> select personID, statusID from Person_Status where personID = 159 and statusID = 13;
+159|13
+sqlite> DELETE From Person_Status where personID = 159 and statusID = 13;
+sqlite> select personID, statusID from Person_Status where personID = 159 and statusID = 13;
+sqlite> .quit
+
