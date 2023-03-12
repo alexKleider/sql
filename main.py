@@ -13,41 +13,41 @@ Support code found in the 'code' directory.
 'code/commands.py': the commands themselves.
 
 See code/commands/get_command() for what's so far implemented.
+
+Some development is taking place in utilities.py
 """
 
 import sys
+import sqlite3
 from code import commands
 
+club_db = "/home/alex/Git/Sql/Secret/club.db"
 
-def main():
-    """
-    Too complicated! needs debugging!!
-    """
-    cmd = None
-    args = []
-    largs = len(sys.argv)
-    if largs > 1:
-        args = sys.argv[2:]
-        cmd = sys.argv[1]
-        if cmd == 'show': cmd = commands.show_cmd
-        elif cmd == 'applicants': cmd = commands.appl_cmd
-        else: cmd = None
-    else: 
-        cmd = commands.get_command()
-    if cmd: 
-        res = cmd()
-        if args:
-            outfile = args[0]
-        else:
-            outfile = input("Send result to file: ")
-        if outfile:
-            with open(outfile, 'w') as outstream:
-                outstream.write('\n'.join(res))
-                print(f"Results sent to {outstream.name}.")
-        else: print('\n'.join(res))
-    else:
-        print("No valid command provided.")
 
+def initDB(path):
+    """
+    Returns a connection ("db")
+    and a cursor ("clubcursor")
+    """
+    try:
+        db = sqlite3.connect(path)
+        clubcursor = db.cursor()
+    except sqlite3.OperationalError:
+        print("Failed to connect to database:", path)
+        db, clubcursor = None, None
+        raise
+    return db, clubcursor
+
+
+def closeDB(database, cursor):
+    try:
+       cursor.close()
+       database.commit()
+       database.close()
+    except sqlite3.OperationalError:
+       print( "problem closing database..." )
+       raise
+ 
 
 if __name__ == '__main__':
     while True:
@@ -65,5 +65,6 @@ if __name__ == '__main__':
                 print('\n'.join(res))
         else:
             print("No valid command provided.")
-        response = input("...any key to continue... ")
-
+        response = input(
+            "\n Q)uit or any other key to continue... ")
+        if response and response[0] in 'qQ': break 

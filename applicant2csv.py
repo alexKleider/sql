@@ -3,6 +3,11 @@
 # File: applicant2csv.py
 
 """
+Probably can be redacted: works with files of old system.
+Before redacting, add a create csv option for main.py
+option #2: Show applicants -similar to what's available in
+option #6: No email and yet to be implemented option #7.
+
 Code: "use_sanitized = True/False"
 must be changed depending on whether we are serious or testing.
 Default is True

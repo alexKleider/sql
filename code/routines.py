@@ -11,7 +11,32 @@ import sqlite3
 db_file_name = '/home/alex/Git/Sql/Secret/club.db'
 
 
-def get_query_result(sql_source, db=db_file_name,
+def initDB(path):
+    """
+    Returns a connection ("db")
+    and a cursor ("clubcursor")
+    """
+    try:
+        db = sqlite3.connect(path)
+        clubcursor = db.cursor()
+    except sqlite3.OperationalError:
+        print("Failed to connect to database:", path)
+        db, clubcursor = None, None
+        raise
+    return db, clubcursor
+
+
+def closeDB(database, cursor):
+    try:
+       cursor.close()
+       database.commit()
+       database.close()
+    except sqlite3.OperationalError:
+       print( "problem closing database..." )
+       raise
+ 
+
+def fetch(sql_source, db=db_file_name,
                     params=None, data=None,
                     from_file=True, commit=False):
     """
@@ -20,10 +45,12 @@ def get_query_result(sql_source, db=db_file_name,
     to False) the query itself. The query is executed on the <db>.
     Only one (if any) of the following should be provided:
         <params> must be an iterable of length to match number
-            of qmark placeholders in the query.
-        <data> must be a dict with all keys necessary to match all
-        place holders in the query. Remember place holder names
-        are prefaced by a colon in the query eg: (:key1, :key2).
+            of qmark placeholders in the query. Remember to use
+            the '%' character as a suffix (or prefix or both.)
+        <data> must be a dict with all keys necessary to match
+            all place holders in the query. Remember place holder
+            names are prefaced by a colon in the query.
+            eg: (:key1, :key2).
     """
     if from_file:
         with open(sql_source, 'r') as source:
@@ -31,8 +58,7 @@ def get_query_result(sql_source, db=db_file_name,
 #       _ = input(f"### Query begins next line\n{query}")
     else: query = sql_source
 #   print(query)
-    con = sqlite3.connect(db)
-    cur = con.cursor()
+    db, cur = initDB(db)
     if data:
         cur.executemany(query, data)
     else:
@@ -43,9 +69,8 @@ def get_query_result(sql_source, db=db_file_name,
             cur.execute(query)
 #   _ = input(
 #       f"get_query_result returning the following:\n {ret}")
-    if commit:
-        con.commit()
     ret = cur.fetchall()
+    closeDB(db, cur)
     return ret
 
 
@@ -198,8 +223,8 @@ def get_commands(sql_file):
                 command = []
 
 
-def fetch(query_source, db_file_name=db_file_name):
-    con = sqlite3.connect(db_file_name)
+def fetch0(query_source, db=db_file_name):
+    con = sqlite3.connect(db)
     cur = con.cursor()
     execute(cur, con,
             get_query(query_source))

@@ -1,7 +1,8 @@
 /* show.sql */
 
 SELECT
-    first, last, phone, address, town, state, postal_code, email
+    first, last, suffix, phone, address,
+    town, state, postal_code, email
 --    St.key, P.first, P.last
 FROM
     People AS P

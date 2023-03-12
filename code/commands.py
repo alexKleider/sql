@@ -33,7 +33,7 @@ def get_command():
   4. Report
   5. yet2bNamed
   6. No email
-  7. Get stati
+  7. Get (non member) stati
   8. Update Status
   9. Find ID by name
  10. Populate Payables
@@ -89,7 +89,7 @@ def update_people_cmd():
     # display data as it is currently:
     query = """SELECT * FROM People
         WHERE personID = ?;"""
-    ret = routines.get_query_result(
+    ret = routines.fetch(
             query,
 #           db=club.db_file_name,
             params=(personID,),
@@ -172,7 +172,7 @@ def populate_payables():
             AND S.key = 'm'
             ;
     """
-    ret = routines.get_query_result(
+    ret = routines.fetch(
                 query,
 #               db=club.db_file_name,
                 params=None,
@@ -217,7 +217,7 @@ def id_by_name():
     last = input("Last name (partial or blank): ")
     params = [name+'%' if name else name for name in (first, last,)]
 #   print(params)
-    ret = routines.get_query_result(
+    ret = routines.fetch(
                 query,
 #               db=club.db_file_name,
                 params=params,
@@ -232,6 +232,7 @@ def id_by_name():
 
 def show_members():
     res = routines.fetch('Sql/show.sql')
+#   first, last, suffix, phone, address, town, state, postal_code, email
     n = len(res)
 #   _ = input(f"Number of members: {n}\n")
     report = [f"""FOR MEMBER USE ONLY
@@ -249,7 +250,8 @@ There are currently {n} members in good standing:
             first_letter = last_initial
             report.append("")
         report.append(
-        "{}, {} [{}] {}, {}, {} {} [{}]".format(*item))
+"""{0} {1} {2} [{3}] [{8}]
+\t{4}, {5}, {6} {7}""".format(*item))
     return report
 
 
@@ -288,7 +290,8 @@ def show_applicants():
             header = d['St_text']
             report.extend(['', header, '-' * len(header)])
         report.append(
-"""{first} {last} [{phone}] {address}, {town}, {state} {postal_code} [{email}]
+"""{first} {last} [{phone}] [{email}]
+\t{address}, {town}, {state} {postal_code}
 \tMeeting dates: {meeting_dates} 
 \tSponsors: {sponsors}""".format(**d))
     return report
@@ -363,20 +366,19 @@ def report_cmd():
 
 
 def get_stati():
-    con = sqlite3.connect(club.db_file_name)
-    cur = con.cursor()
-    for command in routines.get_commands(
-            "Sql/get_non_member_stati.sql"):
-        # only expect one command from this query
-        cur.execute(command)
-        res = cur.fetchall()
-        index = 0
-        ret = {}
-        for item in res:
-#           ret[index] = '{:>3}{:>10} {:<15} {}'.format(*item))
-            ret[index] = item
-            index += 1
-        return ret
+    """
+    """
+    con, cur = routines.initDB(club.db_file_name)
+    res = routines.fetch(
+            "Sql/get_non_member_stati.sql")
+    # P.personID, P.first, P.last, St.key
+    index = 0
+    ret = {}
+    for item in res:
+        ret[index] = '{:>3}{:>10} {:<15} {}'.format(*item)
+        ret[index] = item
+        index += 1
+    return ret
 
 
 def get_stati_cmd():  # get_non_member_stati.sql
@@ -388,8 +390,10 @@ def get_stati_cmd():  # get_non_member_stati.sql
     res = get_stati()
     n = len(res)
     ret = [
+#    13:  34     Angie Calpestri       z4_treasurer
      "People with non member stati (indexed)",
-     "======================================",
+     " ##   ID     First Last            Status",
+     "=========================================",
      ]
     for key in res.keys():
         # each item: P.personID, P.first, P.last, St.key
@@ -467,7 +471,7 @@ def no_email_cmd():
 
 def get_status_ID(status_key):
 #   _ = input(status_key)
-    status_id = routines.get_query_result(
+    status_id = routines.fetch(
             'Sql/get_status_id.sql',
             params=(status_key,))
 #   _ = input(status_id)
@@ -498,7 +502,7 @@ def update_status_cmd():
     if status2remove:
         id2remove = get_status_ID(status2remove,)
         id2remove = id2remove[0][0]
-        res = routines.get_query_result(
+        res = routines.fetch(
                 "Sql/drop_person_status.sql",
 #DELETE FROM Person_Status
 #WHERE personID = ? AND statusID = ?;
@@ -511,7 +515,7 @@ def update_status_cmd():
         id2add = get_status_ID(status2add,)
         id2add = id2add[0][0]
         query = """ INSERT INTO Person_Status VALUES (?, ?) ;"""
-        res = routines.get_query_result(query,
+        res = routines.fetch(query,
                 params=(personID, id2add), from_file=False,
                 commit=True)
     return [

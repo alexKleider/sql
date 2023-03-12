@@ -64,3 +64,37 @@ create your index. Neither SQLite (nor any other relational database
 I know of) can use composite indexes to optimize filtering when the
 head columns of the index are not specified in the search.
 
+SELECT FROM Table
+    GROUP BY
+    ORDER BY
+INSERT INTO Table ... VALUES ...
+UPDATE Table SET ..=.., .... WHERE ....
+DELETE FROM Table WHERE ..=..  --use SELECT first to be sure!
+
+Clauses
+=======
+WHERE (always after FROM but before ORDER BY)
+ORDER BY fieldName ASC/DESC
+LIMIT xx
+
+Operators    ('BETWEEN' operator is inclusive)
+=========    ('LIKE': use % wild card)
+Comparison  Logical     Arithmetic
+----------  -------     ----------
+=, >, <,    BETWEEN    +, -, /, *, %
+>=, <=, <>  IN, LIKE    
+            AND, OR
+
+STATEMENT
+=========
+CASE  --p84
+
+
+
+Do we want to exclude any data, filter or omit any range or time
+period???
+Consice statement: what does the query do???
+
+Best to separate queries into Clauses:
+    Each Clause begins with a Key Word and may
+    include additional parameters and operators.

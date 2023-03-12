@@ -1,5 +1,5 @@
-/* getApplicants.sql */
-
+/* Sql/getApplicants.sql */
+/* collects _current_ applicants */
 SELECT
     P.personID,
     P.first, P.last, P.suffix,  -- 1:4           6
@@ -12,5 +12,7 @@ JOIN
     People AS P
 ON Ap.personID = P.personID
 WHERE
-    Ap.dues_paid = ''
+    Ap.dues_paid = ''  --exclude those already made members
+OR  Ap.dues_paid = 'zae'  -- and those who have dropped out
 ;
+
