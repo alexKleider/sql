@@ -1,3 +1,0 @@
-/* Sql/meetings.sql */
-
-SELECT 

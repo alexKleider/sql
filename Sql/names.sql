@@ -1,5 +1,4 @@
-/* forAngie.sql */
-
+/* Sql/names.sql */
 SELECT
     first, last
 FROM
@@ -18,4 +17,3 @@ WHERE
 ORDER BY
     P.last, P.first
 ;
-

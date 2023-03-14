@@ -1,8 +1,5 @@
-/* get_dock_users.sql */
-
-SELECT 
-    P.first, P.last,
-    D.cost
+/* Sql/get_dock_users.sql */
+SELECT P.first, P.last, D.cost
 FROM
    People AS P
 INNER JOIN
@@ -12,5 +9,3 @@ ON
 ORDER BY
     P.last, P.first
 ;
-
-

@@ -20,17 +20,6 @@ import sqlite3
 
 club_db = "/home/alex/Git/Sql/Secret/club.db"
 
-APP_KEY_VALUES = {  # Souldn't be any need for this: 
-    # the SPoT should be the Stati table!
-    "a-": "Application received without fee", #0
-    "a" : "Applicant (no meetings yet)",  # welcomed
-    "a1": "Attended one meeting",
-    "a2": "Attended two meetings",
-    "a3": "Attended three (or more) meetings",
-    "ad": "Inducted & notified, membership pending payment of dues",
-    "m": "New Member",  # temporary until congratulatory letter.
-    }
-
 
 def initDB(path):
     """
@@ -74,6 +63,65 @@ def fetch_query(cursor, query, message=None):
     return ret
 
 
+def getAppStatiDict():
+    """
+    creates a dict to take the place of APP_KEY_VALUES 
+    """
+    with open('Sql/get_app_stati.sql', 'r') as infile:
+        query = infile.read()
+    db, cursor = initDB(club_db)
+    res = fetch_query(cursor, query)
+    ret = {}
+    for line in res:
+        ret[line[1]] = line[2]
+    return ret
+
+stati_key_values = getAppStatiDict()
+'''
+APP_KEY_VALUES = {  # Souldn't be any need for this: 
+    # the SPoT should be the Stati table!
+    "a-": "Application received without fee", #0
+    "a" : "Applicant (no meetings yet)",  # welcomed
+    "a1": "Attended one meeting",
+    "a2": "Attended two meetings",
+    "a3": "Attended three (or more) meetings",
+    "ad": "Inducted & notified, membership pending payment of dues",
+    "m": "New Member",  # temporary until congratulatory letter.
+    }
+
+The following returned Mar 11, '23
+         Key   Value
+         ===   =====
+           a:  Application complete but not yet acknowledged
+          a-:  Application received without fee
+          a0:  Applicant (no meetings yet)
+          a1:  Attended one meeting
+          a2:  Attended two meetings
+          a3:  Attended three (or more) meetings
+          ad:  Inducted & notified, membership pending payment of dues
+          ai:  Inducted, needs to be notified
+          am:  New Member
+          av:  Vacancy ready to be filled pending payment of dues
+          aw:  Inducted & notified, awaiting vacancy
+          ba:  Postal address => mail returned
+          be:  Email on record being rejected
+           h:  Honorary Member
+           i:  Inactive (continuing to receive minutes)
+           m:  Member in good standing
+           r:  Retiring/Giving up Club Membership
+           t:  Membership terminated (probably non payment of fees)
+           w:  Fees being waived
+     z1_pres:  President
+       z2_vp:  VicePresident
+      z3_sec:  Secretary of the Club
+z4_treasurer:  Treasurer
+    z5_d_odd:  Director- term ends Feb next odd year
+   z6_d_even:  Director- term ends Feb next even year
+         zae:  Application expired or withdrawn
+         zzz:  No longer a member
+'''
+
+
 def getApplicants(cursor):
     """
     Retrieves _all_ applicant data (incl. demographics)
@@ -112,12 +160,18 @@ def appl_dicts(cursor):
 
 def appl_status(appl_dict):
     """
-    Parameter is a dict which must have
-    a minimum of the following keys:
+    Taking data (appl_dict) derived from the Applicants table
+    (which contains sponsors & dates) returns the relavant
+    Stati table key.
+    <appl_dict> must have at a minimum the following keys:
     app_rcvd, fee_rcvd, meeting1..3, approved & dues_paid
     returning:
     'a-', 'a', 'a1', 'a2', 'a3', 'ad', 'm' or None
     A return of None suggests something is wrong!!!
+    What if applicant drops out?
+    Data could be inconsistent!!
+    Must insure consistency between Applicants and
+    Person_Status tables!!!!
     """
     if (appl_dict['app_rcvd']
     and not appl_dict['fee_rcvd']):
@@ -171,12 +225,12 @@ web_formatter = (
     "{address}, {town}, {state} {postal_code} [{email}]")
 
 report_formatter = ("{first} {last}" + '\n' +
-        '\t' + "Sponsors: {sponsor1}, {sponsor2}" + '\n\t'
+        '    ' + "Sponsors: {sponsor1}, {sponsor2}" + '\n    '
         + "Meetings: {meeting1} {meeting2} {meeting3}" )
 
 
 applicant_formatter = (web_formatter + '\n' +
-        '\t' + "Sponsors: {sponsor1}, {sponsor2}" + '\n\t'
+        '    ' + "Sponsors: {sponsor1}, {sponsor2}" + '\n    '
         + "Meetings: {meeting1} {meeting2} {meeting3}" )
 
 
@@ -187,7 +241,7 @@ def display_apsByStatus(apsbystatus, formatter=None):
     """
     ret = []
     for status in [key for key in apsbystatus.keys()]:
-        text = APP_KEY_VALUES[status]
+        text = stati_key_values[status]
         header = ['\n'+text, '-'*len(text)]
         ret.extend(header)
         for entry in apsbystatus[status]:
@@ -214,6 +268,16 @@ def applicantReport():
 
 def main():
     print(applicantReport())
+
+
+def main():
+    d = getAppStatiDict()
+    ret = ['         Key   Value',
+           '         ===   =====',
+           ]
+    for key, value in [(key, value) for (key, value) in d.items()]:
+        ret.append(f'{key:>12}:  {value}')
+    print('\n'.join(ret))
 
 
 if __name__ == '__main__':

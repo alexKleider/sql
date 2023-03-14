@@ -1,6 +1,4 @@
-
-
--- File: Sql/redo_DKM_tables.sql:wq
+/* Sql/redo_DKM_tables.sql */
 
 DROP TABLE IF EXISTS Dock_Privileges;
 CREATE TABLE Dock_Privileges ( -- AS Do

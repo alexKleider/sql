@@ -1,5 +1,5 @@
-/* show.sql */
-
+/* Sql/show.sql */
+-- retrieves member demographics
 SELECT
     first, last, suffix, phone, address,
     town, state, postal_code, email
@@ -19,4 +19,3 @@ WHERE
 ORDER BY
     P.last, P.first
 ;
-

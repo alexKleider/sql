@@ -15,4 +15,3 @@ WHERE
     Ap.dues_paid = ''  --exclude those already made members
 OR  Ap.dues_paid = 'zae'  -- and those who have dropped out
 ;
-

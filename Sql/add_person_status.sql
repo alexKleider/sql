@@ -2,5 +2,5 @@
 /* requires a 2 tuple (personID, statusID)
 INSERT INTO Person_Status
 (personID, statusID)
-VALUES (?, ?);
-
+VALUES (?, ?)
+;
