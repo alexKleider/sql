@@ -1,0 +1,3 @@
+# Sql/exclude.txt 
+create_tables.sql
+redo_DKM_tables.sql
