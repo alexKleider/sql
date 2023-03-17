@@ -186,15 +186,6 @@ def get_query(sql_source_file, formatting=None):
             ret = ret.format(*formatting)
         return ret
 
-def get_command(sql_file, ):
-    """
-    Assumes that sql_file could be '.read' by sqlite3
-
-    and that it is in a format that could be .read
-    by sqlite3
-    """
-    pass
-
 
 def get_commands(sql_file):
     """
@@ -223,12 +214,30 @@ def get_commands(sql_file):
                 command = []
 
 
-def fetch0(query_source, db=db_file_name):
-    con = sqlite3.connect(db)
-    cur = con.cursor()
-    execute(cur, con,
-            get_query(query_source))
-    return cur.fetchall()
+def dict_from_list(listing, fields):
+    """
+    <listing> is an iterable as might be an element in what's
+    returned by an SQL query.
+    <fields> is an array of (word, integer, ) tuples that
+    determines which entry in the listing is keyed by what
+    <word> in the resulting dict.
+    """
+    ret = {}
+    for word, i in fields:
+        ret[word] = listing[i]
+    return ret
+
+
+def compound_dict_from_query(listings, fields,
+                        key_name_and_index):
+    """
+    The first two params are used to create 
+    """
+    ret = {}
+    for listing in listings:
+        d_from_list = dict_from_list(listing, fields)
+        ret[key_name_and_index[0]] = listing[
+                            key_name_and_index[1]]
 
 
 def exercise_get_people_fields_by_ID():
@@ -239,6 +248,6 @@ def exercise_get_people_fields_by_ID():
 
 
 if __name__ == '__main__':
-#   exercise_get_people_fields_by_ID()
+    exercise_get_people_fields_by_ID()
     pass
 

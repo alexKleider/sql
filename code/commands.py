@@ -22,6 +22,14 @@ try:
     from code import club
 except ImportError:
     import club
+try:
+    from code import content
+except ImportError:
+    import content
+try:
+    from code import mailer
+except ImportError:
+    import mailer
 
 def get_command():
     while True:
@@ -39,7 +47,8 @@ def get_command():
  10. Populate Payables
  11. Update people demographics
  12. Add Dues
- 13. Not implemented
+ 13. Prepare Mailing
+ 14. Not implemented
 ...... """)
         if choice  ==   '0': sys.exit()
         elif choice ==  '1': return show_cmd
@@ -54,28 +63,12 @@ def get_command():
         elif choice == '10': return populate_payables
         elif choice == '11': return update_people_cmd
         elif choice == '12': return add2dues_cmd
-        elif choice == '13': return ["Not implemented", ]
+        elif choice == '13': return prepare_mailing_cmd
+        elif choice == '14': return["Not implemented", ]
         else: print("Not implemented")
 
 # for add_dues:
 # UPDATE table SET value = value + 5 WHERE id = 1;
-
-
-def add2dues_cmd():
-    """
-    UPDATE Dues SET dues_owed = dues_owed + 100
-    -- WHERE id = 1
-    ;
-    """
-    # Add same to every entry since all are members.
-    query = """
-        UPDATE Dues SET dues_owed = dues_owed + 100;
-        """
-    con = sqlite3.connect(club.db_file_name)
-    cur = con.cursor()
-    cur.execute(query)
-    con.commit()
-    return ['executed:', query]
 
 
 def update_people_cmd():
@@ -150,6 +143,23 @@ def update_people_cmd():
     else: 
         print("not accepting new values")
         ret = ['Nothing done', ]
+
+
+def add2dues_cmd():
+    """
+    UPDATE Dues SET dues_owed = dues_owed + 100
+    -- WHERE id = 1
+    ;
+    """
+    # Add same to every entry since all are members.
+    query = """
+        UPDATE Dues SET dues_owed = dues_owed + 100;
+        """
+    con = sqlite3.connect(club.db_file_name)
+    cur = con.cursor()
+    cur.execute(query)
+    con.commit()
+    return ['executed:', query]
 
 
 def populate_payables():
@@ -523,6 +533,28 @@ def update_status_cmd():
             f"ID & key of status to remove: '{id2remove}'",
             f"ID & key of status to insert: '{id2add}'",
             ]
+
+
+def prepare_mailing_cmd():
+    menu = {}
+    n_types = len(content.content_types)
+    choices = sorted(content.content_types.keys())
+    numbered_letters = zip(range(1, n_types+1), choices)
+    ret = ['  0: Quit',]
+    for key, letter_key in numbered_letters:
+        # remember: key is an int! (not a string)
+        menu[key] = letter_key
+        ret.append(f"{key:>3}: {letter_key}")
+    for item in ret:
+        print(item)
+    response = input("Choose letter type (0 to quit): ")
+    if response and response[0] in '0qQ':
+        return(["Quiting per your choice", ])
+    which = menu[int(response)]
+    ret = [f"Your choice: {response:>3}: {which}", ]
+    for key, value in content.content_types[which].items():
+        ret.append(f"%% {key:>13} %%: {value}")
+    return ret
 
 
 if __name__ == "__main__":
