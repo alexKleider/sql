@@ -48,7 +48,8 @@ def get_command():
  11. Update people demographics
  12. Add Dues
  13. Prepare Mailing
- 14. Not implemented
+ 14. Show Applicant Data
+ 15. Not implemented
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -64,7 +65,8 @@ def get_command():
         elif choice == '11': return update_people_cmd
         elif choice == '12': return add2dues_cmd
         elif choice == '13': return prepare_mailing_cmd
-        elif choice == '14': return not_implemented
+        elif choice == '14': return get_applicant_data_cmd
+        elif choice == '15': return not_implemented
         else: print("Not implemented")
 
 # for add_dues:
@@ -272,46 +274,86 @@ There are currently {n} members in good standing:
 \t{4}, {5}, {6} {7}""".format(*item))
     return report
 
-
 def show_applicants():
     """
-('a0', 'Sandra', 'Buckley', '707/363-0754', '10 Canyon Rd. #57', 'Bolinas', 'CA', '94924-0057', 'sandrabuckley@att.net', 'Billy Cummings', 'Sandy Monteko-Sherman', '221221', '221221', '', '', '', '', '', '', 'Applicant (no meetings yet)')
+    P.first, P.last, 
+    P.phone, P.address, P.town, P.state, P.postal_code, P.email,
+    sponsor1, sponsor2,
+    app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
+    approved, inducted, dues_paid
     """
     keys = (
-    'St_key', 'first', 'last', 
+    'first', 'last', 
     'phone', 'address', 'town', 'state', 'postal_code', 'email',
     'sponsor1', 'sponsor2',
     'app_rcvd', 'fee_rcvd', 'meeting1', 'meeting2', 'meeting3',
-    'approved', 'inducted', 'dues_paid', 'St_text',)
-    meeting_keys = ('meeting1', 'meeting2', 'meeting3',)
-    sponsor_keys = ('sponsor1', 'sponsor2',)
-    res = routines.fetch('Sql/applicants.sql')
-    n = len(res)
-    report = [
-        f"There are currently {n} applicants.",
-         "===================================",
-         ]
-    header = ''
-    for entry in res:
-        d = routines.make_dict(keys, entry)
-        meeting_dates = [d[k] for k in meeting_keys if d[k]]
-        if not meeting_dates:
-            d['meeting_dates'] = 'no meetings yet'
-        else:
-            d['meeting_dates'] = ', '.join(meeting_dates)
-        sponsors = [d[k] for k in sponsor_keys if d[k]]
-        if not sponsors:
-            d['sponsors'] = 'not available'
-        else:
-            d['sponsors'] = ', '.join(sponsors)
-        if d['St_text'] != header:
-            header = d['St_text']
-            report.extend(['', header, '-' * len(header)])
-        report.append(
-"""{first} {last} [{phone}] [{email}]
-\t{address}, {town}, {state} {postal_code}
-\tMeeting dates: {meeting_dates} 
-\tSponsors: {sponsors}""".format(**d))
+    'approved', 'inducted', 'dues_paid',
+    )
+    headers = ('No meetings', 'Attended one meeting',    # 0, 1
+        'Attended two meetings',                         # 2
+        'Attended three (or more) meetings',             # 3
+        'Approved (membership pending payment of dues)', # 4
+        )
+    meeting_keys = ('meeting1', 'meeting2', 'meeting3', 'approved',
+            )
+    sponsor_keys = ('sponsor1', 'sponsor2',
+            )
+    query_file = 'Sql/applicants2.sql'
+    res = routines.fetch(query_file)
+    # convert our returned sequences into...
+    dics = []        #  a sequence of dicts:
+    for sequence in res:
+        key_value_pairs = zip(keys, sequence)
+        mapping = {}
+        for key, value in key_value_pairs:
+            mapping[key] = value
+        dics.append(mapping)
+    if not dics: print("NO SEQUENCE of DICTS")
+    # Divide our sequence of dicts into a mapping
+    # where keys are the headers and values are
+    # lists of dicts to go under that header.
+    header_mapping = {}
+    for entry in dics:
+        if entry['approved']:
+            header_mapping.setdefault(headers[4], [])
+            header_mapping[headers[4]].append(entry)
+        elif entry['meeting3']:
+            header_mapping.setdefault(headers[3], [])
+            header_mapping[headers[3]].append(entry)
+        elif entry['meeting2']:
+            header_mapping.setdefault(headers[2], [])
+            header_mapping[headers[2]].append(entry)
+        elif entry['meeting1']:
+            header_mapping.setdefault(headers[1], [])
+            header_mapping[headers[1]].append(entry)
+        elif entry['fee_rcvd']:
+            header_mapping.setdefault(headers[0], [])
+            header_mapping[headers[0]].append(entry)
+#   _ = input(header_mapping)
+    report = []  # header_mapping is a dict keyed by headers
+            # and values are a list of (applicant) dicts
+    for header in [header for header in headers
+            if header in header_mapping.keys()]:
+        report.append('\n'+header)
+        report.append('-'*len(header))
+        entry = []
+        for mapping in header_mapping[header]:
+            if mapping['approved']:
+                entry.append("""{first} {last} [{phone}] {email}
+    Sponsors: {sponsor1}, {sponsor2},
+    Meetings: {meeting1} {meeting2} {meeting3}
+    Date approved by Executive Committee: {approved}"""
+                .format(**mapping))
+            elif mapping['meeting1']:
+                entry.append("""{first} {last} [{phone}] {email}
+    Sponsors: {sponsor1}, {sponsor2},
+    Meetings: {meeting1} {meeting2} {meeting3} {approved}"""
+                .format(**mapping))
+            else:
+                entry.append("""{first} {last} [{phone}] {email}
+    Sponsors: {sponsor1}, {sponsor2}"""
+                .format(**mapping))
+        report.extend(entry)
     return report
 
 
@@ -603,6 +645,30 @@ def prepare_mailing_cmd():
     return ret
 
 
+def show_applicant_data(ID):
+    ret = routines.fetch('Sql/show_applicant_data4ID.sql',
+            params=(ID,))
+    print("returning ...")
+    print(ret)
+    ret = [line for line in ret]
+    if len(ret) > 1:
+        print(f"Only first line being shown for {ID}")
+    return ret[0]
+
+
+def get_applicant_data_cmd():
+    response = input("Enter ID, blank for prompt: ")
+    if not response:
+        ret = id_by_name()
+        for line in ret:
+            print(line)
+    appID = input("Enter ID: ")
+    if not appID:
+        print("Lack of entry ==> termination!")
+        sys.exit()
+    return show_applicant_data(appID)
+
+
 if __name__ == "__main__":
 #   with open("4Angie.csv", 'w', newline='') as csvfile:
 #       fieldnames = ('last', 'first')
@@ -611,4 +677,5 @@ if __name__ == "__main__":
 #           for entry in for_angie():
 #               writer.writerow(
 #                   {'last': entry[0], 'first': entry[1]})
-    print(for_angie())
+#   print(for_angie())
+    try_applicants()
