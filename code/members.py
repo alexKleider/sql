@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-# File: code/members.py
+# File: code/members.py   # Note: trailing 's'.
+
+"""
+Under old system we had a "member" (no trailing 's') module.
+This will replace it for the current system.
 
 """
 
-"""
-
-STATUS_KEY_VALUES = {
+STATUS_KEY_VALUES = {   # Hope this can be redacted
+                        # or if not, than moved to 'club' module.
     "a-": "Application received without fee", #0
     "a" : "Application complete but not yet acknowledged",
                 # temporary until letter of welcome is sent
@@ -39,3 +42,66 @@ STATUS_KEY_VALUES = {
     'zzz': "No longer a member"  # not implemented
             # may use if keep people in db when no longer members
     }
+
+SEPARATOR = '|'
+
+
+def std_mailing_func():
+    pass
+
+
+def is_angie():
+    pass
+
+
+def testing_func():
+    pass
+
+
+def bad_address_mailing_func():
+    pass
+
+
+def letter_returned():
+    pass
+
+
+def assign_statement2extra_func():
+    pass
+
+
+def is_dues_paying():
+    pass
+
+
+def thank_func():
+    pass
+
+
+def not_paid_up():
+    pass
+
+
+def is_new_applicant():
+    pass
+
+
+def is_inductee():
+    pass
+
+
+def inductee_payment_f():
+    pass
+
+
+def vacancy_open():
+    pass
+
+
+def is_new_member():
+    pass
+
+
+def is_terminated():
+    pass
+

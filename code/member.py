@@ -3,6 +3,8 @@
 # File: member.py
 
 """
+Brought in from the previous csv and text based system.
+To be replaced by a members module (note, 's' on the end)
 Applies to records of members of 'the club' which
 is further defined in another module (rbc.py).
 (Most?) functions in this module pertain to member records and many

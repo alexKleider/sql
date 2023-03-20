@@ -34,7 +34,7 @@ except ImportError:
 def get_command():
     while True:
         choice = input("""Choose one of the following:
-  0. Exit
+  0. Quit (or just hit return to quit)
   1. Show for web site
   2. Show applicants
   3. Show names as table
@@ -50,7 +50,7 @@ def get_command():
  13. Prepare Mailing
  14. Not implemented
 ...... """)
-        if choice  ==   '0': sys.exit()
+        if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
         elif choice ==  '2': return show_applicants
         elif choice ==  '3': return show_names
@@ -64,12 +64,14 @@ def get_command():
         elif choice == '11': return update_people_cmd
         elif choice == '12': return add2dues_cmd
         elif choice == '13': return prepare_mailing_cmd
-        elif choice == '14': return["Not implemented", ]
+        elif choice == '14': return not_implemented
         else: print("Not implemented")
 
 # for add_dues:
 # UPDATE table SET value = value + 5 WHERE id = 1;
 
+def not_implemented():
+    return ["Not implemented", ]
 
 def update_people_cmd():
     """
@@ -218,14 +220,20 @@ def id_by_name():
     query = """
     SELECT personID, first, last, suffix
     FROM People
-    WHERE first LIKE ? OR last LIKE ? 
+    WHERE {}
     ;
     """
     print("Looking for people:")
     print("Narrow the search, use * to eliminate a blank...")
     first = input("First name (partial or blank): ")
     last = input("Last name (partial or blank): ")
-    params = [name+'%' if name else name for name in (first, last,)]
+    if first and last:
+        query = query.format("first LIKE ? AND last LIKE ? ")
+    elif first:
+        query = query.format("first LIKE ?")
+    elif last:
+        query = query.format("last LIKE ? ") 
+    params = [name+'%' for name in (first, last,) if name]
 #   print(params)
     ret = routines.fetch(
                 query,
@@ -308,7 +316,7 @@ def show_applicants():
 
 
 def for_angie(include_blanks=True):
-    res = routines.fetch('Sql/forAngie.sql')
+    res = routines.fetch('Sql/names.sql')
     report = []
     first_letter = 'A'
     for item in res:
@@ -412,7 +420,18 @@ def get_stati_cmd():  # get_non_member_stati.sql
     csv_file = input(
         "Name of csv file (return if not needed): ")
     if csv_file:
-        print("Creation of csv not yet implemented.")
+        with open(csv_file, 'w', newline='') as outf:
+            writer = csv.DictWriter(outf,
+                    fieldnames=('ID', 'first', 'last', 'status' ))
+            writer.writeheader()
+            for key in res.keys():
+                writer.writerow(
+                        {'ID': res[key][0],
+                         'first': res[key][1],
+                         'last': res[key][2],
+                         'status': res[key][3],
+                         })
+        print(f"Data written to '{csv_file}'.")
     return ret
 
 
@@ -429,16 +448,18 @@ def yet2bNamed():
     con = sqlite3.connect(club.db_file_name)
     cur = con.cursor()
 
-    res = routines.get_ids_by_name(cur, con, 'John', 'Maalis')
+#   res = routines.get_ids_by_name(cur, con, 'John', 'Maalis')
+    res = routines.get_ids_by_name('John', 'Maalis')
     for personID in res:
+#       _ = input(f"personID resolves to {personID}")
         line = [str(personID)+':',]
-        cur.execute(query, (personID,))
+        cur.execute(query, (personID[0],))
         stati = cur.fetchall()
 #       _ = input(f"stati: {stati}") # stati: [('a3',)]
         line.extend([status[0] for status in stati])
         line = ' '.join(line)
         ret.append(line)
-    _ = input(repr(ret))
+#   _ = input(repr(ret))
     return ret
 
 
@@ -479,26 +500,50 @@ def no_email_cmd():
     return ret
 
 
-def get_status_ID(status_key):
+def get_status_info(personID):
+    """
+    Returns ID, key, text for each status of personID
+    eg: [(15, 'm', 'Member in good standing')]
+    None if without status
+    """
+    ret = routines.fetch("Sql/get_stati_row_by_personID.sql",
+            params=(personID,))
+    return ret
+
+
+def get_status_IDs(personID):
 #   _ = input(status_key)
-    status_id = routines.fetch(
-            'Sql/get_status_id.sql',
+    status_ids = routines.fetch(
+            'Sql/get_stati_by_personID.sql',
             params=(status_key,))
 #   _ = input(status_id)
-    return status_id
+    return status_ids
+
+
+def get_status_ID(status_key):
+    """
+    Returns the statusID of the status_key
+    an invalid status_key causes return of NONE
+    """
+    ret = routines.fetch(
+        "SELECT statusID from Stati WHERE key = ? ;",
+        params=(status_key,), from_file=False)
+    if ret:
+        return ret[0][0]
 
 
 def update_status_cmd():
     # First give user a look at what stati there are to change
     print('\n'.join(get_stati_cmd()))
     # ...Then present oportunity to pick a name not listed.
-    names = input("Enter 'first last' if you need a personID: ")
-    if names:
-        names = names.split()
-        ids_by_name = routines.get_ids_by_name(*names)
-        for row in ids_by_name:
-            print(row)
+    yesorno = input("Do you need another person's ID? (y/n): ")
+    if yesorno and yesorno[0] in 'yY':
+        print('\n'.join(id_by_name()))
     personID = int(input("personID who's status to change: "))
+    # We've got a person, now show her stati:
+    print("Remove any of the following stati (y/n): ")
+    for status in stati:
+        print("")
     status2remove = input("Existing status to remove: ")
     status2add = input("New status: ")
 #   _ = input("Entries are.." +
@@ -511,6 +556,7 @@ def update_status_cmd():
     ret = []
     if status2remove:
         id2remove = get_status_ID(status2remove,)
+        print(id2remove)
         id2remove = id2remove[0][0]
         res = routines.fetch(
                 "Sql/drop_person_status.sql",

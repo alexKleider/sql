@@ -3,7 +3,8 @@
 # File: code/routines.py
 
 """
-Contains some 'helper' code to support data base management.
+Contains some 'helper' code to support SQL(ite3)
+relational data base management.
 """
 
 import sqlite3
