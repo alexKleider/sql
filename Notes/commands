@@ -98,3 +98,15 @@ Consice statement: what does the query do???
 Best to separate queries into Clauses:
     Each Clause begins with a Key Word and may
     include additional parameters and operators.
+
+ALTER TABLE table-name
+>RENAME TO new-table-name >*
+>RENAME COLUMN column-name TO new-column-name >*
+>ADD COLUMN column-def >*
+>DROP COLUMN column-name >*
+
+column-def:
+    column-name [type-name] [column-constraint..] >*
+column-constraint:
+    DEFAULT ''
+## See https://www.sqlite.org/lang_altertable.html

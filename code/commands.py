@@ -283,7 +283,7 @@ def show_applicants():
     approved, inducted, dues_paid
     """
     keys = (
-    'first', 'last', 
+    'first', 'last', 'suffix',
     'phone', 'address', 'town', 'state', 'postal_code', 'email',
     'sponsor1', 'sponsor2',
     'app_rcvd', 'fee_rcvd', 'meeting1', 'meeting2', 'meeting3',
@@ -339,18 +339,22 @@ def show_applicants():
         entry = []
         for mapping in header_mapping[header]:
             if mapping['approved']:
-                entry.append("""{first} {last} [{phone}] {email}
+                entry.append(
+                """{first} {last} {suffix} [{phone}] {email}
+    {address}, {town}, {state} {postal_code}
     Sponsors: {sponsor1}, {sponsor2},
     Meetings: {meeting1} {meeting2} {meeting3}
     Date approved by Executive Committee: {approved}"""
                 .format(**mapping))
             elif mapping['meeting1']:
                 entry.append("""{first} {last} [{phone}] {email}
+    {address}, {town}, {state} {postal_code}
     Sponsors: {sponsor1}, {sponsor2},
     Meetings: {meeting1} {meeting2} {meeting3} {approved}"""
                 .format(**mapping))
             else:
                 entry.append("""{first} {last} [{phone}] {email}
+    {address}, {town}, {state} {postal_code}
     Sponsors: {sponsor1}, {sponsor2}"""
                 .format(**mapping))
         report.extend(entry)
@@ -373,10 +377,12 @@ def for_angie(include_blanks=True):
 
 
 def show_cmd():
-    members = show_members()
-    applicants = show_applicants()
-#   return members + "\n" + applicants
-    return members + ["\n"] + applicants
+    applicant_header = 'Applicants'
+    ret = show_members()
+    ret.extend(('', '', applicant_header,
+        '='*len(applicant_header), ))
+    ret.extend(show_applicants())
+    return ret
 
 
 def show_names():
