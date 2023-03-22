@@ -289,7 +289,7 @@ def show_applicants():
         'Approved (membership pending payment of dues)', # 4
         )
     # not sure the next two are being used!!
-    meeting_keys = club.meeting_keys
+    date_keys = club.date_keys
     sponsor_keys = club.sponsor_keys
     
     query_file = 'Sql/applicants2.sql'
@@ -681,6 +681,12 @@ Choose a mailing type from one of the following:""")
 
 def add_date_cmd():
     ret = ['Adding to applicant dates...']
+    # get a personID of the person who's data to modify
+    print("Choose from the following...")
+    for line in id_by_name():
+        print(line)
+    personID = int(input(
+        "Pick a personID (must be an integer): "))
     # get which date key to modify (provides formatting)
     menu = routines.get_menu_dict(club.date_keys)
     while True:
@@ -706,18 +712,18 @@ def add_date_cmd():
     """
     query = query.format(*(menu[date_key], ))
     params = {f'{date_key}': f'{date}',
-        'personID': f'{id}',
+        'personID': f'{personID}',
         }
     print(query)
     print(params)
+    nogood = "{'4': '230330', 'personID': '<built-in function id>'}"
     ret.append(query)
-    ret.append(params)
+    ret.append(repr(params))
     r = input("Continue? (y/n): ")
     if r and r[0] in 'yY': 
         alchemy.setting(query, dic=params) 
     else:
         ret.append('Aborting...')
-    nogood = "{'4': '230330', 'personID': '<built-in function id>'}"
     return ret
 
 
