@@ -30,16 +30,21 @@ try:
     from code import mailer
 except ImportError:
     import mailer
+try:
+    from code import alchemy
+except ImportError:
+    import alchemy
 
 def get_command():
     while True:
-        choice = input("""Choose one of the following:
+        choice = input("""   MAIN MENU
+Choose one of the following:
   0. Quit (or just hit return to quit)
   1. Show for web site
   2. Show applicants
   3. Show names as table
   4. Report
-  5. yet2bNamed
+  5. Send letter/email
   6. No email
   7. Get (non member) stati
   8. Update Status
@@ -49,14 +54,15 @@ def get_command():
  12. Add Dues
  13. Prepare Mailing
  14. Show Applicant Data
- 15. Not implemented
+ 15. Add Meeting Date
+ 16. Not implemented
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
         elif choice ==  '2': return show_applicants
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
-        elif choice ==  '5': return yet2bNamed
+        elif choice ==  '5': return mailing_cmd
         elif choice ==  '6': return no_email_cmd
         elif choice ==  '7': return get_stati_cmd
         elif choice ==  '8': return update_status_cmd
@@ -66,7 +72,7 @@ def get_command():
         elif choice == '12': return add2dues_cmd
         elif choice == '13': return prepare_mailing_cmd
         elif choice == '14': return get_applicant_data_cmd
-        elif choice == '15': return not_implemented
+        elif choice == '15': return add_date_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -88,7 +94,7 @@ def update_people_cmd():
         WHERE personID = ?;"""
     ret = routines.fetch(
             query,
-#           db=club.db_file_name,
+#           db=club.DB,
             params=(personID,),
             data=None,
             from_file=False,
@@ -134,7 +140,7 @@ def update_people_cmd():
         print(query)
         response = input("OK to execute above query? (y/n) ")
         if response and response[0] in 'yY':
-            con = sqlite3.connect(club.db_file_name)
+            con = sqlite3.connect(club.DB)
             cur = con.cursor()
             cur.execute(query)
             con.commit()
@@ -159,7 +165,7 @@ def add2dues_cmd():
     query = """
         UPDATE Dues SET dues_owed = dues_owed + 100;
         """
-    con = sqlite3.connect(club.db_file_name)
+    con = sqlite3.connect(club.DB)
     cur = con.cursor()
     cur.execute(query)
     con.commit()
@@ -188,7 +194,7 @@ def populate_payables():
     """
     ret = routines.fetch(
                 query,
-#               db=club.db_file_name,
+#               db=club.DB,
                 params=None,
                 data=None,
                 from_file=False,
@@ -239,7 +245,7 @@ def id_by_name():
 #   print(params)
     ret = routines.fetch(
                 query,
-#               db=club.db_file_name,
+#               db=club.DB,
                 params=params,
                 data=None,
                 from_file=False,
@@ -276,34 +282,22 @@ There are currently {n} members in good standing:
 
 def show_applicants():
     """
-    P.first, P.last, 
-    P.phone, P.address, P.town, P.state, P.postal_code, P.email,
-    sponsor1, sponsor2,
-    app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
-    approved, inducted, dues_paid
     """
-    keys = (
-    'first', 'last', 'suffix',
-    'phone', 'address', 'town', 'state', 'postal_code', 'email',
-    'sponsor1', 'sponsor2',
-    'app_rcvd', 'fee_rcvd', 'meeting1', 'meeting2', 'meeting3',
-    'approved', 'inducted', 'dues_paid',
-    )
     headers = ('No meetings', 'Attended one meeting',    # 0, 1
         'Attended two meetings',                         # 2
         'Attended three (or more) meetings',             # 3
         'Approved (membership pending payment of dues)', # 4
         )
-    meeting_keys = ('meeting1', 'meeting2', 'meeting3', 'approved',
-            )
-    sponsor_keys = ('sponsor1', 'sponsor2',
-            )
+    # not sure the next two are being used!!
+    meeting_keys = club.meeting_keys
+    sponsor_keys = club.sponsor_keys
+    
     query_file = 'Sql/applicants2.sql'
     res = routines.fetch(query_file)
     # convert our returned sequences into...
     dics = []        #  a sequence of dicts:
     for sequence in res:
-        key_value_pairs = zip(keys, sequence)
+        key_value_pairs = zip(club.appl_keys, sequence)
         mapping = {}
         for key, value in key_value_pairs:
             mapping[key] = value
@@ -434,7 +428,7 @@ def report_cmd():
 def get_stati():
     """
     """
-    con, cur = routines.initDB(club.db_file_name)
+    con, cur = routines.initDB(club.DB)
     res = routines.fetch(
             "Sql/get_non_member_stati.sql")
     # P.personID, P.first, P.last, St.key
@@ -447,7 +441,7 @@ def get_stati():
     return ret
 
 
-def get_stati_cmd():  # get_non_member_stati.sql
+def get_stati_cmd(tocsv=True):  # get_non_member_stati.sql
     """
     Returns a header followed by a listing of all
     people with a status OTHER THAN 'm':
@@ -465,21 +459,22 @@ def get_stati_cmd():  # get_non_member_stati.sql
         # each item: P.personID, P.first, P.last, St.key
         entry = '{:>3}{:>10} {:<15} {}'.format(*res[key])
         ret.append(f'{key:>3}: {entry}')
-    csv_file = input(
-        "Name of csv file (return if not needed): ")
-    if csv_file:
-        with open(csv_file, 'w', newline='') as outf:
-            writer = csv.DictWriter(outf,
-                    fieldnames=('ID', 'first', 'last', 'status' ))
-            writer.writeheader()
-            for key in res.keys():
-                writer.writerow(
-                        {'ID': res[key][0],
-                         'first': res[key][1],
-                         'last': res[key][2],
-                         'status': res[key][3],
-                         })
-        print(f"Data written to '{csv_file}'.")
+    if tocsv:
+        csv_file = input(
+            "Name of csv file (return if not needed): ")
+        if csv_file:
+            with open(csv_file, 'w', newline='') as outf:
+                writer = csv.DictWriter(outf,
+                        fieldnames=('ID', 'first', 'last', 'status' ))
+                writer.writeheader()
+                for key in res.keys():
+                    writer.writerow(
+                            {'ID': res[key][0],
+                             'first': res[key][1],
+                             'last': res[key][2],
+                             'status': res[key][3],
+                             })
+            print(f"Data written to '{csv_file}'.")
     return ret
 
 
@@ -493,7 +488,7 @@ def yet2bNamed():
         JOIN Person_Status AS PS
         ON PS.statusID = ST.statusID
         WHERE PS.personID = ?; """
-    con = sqlite3.connect(club.db_file_name)
+    con = sqlite3.connect(club.DB)
     cur = con.cursor()
 
 #   res = routines.get_ids_by_name(cur, con, 'John', 'Maalis')
@@ -515,7 +510,7 @@ def no_email_cmd():
     """
     Provides a listing of _members_ without email.
     """
-    con = sqlite3.connect(club.db_file_name)
+    con = sqlite3.connect(club.DB)
     cur = con.cursor()
     for command in routines.get_commands("Sql/no_email.sql"):
         # only expect one command from this query
@@ -544,7 +539,7 @@ def no_email_cmd():
                         row[key] = value
                     writer.writerow(row)
         for line in res:
-            ret.append("{:>3}: {} {} {} {} {} {}".format(*line))
+            ret.append("{:>3}: {} {}: {}, {}, {} {}".format(*line))
     return ret
 
 
@@ -579,53 +574,46 @@ def get_status_ID(status_key):
     if ret:
         return ret[0][0]
 
+_code_ = """
+    while True:
+        personID = input("Get row for ID (blank to quit): ")
+        try:
+            personID = int(personID)
+        except ValueError:
+            break
+            """
 
 def update_status_cmd():
     # First give user a look at what stati there are to change
-    print('\n'.join(get_stati_cmd()))
+    stati = get_stati_cmd(tocsv=False)
+    print('\n'.join(stati))
     # ...Then present oportunity to pick a name not listed.
     yesorno = input("Do you need another person's ID? (y/n): ")
     if yesorno and yesorno[0] in 'yY':
         print('\n'.join(id_by_name()))
     personID = int(input("personID who's status to change: "))
+    personInfo = routines.fetch('Sql/find_by_ID.sql',
+            params = (personID, ))[0]
+    print(personInfo)
     # We've got a person, now show her stati:
-    print("Remove any of the following stati (y/n): ")
-    for status in stati:
-        print("")
     status2remove = input("Existing status to remove: ")
     status2add = input("New status: ")
-#   _ = input("Entries are.." +
-#       f"{personID}, {status2remove}, {status2add}")
     id2remove = id2add = ''
-#   /* Sql/drop_person_status.sql *)
-#   /* requires a 2 tuple (personID, statusID)
-#   DELETE FROM Person_Status
-#   WHERE personID = ? AND statusID = ?;
     ret = []
     if status2remove:
         id2remove = get_status_ID(status2remove,)
-        print(id2remove)
-        id2remove = id2remove[0][0]
-        res = routines.fetch(
-                "Sql/drop_person_status.sql",
-#DELETE FROM Person_Status
-#WHERE personID = ? AND statusID = ?;
-                params=(personID, id2remove, ),
-                commit=True)
-        _ = input(f"res: {res}")
-        ret.append(f"Dropped ")
-        
+        print(f"id2remove set to {id2remove}")
     if status2add:
         id2add = get_status_ID(status2add,)
-        id2add = id2add[0][0]
-        query = """ INSERT INTO Person_Status VALUES (?, ?) ;"""
-        res = routines.fetch(query,
-                params=(personID, id2add), from_file=False,
-                commit=True)
+    params = (id2add, personID, id2remove)
+    res = routines.fetch("Sql/changePersonStatus.sql",
+            params = params, from_file=True,
+            commit=True)
     return [
-            f"personID: '{personID}'",
-            f"ID & key of status to remove: '{id2remove}'",
-            f"ID & key of status to insert: '{id2add}'",
+        f"personID: '{personID}'",
+        f"person info: \n  {personInfo}",
+        f"ID & key to remove: {id2remove}, '{status2remove}'",
+        f"ID & key to insert: {id2add}, '{status2add}'",
             ]
 
 
@@ -673,6 +661,64 @@ def get_applicant_data_cmd():
         print("Lack of entry ==> termination!")
         sys.exit()
     return show_applicant_data(appID)
+
+
+def mailing_cmd():
+    ret = ['mailing command is under development', ]
+    okrange = range(1,len(content.ctypes)+1)
+    choices = zip(okrange, content.ctypes)
+    while True:
+        print("""   MAILING MENU
+Choose a mailing type from one of the following:""")
+        for choice in choices:
+            print(f'{choice[0]:<3}: {choice[1]}')
+        response = int(input("Choice ('0' to quit): "))
+        if response in okrange:
+            break
+    ret.append(f"You chose '{content.ctypes[response-1]}'")
+    return ret
+
+
+def add_date_cmd():
+    ret = ['Adding to applicant dates...']
+    # get which date key to modify (provides formatting)
+    menu = routines.get_menu_dict(club.date_keys)
+    while True:
+        print("Choices:")
+        for key, entry in menu.items():
+            print(f'{key}: {entry}')
+        n = int(input("Enter # of date key to modify: "))
+        if n in menu.keys():
+            date_key = n
+            break
+    # get date to insert (over write!)
+    while True:
+        date = input(
+            "Date (6 digits in 'yymmdd' format) to insert: ")
+        confirm = input(f"Is {date} correct? (y/n): ")
+        if confirm and confirm[0] in 'yY':
+            break
+    query = """/* Sql/insert_date.sql */
+    UPDATE Applicants
+    SET {0:} = :{0:} 
+    WHERE personID = :personID
+    ;
+    """
+    query = query.format(*(menu[date_key], ))
+    params = {f'{date_key}': f'{date}',
+        'personID': f'{id}',
+        }
+    print(query)
+    print(params)
+    ret.append(query)
+    ret.append(params)
+    r = input("Continue? (y/n): ")
+    if r and r[0] in 'yY': 
+        alchemy.setting(query, dic=params) 
+    else:
+        ret.append('Aborting...')
+    nogood = "{'4': '230330', 'personID': '<built-in function id>'}"
+    return ret
 
 
 if __name__ == "__main__":

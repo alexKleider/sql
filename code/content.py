@@ -854,6 +854,7 @@ content_types = dict(  # which_letter
 
     )
 # ... end of content_types.
+ctypes = [key for key in content_types.keys()]
 
 printers = dict(
     # tuples in the case of envelope windows.

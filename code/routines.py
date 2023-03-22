@@ -80,10 +80,23 @@ def make_dict(keys, values):
     Parameters are iterables of equal length.
     A dict is returned.
     """
+    assert len(keys) == len(values)
     ret = {}
     for key, value in zip(keys, values):
         ret[key] = value
     return ret
+
+
+def get_menu_dict(items):
+    """
+    Returns a dict keyed by successive integers
+    beginning with 1 (not zero!)
+    """
+    z = zip(range(1, len(items)+1), items)
+    menu = dict()
+    for key, item in z:
+        menu[key] = item
+    return menu
 
 
 def get_query(sql_source_file, values=None):

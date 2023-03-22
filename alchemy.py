@@ -19,13 +19,19 @@ with engine.connect() as conn:
 """
 
 import sqlalchemy
+from code import club
 
 # print(sqlalchemy.__version__)
+
+AlchemyDB = "sqlite+pysqlite:///" + club.DB
 
 query = "SELECT statusID, key, text FROM Stati;"
 
 
-def getting(engine, query, dic=None):
+def getting(query, dic=None):
+    engine = sqlalchemy.create_engine(AlchemyDB
+#       , echo=True
+        )
     with engine.connect() as con:
         if dic:
             result = con.execute(sqlalchemy.text(query, dic))
@@ -34,7 +40,10 @@ def getting(engine, query, dic=None):
         return result.mappings()
 
 
-def setting(engine, query, dic=None):
+def setting(query, dic=None):
+    engine = sqlalchemy.create_engine(AlchemyDB
+#       , echo=True
+        )
     with engine.connect() as con:
         if dic:
             result = con.execute(sqlalchemy.text(query), dic)
@@ -42,30 +51,27 @@ def setting(engine, query, dic=None):
             result = con.execute(sqlalchemy.text(query))
         con.commit()
 
-def task1():
+def task1(engine):
+    query = "SELECT statusID, key, text FROM Stati;"
     for entry in getting(engine, query):
         for key in entry.keys():
             print(f"{entry[key]:<12}",end='')
         print()
 #   con.commit()  # needed if changing (vs querying) data
 
-def task2():
+def task2(engine):
     insert_query = """
     /* Sql/insert_date.sql */
     UPDATE Applicants
-    SET (meeting, ) VALUES (:meeting, )
+    SET meeting3 = :meeting3 
     WHERE personID = :personID
     ;
     """
-    params = {'meeting': '230303',
+    params = {'meeting3': '230303',
         'personID': 143,
         }
-    setting(engine, insert_query, dic=params) 
+    setting(insert_query, dic=params) 
 
 
 if __name__ == '__main__':
-    engine = sqlalchemy.create_engine(
-        "sqlite+pysqlite:////home/alex/Git/Sql/Secret/club.db"
-#       , echo=True
-        )
-    task2()
+    task2(engine)
