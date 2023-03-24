@@ -50,6 +50,9 @@ def std_mailing_func():
     pass
 
 
+def is_member():
+    pass
+
 def is_angie():
     pass
 

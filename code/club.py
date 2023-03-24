@@ -2,6 +2,28 @@
 
 # File: code/club.py  # contains club globals
 
+"""
+This module is specific to the Bolinas Rod and Boat Club.
+Data is maintained in an SQL data base in a "Secret" directory
+which (along with some other reference files) is not part of
+the GIT repo but is backed up on the Club's Google Drive.
+The code base is a git repository.
+It provides the <Holder> class which serves largely to keep
+track of global values.  Only one instance at a time.
+"""
+
+class Holder(object):
+
+    n_instances = 0
+
+    @classmethod
+    def inc_n_instances(cls):
+        cls.n_instances += 1
+
+    def __init__(self):
+        if self.n_instances > 0:
+            raise NotImplementedError("Only one instance allowed.")
+        self.inc_n_instances()
 
 ROOT = "/home/alex/Git/Sql/"
 DB = ROOT + "Secret/club.db"
@@ -48,7 +70,9 @@ sponsor_keys = applicantDB_keys[2:4]
 
 yearly_dues = 200
 
+
 if __name__ == '__main__':
+    print('Running code/club...')
     print(f"peopleDB keys: {peopleDB_keys}")
     print(f"applicantDB keys: {applicantDB_keys}")
     print(f"meeting keys: {date_keys}")

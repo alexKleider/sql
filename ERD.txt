@@ -1,56 +1,39 @@
 
--- Data Base Schema  Feb 16, 2023
+-- Data Base Schema  Mar 23, 2023
 -- AKA Entity Relationship Diagram (ERD)
                                          
 
-DROP TABLE IF EXISTS People;             DROP TABLE IF EXISTS Attrition;
-CREATE TABLE People ( -- AS P            --keeping data in People table
-    personID INTEGER PRIMARY KEY,        CREATE TABLE Attrition ( -- AS At
-    first TEXT NOT NULL,                     attritionID INTEGER PRIMARY KEY,
-    last TEXT NOT NULL,                      personID INTEGER NOT NULL,
-    suffix TEXT DEFAULT '',                  -- foreign key
-    phone TEXT DEFAULT '',                   date TEXT DEFAULT '',
-    address TEXT DEFAULT '',                 reason TEXT DEFAULT ''
-    town TEXT DEFAULT '',                    );
-    state TEXT DEFAULT '',               
-    postal_code TEXT DEFAULT '',         DROP TABLE IF EXISTS Dues;
-    country TEXT DEFAULT 'USA',          CREATE TABLE Dues ( -- AS Du
-    email TEXT DEFAULT ''                    personID INTEGER UNIQUE NOT NULL,
-    );                                       -- foreign key
-                                             -- only one entry per person
-DROP TABLE IF EXISTS Applicants;             dues_owed NUMERIC DEFAULT 100
--- also in Stati table                       );
--- unitil > member                       
-CREATE TABLE Applicants ( -- AS Ap       DROP TABLE IF EXISTS Dock_Privileges;
-    applicantID INTEGER PRIMARY KEY,     CREATE TABLE Dock_Privileges ( -- AS Do
-    personID INTEGER NOT NULL UNIQUE,        personID TEXT NOT NULL UNIQUE,
-        --foreign key                        --no one will pay for >1
-    sponsor1 TEXT DEFAULT '',                --so no need for an
-    sponsor2 TEXT DEFAULT '',                --auto generated PRIMARY KEY
-    app_rcvd TEXT NOT NULL,                  cost NUMERIC DEFAULT 75
-    fee_rcvd TEXT DEFAULT '',                );
-    meeting1 TEXT DEFAULT '',            
-    meeting2 TEXT DEFAULT '',            DROP TABLE IF EXISTS Kayak_Slots;
-    meeting3 TEXT DEFAULT '',            CREATE TABLE Kayak_Slots ( -- AS K
-    approved TEXT DEFAULT '',                slotID INTEGER PRIMARY KEY,
-    inducted TEXT DEFAULT '',                slot_code TEXT NOT NULL UNIQUE,
-    dues_paid TEXT DEFAULT ''                slot_cost NUMERIC DEFAULT 70,
-    );                                       personID TEXT
-                                             -- foreign key
-DROP TABLE IF EXISTS Stati;                  -- unlikely but theoretically
-CREATE TABLE Stati ( -- AS St                -- possible for one member to
-    statusID INTEGER PRIMARY KEY,            -- have >1 kayak slot.
-    key TEXT NOT NULL,                       );
-    text TEXT NOT NULL                   
-    );                                   DROP TABLE IF EXISTS Moorings;
-                                         CREATE TABLE Moorings ( -- AS M
-DROP TABLE IF EXISTS Person_Status;          mooringID INTEGER PRIMARY KEY,
---intersection table                         mooring_code TEXT NOT NULL UNIQUE,
-CREATE TABLE Person_Status ( -- AS PS        mooring_cost NUMERIC DEFAULT 0,
-    personID INTEGER NOT NULL,               personID TEXT
-    statusID INTEGER NOT NULL,               -- foreign key
-    PRIMARY Key (personID, statusID)         -- unlikely but theoretically
-    -- composite primary key                 -- possible for one member to
-    );                                       -- have >1 mooring.
-                                             );
+CREATE TABLE People (                    CREATE TABLE Person_Status (
+personID INTEGER PRIMARY KEY,            personID INTEGER NOT NULL,
+first TEXT NOT NULL,                     statusID INTEGER NOT NULL,
+last TEXT NOT NULL,                      begin TEXT DEFAULT '',
+suffix TEXT DEFAULT '',                  end TEXT DEFAULT '',
+phone TEXT DEFAULT '',                   PRIMARY Key (personID,
+address TEXT DEFAULT '',                 statusID) );
+town TEXT DEFAULT '',                    
+state TEXT DEFAULT '',                   CREATE TABLE Attrition (
+postal_code TEXT DEFAULT '',             attritionID INTEGER PRIMARY KEY,
+country TEXT DEFAULT 'USA',              personID INTEGER NOT NULL,
+email TEXT DEFAULT '' );                 date TEXT DEFAULT '',
+                                         reason TEXT DEFAULT '' );
+CREATE TABLE Applicants (                
+applicantID INTEGER PRIMARY KEY,         CREATE TABLE Dues (
+personID INTEGER NOT NULL UNIQUE,        personID INTEGER UNIQUE NOT NULL,
+sponsor1 TEXT DEFAULT '',                dues_owed NUMERIC DEFAULT 100 );
+sponsor2 TEXT DEFAULT '',                
+app_rcvd TEXT NOT NULL,                  CREATE TABLE Dock_Privileges (
+fee_rcvd TEXT DEFAULT '',                personID INTEGER NOT NULL UNIQUE,
+meeting1 TEXT DEFAULT '',                cost NUMERIC DEFAULT 75 );
+meeting2 TEXT DEFAULT '',                
+meeting3 TEXT DEFAULT '',                CREATE TABLE Kayak_Slots (
+approved TEXT DEFAULT '',                slotID INTEGER PRIMARY KEY,
+inducted TEXT DEFAULT '',                slot_code TEXT NOT NULL UNIQUE,
+dues_paid TEXT DEFAULT '' );             slot_cost NUMERIC DEFAULT 70,
+                                         personID INTEGER );
+CREATE TABLE Stati (                     
+statusID INTEGER PRIMARY KEY,            CREATE TABLE Moorings (
+key TEXT NOT NULL,                       mooringID INTEGER PRIMARY KEY,
+text TEXT NOT NULL );                    mooring_code TEXT NOT NULL UNIQUE,
+                                         mooring_cost NUMERIC DEFAULT 0,
+                                         personID INTEGER );
                                          

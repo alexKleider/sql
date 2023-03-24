@@ -10,51 +10,36 @@ Driver of the code is main.py
 import sqlite3
 import sys
 import csv
-try:
-    from code import routines
-except ImportError:
-    import routines
-try:
-    from code import helpers
-except ImportError:
-    import helpers
-try:
-    from code import club
-except ImportError:
-    import club
-try:
-    from code import content
-except ImportError:
-    import content
-try:
-    from code import mailer
-except ImportError:
-    import mailer
-try:
-    from code import alchemy
-except ImportError:
-    import alchemy
+try: from code import routines
+except ImportError: import routines
+
+try: from code import helpers
+except ImportError: import helpers
+
+try: from code import club
+except ImportError: import club
+
+try: from code import content
+except ImportError: import content
+
+try: from code import mailer
+except ImportError: import mailer
+
+try: from code import alchemy
+except ImportError: import alchemy
 
 def get_command():
     while True:
         choice = input("""   MAIN MENU
 Choose one of the following:
-  0. Quit (or just hit return to quit)
-  1. Show for web site
-  2. Show applicants
-  3. Show names as table
-  4. Report
-  5. Send letter/email
-  6. No email
-  7. Get (non member) stati
-  8. Update Status
-  9. Find ID by name
- 10. Populate Payables
- 11. Update people demographics
- 12. Add Dues
- 13. Prepare Mailing
- 14. Show Applicant Data
- 15. Add Meeting Date
+  0. Quit (or just return)    1. Show for web site
+  2. Show applicants          3. Show names as table
+  4. Report                   5. Send letter/email
+  6. No email                 7. Get (non member) stati
+  8. Update Status            9. Find ID by name
+ 10. Populate Payables       11. Update demographics
+ 12. Add Dues                13. Prepare Mailing
+ 14. Show Applicant Data     15. Add Meeting Date
  16. Not implemented
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
@@ -618,6 +603,23 @@ def update_status_cmd():
 
 
 def prepare_mailing_cmd():
+    """
+    4: awaiting_vacancy
+%% subject: Membership pending vacancy
+%% from: {'first': 'Bolinas', 'last': 'Rod & Boat Club',
+            'address': 'PO Box 248', 'town': 'Bolinas', 'state': 'CA',
+            'postal_code': '94924', 'country': 'USA',
+            'email_signature': '\nSincerely,\nAlex Kleider (Membership)',
+            'email': 'rodandboatclub@gmail.com',
+            'reply2': 'rodandboatclub@gmail.com',
+            'mail_signature': '\nSincerely,\n\n\nAlex Kleider (Membership)'}
+%% cc: sponsors
+%% body:  "blah blah blah"
+%% post_scripts: ()
+%% funcs: (<function std_mailing_func at 0x7fd18da52c10>,)
+%% test: <function <lambda> at 0x7fd18da5edc0>
+%% e_and_or_p: one_only
+    """
     menu = {}
     n_types = len(content.content_types)
     choices = sorted(content.content_types.keys())
@@ -636,6 +638,8 @@ def prepare_mailing_cmd():
     ret = [f"Your choice: {response:>3}: {which}", ]
     for key, value in content.content_types[which].items():
         ret.append(f"%% {key:>13} %%: {value}")
+    ret.append("\nContent Types:")
+    ret.extend(content.ctypes)
     return ret
 
 

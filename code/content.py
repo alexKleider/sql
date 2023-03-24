@@ -21,7 +21,7 @@ A number of 'dict's are being used:
             "body": letter_bodies["happyNY_and_0th_fees_request"],
             "post_script": a string,
             "funcs": [func_1, ..],
-            "test": lambda record: True,
+            "test": members.is_member, 
             "e_and_or_p": "one_only",
             },
     printers: X6505, HL2170, ...
@@ -552,7 +552,7 @@ content_types = dict(  # which_letter
             post_scripts['forgive_duplicate'],
             ),
         "funcs": [members.testing_func, ],
-        "test": lambda record: True,
+        "test": members.is_member,
         "e_and_or_p": "one_only",
         },
     bad_address={
@@ -561,7 +561,7 @@ content_types = dict(  # which_letter
         "body": letter_bodies["bad_address"],
         "post_scripts": (post_scripts["ref1_email_or_PO"],),
         "funcs": [members.bad_address_mailing_func, ],
-        "test": members.letter_returned,
+        "test": members.is_member, 
         "e_and_or_p": "email",
         },
     find_enclosed={  # test will always return False!?!
@@ -570,19 +570,8 @@ content_types = dict(  # which_letter
         "body": letter_bodies["find_enclosed"],
         "post_scripts": (),
         "funcs": [members.std_mailing_func,],
-        "test": lambda record: record['phone']=='0',  # !?!
+        "test": members.is_dues_paying, 
         "e_and_or_p": "usps",
-        },
-    feb_meeting={
-        "subject": "Meeting first Friday of February",
-        "from": authors["membership"],
-        "body": letter_bodies["feb_meeting"],
-        "post_scripts": (
-            post_scripts['ref1_reservations'],
-            ),
-        "funcs": (members.std_mailing_func,),
-        "test": lambda record: True if record["email"] else False,
-        "e_and_or_p": "email",
         },
     happyNY_and_0th_fees_request={
         "subject": "Happy New Year from the Bolinas R&B Club",
@@ -593,10 +582,19 @@ content_types = dict(  # which_letter
             ),
         "funcs": (members.assign_statement2extra_func,
                   members.std_mailing_func),
-        "test": lambda record: True if (
-            members.is_dues_paying(record)
-            ) else False,
+        "test": members.is_dues_paying,
         "e_and_or_p": "one_only",
+        },
+    feb_meeting={
+        "subject": "Meeting first Friday of February",
+        "from": authors["membership"],
+        "body": letter_bodies["feb_meeting"],
+        "post_scripts": (
+            post_scripts['ref1_reservations'],
+            ),
+        "funcs": (members.std_mailing_func,),
+        "test": members.is_dues_paying, 
+        "e_and_or_p": "email",
         },
     thank={
         "subject": "Thanks for your payment",
@@ -606,7 +604,7 @@ content_types = dict(  # which_letter
         "funcs": (
                 members.thank_func,
                 ),
-        "test": lambda record: True,
+        "test": members.is_member, 
         "e_and_or_p": "one_only",
         },
     correction={
