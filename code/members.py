@@ -8,6 +8,7 @@ This will replace it for the current system.
 
 """
 
+redact = '''
 STATUS_KEY_VALUES = {   # Hope this can be redacted
                         # or if not, than moved to 'club' module.
     "a-": "Application received without fee", #0
@@ -42,6 +43,7 @@ STATUS_KEY_VALUES = {   # Hope this can be redacted
     'zzz': "No longer a member"  # not implemented
             # may use if keep people in db when no longer members
     }
+'''
 
 SEPARATOR = '|'
 

@@ -22,9 +22,6 @@ except ImportError: import club
 try: from code import content
 except ImportError: import content
 
-try: from code import mailer
-except ImportError: import mailer
-
 try: from code import alchemy
 except ImportError: import alchemy
 
@@ -601,28 +598,67 @@ def update_status_cmd():
         f"ID & key to insert: {id2add}, '{status2add}'",
             ]
 
+def get_mailing_dict(personID):
+    """
+    Returns first, last, suffix,
+    address, town, state, postal_code, country
+    for personID
+    """
+    query_file = "Sql/get_mailing_dict.sql"
+    return routines.fetch(query_file,
+            params=(personID, )   )
+
+
+def get_emailing_dict(personID):
+    """
+    Returns first, last, suffix, email
+    for personID
+    Empty list if no email.
+    """
+    query_file = "Sql/get_emailing_dict.sql"
+    return routines.fetch(query_file,
+            params=(personID, )   )
+
+def prepare_mailing(which):
+    holder = club.Holder(which)
+    print(f"'prepare_mailing' is working on '{which}'.")
+    # first let's retrieve personID for each person who owes
+    # putting their relevant data into a dict keyed by ID.
+    byID = dict()
+    # dues owing:
+    for tup in (routines.fetch("Sql/dues.sql")):
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'dues_owed': tup[4],
+                        }
+    # dock privileges owing:
+    for tup in routines.fetch("Sql/dock.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['dock'] = tup[1]
+    # kayak storage owing:
+    for tup in routines.fetch("Sql/kayak.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['kayak'] = tup[1]
+    # mooring fee owing:
+    for tup in routines.fetch("Sql/mooring.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['mooring'] = tup[1]
+    # return what's been collected:
+    ret = []
+    for key, value in byID.items():
+        ret.append(f"{key}: {repr(value)}")
+    return ret
+
 
 def prepare_mailing_cmd():
     """
-    4: awaiting_vacancy
-%% subject: Membership pending vacancy
-%% from: {'first': 'Bolinas', 'last': 'Rod & Boat Club',
-            'address': 'PO Box 248', 'town': 'Bolinas', 'state': 'CA',
-            'postal_code': '94924', 'country': 'USA',
-            'email_signature': '\nSincerely,\nAlex Kleider (Membership)',
-            'email': 'rodandboatclub@gmail.com',
-            'reply2': 'rodandboatclub@gmail.com',
-            'mail_signature': '\nSincerely,\n\n\nAlex Kleider (Membership)'}
-%% cc: sponsors
-%% body:  "blah blah blah"
-%% post_scripts: ()
-%% funcs: (<function std_mailing_func at 0x7fd18da52c10>,)
-%% test: <function <lambda> at 0x7fd18da5edc0>
-%% e_and_or_p: one_only
+    Sets up & then calls prepare_mailing
     """
+    # Determine content type desired...
     menu = {}
-    n_types = len(content.content_types)
-    choices = sorted(content.content_types.keys())
+    n_types = len(content.ctypes)
+    choices = sorted(content.ctypes)
     numbered_letters = zip(range(1, n_types+1), choices)
     ret = ['  0: Quit',]
     for key, letter_key in numbered_letters:
@@ -636,10 +672,9 @@ def prepare_mailing_cmd():
         return(["Quiting per your choice", ])
     which = menu[int(response)]
     ret = [f"Your choice: {response:>3}: {which}", ]
-    for key, value in content.content_types[which].items():
-        ret.append(f"%% {key:>13} %%: {value}")
-    ret.append("\nContent Types:")
-    ret.extend(content.ctypes)
+    ret.extend(prepare_mailing(which))
+#   for key, value in content.content_types[which].items():
+#       ret.append(f"%% {key:>13} %%: {value}")
     return ret
 
 
@@ -671,15 +706,12 @@ def mailing_cmd():
     ret = ['mailing command is under development', ]
     okrange = range(1,len(content.ctypes)+1)
     choices = zip(okrange, content.ctypes)
-    while True:
-        print("""   MAILING MENU
+    print("""   MAILING MENU
 Choose a mailing type from one of the following:""")
-        for choice in choices:
-            print(f'{choice[0]:<3}: {choice[1]}')
-        response = int(input("Choice ('0' to quit): "))
-        if response in okrange:
-            break
-    ret.append(f"You chose '{content.ctypes[response-1]}'")
+    for choice in choices:  # prints the menu..
+        print(f'{choice[0]:<3}: {choice[1]}')
+    response = int(input("Choice ('0' to quit): "))
+    _ = input(f"You chose '{content.ctypes[response-1]}'")
     return ret
 
 
@@ -740,4 +772,5 @@ if __name__ == "__main__":
 #               writer.writerow(
 #                   {'last': entry[0], 'first': entry[1]})
 #   print(for_angie())
-    try_applicants()
+#   try_applicants()
+    print(get_emailing_dict(101))

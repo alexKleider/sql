@@ -20,10 +20,11 @@ class Holder(object):
     def inc_n_instances(cls):
         cls.n_instances += 1
 
-    def __init__(self):
+    def __init__(self, which):
         if self.n_instances > 0:
             raise NotImplementedError("Only one instance allowed.")
         self.inc_n_instances()
+        print(f"Instantiated a Holder object for {which}")
 
 ROOT = "/home/alex/Git/Sql/"
 DB = ROOT + "Secret/club.db"
@@ -34,6 +35,8 @@ mooring_file = "Secret/mooring_list.txt"
 
 ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 
+## Wouldn't need the followng ..keys tuples
+## if/when use sqlAlchemy
 peopleDB_keys = (
     "first",         # 0
     "last",          # 1
