@@ -619,9 +619,31 @@ def get_emailing_dict(personID):
     return routines.fetch(query_file,
             params=(personID, )   )
 
-def prepare_mailing(which):
-    holder = club.Holder(which)
-    print(f"'prepare_mailing' is working on '{which}'.")
+
+def prepare_mailing(holder):
+    """
+    Early stages of development: assume doing dues & fees.
+    """
+    ret = []
+    ## assign printer to use...
+#   print("About to call content.assign_printer")
+#   content.assign_printer(holder)  # as yet unresolved bug!!
+    menu = routines.get_menu_dict(content.printers.keys())
+    print("Printer to use...")
+    for key, lpr in menu.items():
+        print(f"{key}: {lpr}")
+    index = int(input("Which printer to use? "))
+    holder.printer = menu[index]
+    ret.append(
+        f"          for 'printer'.. {index:>3}: {holder.printer}")
+
+    ## assign letter template...
+#   print(f"holder.which evaluates to {holder.which}")
+    ## first_notice
+    holder.letter_template = content.prepare_letter_template(
+            content.content_types[holder.which],
+            content.printers[holder.printer])
+#   print(f"'prepare_mailing' is working on '{holder.which}'.")
     # first let's retrieve personID for each person who owes
     # putting their relevant data into a dict keyed by ID.
     byID = dict()
@@ -645,9 +667,9 @@ def prepare_mailing(which):
         _ = byID.setdefault(tup[0], {})
         byID[tup[0]]['mooring'] = tup[1]
     # return what's been collected:
-    ret = []
-    for key, value in byID.items():
-        ret.append(f"{key}: {repr(value)}")
+    holder.owed_by_id = byID
+#   for key, value in byID.items():
+#       ret.append(f"{key}: {repr(value)}")
     return ret
 
 
@@ -670,10 +692,11 @@ def prepare_mailing_cmd():
     response = input("Choose letter type (0 to quit): ")
     if response and response[0] in '0qQ':
         return(["Quiting per your choice", ])
-    which = menu[int(response)]
-    ret = [f"Your choice: {response:>3}: {which}", ]
-    ret.extend(prepare_mailing(which))
-#   for key, value in content.content_types[which].items():
+    holder = club.Holder()
+    holder.which = menu[int(response)]
+    ret = [f"Your choice for 'which'.. {response:>3}: {holder.which}", ]
+    ret.extend(prepare_mailing(holder))
+#   for key, value in content.content_types[holder.which].items():
 #       ret.append(f"%% {key:>13} %%: {value}")
     return ret
 

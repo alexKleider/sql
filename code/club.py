@@ -20,11 +20,10 @@ class Holder(object):
     def inc_n_instances(cls):
         cls.n_instances += 1
 
-    def __init__(self, which):
+    def __init__(self):
         if self.n_instances > 0:
             raise NotImplementedError("Only one instance allowed.")
         self.inc_n_instances()
-        print(f"Instantiated a Holder object for {which}")
 
 ROOT = "/home/alex/Git/Sql/"
 DB = ROOT + "Secret/club.db"

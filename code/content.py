@@ -13,7 +13,7 @@ with those names as keys and the methods as values.
 A number of 'dict's are being used:
     letter_bodies
     authors: ak, membership,
-    content_types
+    content_types    # "which"
         each provides: {
             "subject":
             "from": authors["membership"],
@@ -36,26 +36,19 @@ Both the printer and the windowed envelope being used must be taken
 into consideration.
 """
 
-try:
-    from code import helpers
-except ImportError:
-    import helpers
-try:
-    from code import members
-except ImportError:
-    import members
+try: from code import helpers
+except ImportError: import helpers
+
+try: from code import members
+except ImportError: import members
+
+try: from code import routines
+except ImportError: import routines
 
 address_format = """{first} {last}
 {address}
 {town}, {state} {postal_code}
 {country}"""
-
-custom_lambdas = dict(
-    QuattroSolar=(lambda record: True if 'Quattro Solar' in
-                  record["company"] else False),
-    MarinMechanical=(lambda record: True if 'Marin Mechanical'
-                     in record["company"] else False),)
-
 
 letter_bodies_docstring = """
 Some of these 'bodies' are subject to the format method
@@ -452,7 +445,7 @@ what you are paying in order to prevent any confusion.""",
     forgive_duplicate="""This may be a duplication of an email
     already sent in which case please forgive.""",
 
-    )
+    ) # end of post_scripts
 
 authors_DOCSTRING = """   ## NOTE ##
 A "Sender:" field, determined by the --mta is added to each email at
@@ -500,7 +493,7 @@ authors = dict(  # from
         reply2="rodandboatclub@gmail.com",
         mail_signature="\nSincerely,\n\n\nAlex Kleider (Membership)",
         ),
-    )
+    )  # end of authors
 
 content_type_docstring = """
 One of the following content_types is assigned to the 'which'
@@ -904,6 +897,21 @@ printers = dict(
    )
 # ## ... end of printers (dict specifying printer being used.)
 
+def assign_printer(club):
+    """
+    """
+    # there's a bug here that hasn't been resolved
+    # inline code used in code.command.prepare_mailing
+    # rather than this function
+    _ = input("Ready to go ahead with assign_printer?")
+    print("Entering assign_printer")
+    _ = input("Should see Entering ... on line above!")
+    menu = routines.get_menu_dict(printers.keys())
+    print("Printer to use...")
+    for key, lpr in menu.items():
+        print(f"{key}: {lpr}")
+    index = int(input("Which printer will you be using: "))
+    club.printer = menu[index]
 
 def get_postscripts(which_letter):
     """
@@ -1035,11 +1043,22 @@ Please reply telling us which is the one you want the club to use.
 Thanks in advance,
 Membership"""
 
+def ck_assign_printer():
+    class Holder(object):
+        def __init__(self):
+            noval = ''
+    club = Holder()
+    assign_printer(club)
+    print(club.printer)
+    print(printers[club.printer])
+
+
 
 if __name__ == "__main__":
+    ck_assign_printer()
     # main()
-    print('\n'.join(contents()))
-    print("content.py compiles OK")
+#   print('\n'.join(contents()))
+#   print("content.py compiles OK")
 else:
     def print(*args, **kwargs):
         pass
