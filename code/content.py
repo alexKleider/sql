@@ -45,7 +45,7 @@ except ImportError: import members
 try: from code import routines
 except ImportError: import routines
 
-address_format = """{first} {last}
+address_format = """{first} {last}{suffix}
 {address}
 {town}, {state} {postal_code}
 {country}"""
@@ -457,6 +457,7 @@ authors = dict(  # from
     bc=dict(  # AK in British Columbia
         first="Alex",
         last="Kleider",
+        suffix="",
         address="3727 Cavin Rd.",
         town="Duncan",
         state="BC",
@@ -470,6 +471,7 @@ authors = dict(  # from
     ak=dict(  # AK in Bolinas
         first="Alex",
         last="Kleider",
+        suffix="",
         address="PO Box 277",
         town="Bolinas",
         state="CA",
@@ -483,6 +485,7 @@ authors = dict(  # from
     membership=dict(  # Membership Chair
         first="Bolinas",
         last="Rod & Boat Club",
+        suffix="",
         address="PO Box 248",
         town="Bolinas",
         state="CA",
@@ -845,7 +848,7 @@ content_types = dict(  # which_letter
 
     )
 # ... end of content_types.
-ctypes = [key for key in content_types.keys()]
+ctypes = sorted([key for key in content_types.keys()])
 
 printers = dict(
     # tuples in the case of envelope windows.
@@ -948,7 +951,7 @@ def prepare_letter_template(which_letter, lpr):
     try:
         ret.append(which_letter["salutation"] + "\n")
     except KeyError:
-        ret.append("Dear {first} {last},\n")
+        ret.append("Dear {first} {last}{suffix},\n")
     # body of letter (with or without {extra}(s))
     ret.append(which_letter["body"])
     # signarue:
@@ -964,7 +967,7 @@ def prepare_email_template(which_letter):
     Used by utils.prepare_mailing_cmd,
     Format fields are subsequently filled by **record.
     """
-    ret = ["Dear {first} {last},"]
+    ret = ["Dear {first} {last}{suffix},"]
     ret.append(which_letter["body"])
     ret.append(which_letter["from"]["email_signature"])
     ret.extend(get_postscripts(which_letter))
@@ -1010,6 +1013,7 @@ def main():
     rec = dict(
         first="Jane",
         last="Doe",
+        suffix=" Jr",
         address="nnn An Ave.",
         town="Any Town",
         postal_code="CODE",

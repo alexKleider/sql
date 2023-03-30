@@ -619,13 +619,9 @@ def get_emailing_dict(personID):
     return routines.fetch(query_file,
             params=(personID, )   )
 
-
-def prepare_mailing(holder):
-    """
-    Early stages of development: assume doing dues & fees.
-    """
+def assign_printer(holder):
+    """ assign printer to use..."""
     ret = []
-    ## assign printer to use...
 #   print("About to call content.assign_printer")
 #   content.assign_printer(holder)  # as yet unresolved bug!!
     menu = routines.get_menu_dict(content.printers.keys())
@@ -636,16 +632,32 @@ def prepare_mailing(holder):
     holder.printer = menu[index]
     ret.append(
         f"          for 'printer'.. {index:>3}: {holder.printer}")
+    return ret
 
-    ## assign letter template...
-#   print(f"holder.which evaluates to {holder.which}")
-    ## first_notice
+
+def assign_templates(holder):
+    """ assign letter template..."""
+    ret = []
+    ret.append("letter_template follows...")
     holder.letter_template = content.prepare_letter_template(
             content.content_types[holder.which],
             content.printers[holder.printer])
-#   print(f"'prepare_mailing' is working on '{holder.which}'.")
-    # first let's retrieve personID for each person who owes
-    # putting their relevant data into a dict keyed by ID.
+    ret.append(holder.letter_template)
+    ret.append("...end of letter_template for '{holder.which}'.")
+    ret.append("emal_template follows...")
+    holder.email_template = content.prepare_email_template(
+            content.content_types[holder.which])
+    ret.append(holder.email_template)
+    ret.append("...end of email_template for '{holder.which}'.")
+    return ret
+
+def assign_owing(holder):
+    """
+    Assigns holder.owed_by_id dict:
+    Retrieve personID for each person who owes
+    putting their relevant data into a dict keyed by ID.
+    """
+    ret = []
     byID = dict()
     # dues owing:
     for tup in (routines.fetch("Sql/dues.sql")):
@@ -668,6 +680,31 @@ def prepare_mailing(holder):
         byID[tup[0]]['mooring'] = tup[1]
     # return what's been collected:
     holder.owed_by_id = byID
+    return ret
+
+
+def prepare_invoice(holder, personID):
+    """
+    holder.owed_by_id has already been assigned
+    returns an iterable of strings that when '\n'.joined
+    provides an invoice statement.
+    """
+    total = 0
+    invoice = [f"Statement as of {helpers.today}:",]]
+    for key, value in holder.owed_by_id[personID].items():
+        invoice.append(f"    {key:<10} {value}")
+        total += value
+    invoice.append(f"        Total: ${total}")
+    return invoice
+
+
+def prepare_mailing(holder):
+    """
+    Early stages of development: assume doing dues & fees.
+    """
+    ret = []
+    ret.extend(assign_printer(holder))
+    ret.extend(assign_templates(holder))
 #   for key, value in byID.items():
 #       ret.append(f"{key}: {repr(value)}")
     return ret
@@ -678,23 +715,16 @@ def prepare_mailing_cmd():
     Sets up & then calls prepare_mailing
     """
     # Determine content type desired...
-    menu = {}
-    n_types = len(content.ctypes)
-    choices = sorted(content.ctypes)
-    numbered_letters = zip(range(1, n_types+1), choices)
-    ret = ['  0: Quit',]
-    for key, letter_key in numbered_letters:
-        # remember: key is an int! (not a string)
-        menu[key] = letter_key
-        ret.append(f"{key:>3}: {letter_key}")
-    for item in ret:
-        print(item)
-    response = input("Choose letter type (0 to quit): ")
-    if response and response[0] in '0qQ':
-        return(["Quiting per your choice", ])
     holder = club.Holder()
-    holder.which = menu[int(response)]
+    ret = []
+    response = routines.get_menu_response(content.ctypes)
+    if response == 0:
+        ret.append("Quiting per your choice")
+        return
+    holder.which = content.ctypes[response-1]
     ret = [f"Your choice for 'which'.. {response:>3}: {holder.which}", ]
+    # which letter has been established & conveyed to the holder
+    # hand control over to prepare_mailing...
     ret.extend(prepare_mailing(holder))
 #   for key, value in content.content_types[holder.which].items():
 #       ret.append(f"%% {key:>13} %%: {value}")

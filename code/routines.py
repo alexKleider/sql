@@ -96,7 +96,24 @@ def get_menu_dict(items):
     menu = dict()
     for key, item in z:
         menu[key] = item
+    # remember: key is an int! (not a string)
+    # '0' is reserved for Q)uit.
     return menu
+
+def get_menu_response(items, header=None, incl0=True):
+    menu = get_menu_dict(items)
+#   _ = input(menu)
+    while True:
+        if header: display = [header, ]
+        else: display = []
+        if incl0: display.append('  0: Q)uit')
+        for key, value in menu.items():
+            display.append(f"{key:>3}: {value}")
+        print('\n'.join(display))
+        response = int(input("Choice (must be an integer): "))
+        if response>=0 and response<=(len(items)+1):
+            return response
+
 
 
 def get_query(sql_source_file, values=None):
