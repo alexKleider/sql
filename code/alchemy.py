@@ -34,19 +34,13 @@ AlchemyDB = "sqlite+pysqlite:///" + club.DB
 query = "SELECT statusID, key, text FROM Stati;"
 
 
-def getting(query, dic=None):
-    engine = sqlalchemy.create_engine(AlchemyDB
-#       , echo=True
-        )
-    with engine.connect() as con:
-        if dic:
-            result = con.execute(sqlalchemy.text(query, dic))
-        else:
-            result = con.execute(sqlalchemy.text(query))
-        return result.mappings()
-
-
-def setting(query, dic=None):
+def alch(sql_source, dic=None,
+                from_file=True,
+                commit=False):
+    if from_file:
+        with open(sql_source, 'r') as infile:
+            query = infile.read()
+    else: query = sql_source
     engine = sqlalchemy.create_engine(AlchemyDB
 #       , echo=True
         )
@@ -55,15 +49,22 @@ def setting(query, dic=None):
             result = con.execute(sqlalchemy.text(query), dic)
         else:
             result = con.execute(sqlalchemy.text(query))
-        con.commit()
+        if commit:
+            con.commit()
+        else:
+            return result.mappings()
+
 
 def task1():
     query = "SELECT statusID, key, text FROM Stati;"
-    for entry in getting(query):
+    for entry in alch(query, from_file=False):
         for key in entry.keys():
             print(f"{entry[key]:<12}",end='')
         print()
 #   con.commit()  # needed if changing (vs querying) data
+
+
+
 
 def task2():
     insert_query = """
@@ -76,13 +77,21 @@ def task2():
     params = {'meeting3': '230303',
         'personID': 143,
         }
-    setting(insert_query, dic=params) 
+    alch(insert_query, dic=params, from_file=False,
+            commit=True) 
 
-def get_dues():
+def get_dues(owing_only=False):
+    """
+    """
     query = """
     SELECT personID, dues_owed FROM Dues;
     """
-    return getting(query)
+    if owing_only:
+        query = """
+    SELECT personID, dues_owed FROM Dues
+    WHERE NOT dues_owed <= 0;
+    """
+    return alch(query, from_file=False)
 
 def show_dues_owing():
     for d in get_dues():
@@ -92,7 +101,7 @@ def get_dock_fees_owed():
     query = """
     SELECT personID, cost FROM Dock_Privileges;
     """
-    return getting(query)
+    return alch(query, from_file=False)
 
 def show_dock_fees_owed():
     for d in get_dock_fees_owed():
@@ -102,7 +111,7 @@ def get_kayak_fees_owed():
     query = """
     SELECT personID, slot_cost FROM Kayak_Slots;
     """
-    return getting(query)
+    return alch(query, from_file=False)
 
 def show_kayak_fees_owed():
     for d in get_kayak_fees_owed():
@@ -110,9 +119,10 @@ def show_kayak_fees_owed():
 
 def get_mooring_fees_owed():
     query = """
-    SELECT personID, mooring_cost FROM Moorings;
+    SELECT personID, mooring_cost FROM Moorings
+    WHERE NOT personID = '';
     """
-    return getting(query)
+    return alch(query, from_file=False)
 
 def show_mooring_fees_owed():
     for d in get_mooring_fees_owed():

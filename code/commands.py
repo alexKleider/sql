@@ -139,11 +139,8 @@ def update_people_cmd():
 
 def add2dues_cmd():
     """
-    UPDATE Dues SET dues_owed = dues_owed + 100
-    -- WHERE id = 1
-    ;
+    A one time only: add $100 to every one's dues.
     """
-    # Add same to every entry since all are members.
     query = """
         UPDATE Dues SET dues_owed = dues_owed + 100;
         """
@@ -700,6 +697,7 @@ def prepare_invoice(holder, personID):
 
 def prepare_mailing(holder):
     """
+    Populates attributes 'holder'.
     Early stages of development: assume doing dues & fees.
     """
     ret = []
@@ -810,7 +808,7 @@ def add_date_cmd():
     ret.append(repr(params))
     r = input("Continue? (y/n): ")
     if r and r[0] in 'yY': 
-        alchemy.setting(query, dic=params) 
+        alchemy.alch(query, dic=params, from_file=False) 
     else:
         ret.append('Aborting...')
     return ret

@@ -2,6 +2,9 @@
 
 # File: code/members.py   # Note: trailing 's'.
 
+try: from code import routines
+except ImportError: import routines
+
 """
 Under old system we had a "member" (no trailing 's') module.
 This will replace it for the current system.
@@ -46,6 +49,43 @@ STATUS_KEY_VALUES = {   # Hope this can be redacted
 '''
 
 SEPARATOR = '|'
+
+def get_owing_by_ID(holder):
+    """
+    <holder> is an instance of the code.club.Holder class
+    to which is assigned the dict attribute <owing>.
+    """
+    query = """
+    SELECT personID, dues_owed FROM Dues
+    WHERE NOT dues_owed <= 0;
+    """
+    ret = dict()
+    for personID, dues in routines.fetch(query, from_file=False):
+        ret[personID] = {'Dues': dues, }
+
+    query = """
+    SELECT personID, cost FROM Dock_Privileges;
+    """
+    for personID, cost in routines.fetch(query, from_file=False):
+        _ = ret.setdefault(personID, {})
+        ret[personID]['Dock usage fee'] = cost
+
+    query = """
+    SELECT personID, slot_cost FROM Kayak_Slots;
+    """
+    for personID, cost in routines.fetch(query, from_file=False):
+        _ = ret.setdefault(personID, {})
+        ret[personID]['Kayak storage fee'] = cost
+
+    query = """
+    SELECT personID, mooring_code, mooring_cost FROM Moorings
+    WHERE NOT personID = '';
+    """
+    for personID, code, cost in routines.fetch(
+                                    query, from_file=False):
+        _ = ret.setdefault(personID, {})
+        ret[personID][f'Mooring ({code}) fee'] = cost
+    return(ret)
 
 
 def std_mailing_func():
@@ -110,3 +150,6 @@ def is_new_member():
 def is_terminated():
     pass
 
+if __name__ == '__main__':
+    for key, value in get_owing_by_ID(None).items():
+        print(key, value)
