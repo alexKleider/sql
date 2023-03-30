@@ -5,6 +5,9 @@
 try: from code import routines
 except ImportError: import routines
 
+try: from code import helpers
+except ImportError: import helpers
+
 """
 Under old system we had a "member" (no trailing 's') module.
 This will replace it for the current system.
@@ -151,5 +154,14 @@ def is_terminated():
     pass
 
 if __name__ == '__main__':
-    for key, value in get_owing_by_ID(None).items():
-        print(key, value)
+    owing_by_ID = get_owing_by_ID(None)
+#   for key, value in get_owing_by_ID(None).items():
+#       print(key, value)
+    for key, value in owing_by_ID.items():
+        total = 0
+        statement = [f'Statement (for {key}) as of {helpers.date}', ]
+        for item, cost in value.items():
+            total += cost
+            statement.append(f"{item:>20}: ${cost}")
+        statement.append(f"                 TOTAL:  ${total}")
+        _ = input('\n'.join(statement))
