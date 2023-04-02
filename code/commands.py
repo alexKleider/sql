@@ -616,11 +616,10 @@ def get_emailing_dict(personID):
     return routines.fetch(query_file,
             params=(personID, )   )
 
-def assign_printer(holder):
-    """ assign printer to use..."""
+
+def assign_templates(holder):
+    """ assign printer & templates..."""
     ret = []
-#   print("About to call content.assign_printer")
-#   content.assign_printer(holder)  # as yet unresolved bug!!
     menu = routines.get_menu_dict(content.printers.keys())
     print("Printer to use...")
     for key, lpr in menu.items():
@@ -629,21 +628,15 @@ def assign_printer(holder):
     holder.printer = menu[index]
     ret.append(
         f"          for 'printer'.. {index:>3}: {holder.printer}")
-    return ret
-
-
-def assign_templates(holder):
-    """ assign letter template..."""
-    ret = []
     ret.append("letter_template follows...")
     holder.letter_template = content.prepare_letter_template(
-            content.content_types[holder.which],
+            holder.which,
             content.printers[holder.printer])
     ret.append(holder.letter_template)
     ret.append("...end of letter_template for '{holder.which}'.")
-    ret.append("emal_template follows...")
+    ret.append("email_template follows...")
     holder.email_template = content.prepare_email_template(
-            content.content_types[holder.which])
+            holder.which)
     ret.append(holder.email_template)
     ret.append("...end of email_template for '{holder.which}'.")
     return ret
@@ -687,43 +680,50 @@ def prepare_invoice(holder, personID):
     provides an invoice statement.
     """
     total = 0
-    invoice = [f"Statement as of {helpers.today}:",]]
+    invoice = [f"Statement as of {helpers.today}:", ]
     for key, value in holder.owed_by_id[personID].items():
         invoice.append(f"    {key:<10} {value}")
         total += value
     invoice.append(f"        Total: ${total}")
     return invoice
 
-
-def prepare_mailing(holder):
-    """
-    Populates attributes 'holder'.
-    Early stages of development: assume doing dues & fees.
-    """
+def run_funcs(holder):
     ret = []
-    ret.extend(assign_printer(holder))
-    ret.extend(assign_templates(holder))
-#   for key, value in byID.items():
-#       ret.append(f"{key}: {repr(value)}")
+    for func in holder.which["funcs"]:
+        ret.extend(func(holder))
     return ret
 
 
 def prepare_mailing_cmd():
     """
-    Sets up & then calls prepare_mailing
+    Determine content type desired...
+    establish 'which' (add 'thank') letter, 
+    & printer to be used
+    & set up holder.email&letter_templates
+    ck for 'cc', especially in response to 'sponsors'
+    & assign holder.cc if needed
+    insert checks regarding mail dir and email.json
+    then set up mailing dir and holder.emails (a
+                             list of dicts for emails)
+    Traverse records applying funcs
+      populating holder.mail_dir and holder.email list
+    Move holder.email listing into a json file (if not empty.)
+    Delete mail_dir if it's empty
     """
-    # Determine content type desired...
     holder = club.Holder()
     ret = []
     response = routines.get_menu_response(content.ctypes)
     if response == 0:
         ret.append("Quiting per your choice")
         return
-    holder.which = content.ctypes[response-1]
-    ret = [f"Your choice for 'which'.. {response:>3}: {holder.which}", ]
+    which = content.ctypes[response-1]
+    ret = [f"Your choice for 'which'.. {response:>3}: {which}", ]
     # which letter has been established & conveyed to the holder
-    # hand control over to prepare_mailing...
-    ret.extend(prepare_mailing(holder))
+    # now: establish printer to be used and assign templates
+    holder.which = content.content_types[which]
+    ret.extend(assign_templates(holder))
+
+    ret.extend(run_funcs(holder))
 #   for key, value in content.content_types[holder.which].items():
 #       ret.append(f"%% {key:>13} %%: {value}")
     return ret

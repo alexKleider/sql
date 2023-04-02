@@ -1,39 +1,44 @@
 
--- Data Base Schema  Mar 23, 2023
+-- Data Base Schema  Apr 01, 2023
 -- AKA Entity Relationship Diagram (ERD)
                                          
 
-CREATE TABLE People (                    CREATE TABLE Person_Status (
-personID INTEGER PRIMARY KEY,            personID INTEGER NOT NULL,
-first TEXT NOT NULL,                     statusID INTEGER NOT NULL,
-last TEXT NOT NULL,                      begin TEXT DEFAULT '',
-suffix TEXT DEFAULT '',                  end TEXT DEFAULT '',
-phone TEXT DEFAULT '',                   PRIMARY Key (personID,
-address TEXT DEFAULT '',                 statusID) );
-town TEXT DEFAULT '',                    
-state TEXT DEFAULT '',                   CREATE TABLE Attrition (
-postal_code TEXT DEFAULT '',             attritionID INTEGER PRIMARY KEY,
-country TEXT DEFAULT 'USA',              personID INTEGER NOT NULL,
-email TEXT DEFAULT '' );                 date TEXT DEFAULT '',
-                                         reason TEXT DEFAULT '' );
+CREATE TABLE People (                    CREATE TABLE Attrition (
+    personID INTEGER PRIMARY KEY,            attritionID INTEGER PRIMARY KEY,
+    first TEXT NOT NULL,                     personID INTEGER NOT NULL,
+    last TEXT NOT NULL,                      date TEXT DEFAULT '',
+    suffix TEXT DEFAULT '',                  reason TEXT DEFAULT '' );
+    phone TEXT DEFAULT '',               
+    address TEXT DEFAULT '',             CREATE TABLE Dues (
+    town TEXT DEFAULT '',                    personID INTEGER UNIQUE NOT NULL,
+    state TEXT DEFAULT '',                   dues_owed NUMERIC DEFAULT 100 );
+    postal_code TEXT DEFAULT '',         
+    country TEXT DEFAULT 'USA',          CREATE TABLE Dock_Privileges (
+    email TEXT DEFAULT '' );                 personID INTEGER NOT NULL UNIQUE
+                                             , cost NUMERIC DEFAULT 75 );
 CREATE TABLE Applicants (                
-applicantID INTEGER PRIMARY KEY,         CREATE TABLE Dues (
-personID INTEGER NOT NULL UNIQUE,        personID INTEGER UNIQUE NOT NULL,
-sponsor1 TEXT DEFAULT '',                dues_owed NUMERIC DEFAULT 100 );
-sponsor2 TEXT DEFAULT '',                
-app_rcvd TEXT NOT NULL,                  CREATE TABLE Dock_Privileges (
-fee_rcvd TEXT DEFAULT '',                personID INTEGER NOT NULL UNIQUE,
-meeting1 TEXT DEFAULT '',                cost NUMERIC DEFAULT 75 );
-meeting2 TEXT DEFAULT '',                
-meeting3 TEXT DEFAULT '',                CREATE TABLE Kayak_Slots (
-approved TEXT DEFAULT '',                slotID INTEGER PRIMARY KEY,
-inducted TEXT DEFAULT '',                slot_code TEXT NOT NULL UNIQUE,
-dues_paid TEXT DEFAULT '' );             slot_cost NUMERIC DEFAULT 70,
-                                         personID INTEGER );
-CREATE TABLE Stati (                     
-statusID INTEGER PRIMARY KEY,            CREATE TABLE Moorings (
-key TEXT NOT NULL,                       mooringID INTEGER PRIMARY KEY,
-text TEXT NOT NULL );                    mooring_code TEXT NOT NULL UNIQUE,
-                                         mooring_cost NUMERIC DEFAULT 0,
-                                         personID INTEGER );
-                                         
+    applicantID INTEGER PRIMARY KEY,     CREATE TABLE Kayak_Slots (
+    personID INTEGER NOT NULL UNIQUE,        slotID INTEGER PRIMARY KEY,
+    sponsor1 TEXT DEFAULT '',                slot_code TEXT NOT NULL UNIQUE,
+    sponsor2 TEXT DEFAULT '',                slot_cost NUMERIC DEFAULT 70,
+    app_rcvd TEXT NOT NULL,                  personID INTEGER );
+    fee_rcvd TEXT DEFAULT '',            
+    meeting1 TEXT DEFAULT '',            CREATE TABLE Moorings (
+    meeting2 TEXT DEFAULT '',                mooringID INTEGER PRIMARY KEY,
+    meeting3 TEXT DEFAULT '',                mooring_code TEXT NOT NULL UNIQUE,
+    approved TEXT DEFAULT '',                mooring_cost NUMERIC DEFAULT 0,
+    inducted TEXT DEFAULT '',                personID INTEGER );
+    dues_paid TEXT DEFAULT '' );         
+                                         CREATE TABLE Receipts (
+CREATE TABLE Stati (                         ReceiptID INTEGER PRIMARY KEY,
+    statusID INTEGER PRIMARY KEY,            personID INTEGER NOT NULL,
+    key TEXT NOT NULL,                       dues INTEGER DEFAULT NULL,
+    text TEXT NOT NULL );                    dock INTEGER DEFAULT NULL,
+                                             kayak INTEGER DEFAULT NULL,
+CREATE TABLE Person_Status (                 mooring INTEGER DEFAULT NULL,
+    personID INTEGER NOT NULL,               acknowledged TEXT NOT NULL
+    statusID INTEGER NOT NULL,               );
+    begin TEXT DEFAULT '',               
+    end TEXT DEFAULT '',                 
+    PRIMARY Key (personID,               
+    statusID) );                         

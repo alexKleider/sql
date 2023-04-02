@@ -12,6 +12,17 @@ It provides the <Holder> class which serves largely to keep
 track of global values.  Only one instance at a time.
 """
 
+ROOT = "/home/alex/Git/Sql/"
+DB = ROOT + "Secret/club.db"
+db_file_name = ROOT + "Secret/club.db"
+ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
+
+# the following were only for creation of DB
+dock_file = ROOT + "Secret/dock_list.txt"
+kayak_file = ROOT + "Secret/kayak_list.txt"
+mooring_file = ROOT + "Secret/mooring_list.txt"
+
+
 class Holder(object):
 
     n_instances = 0
@@ -25,14 +36,6 @@ class Holder(object):
             raise NotImplementedError("Only one instance allowed.")
         self.inc_n_instances()
 
-ROOT = "/home/alex/Git/Sql/"
-DB = ROOT + "Secret/club.db"
-db_file_name = "Secret/club.db"
-dock_file = "Secret/dock_list.txt"
-kayak_file = "Secret/kayak_list.txt"
-mooring_file = "Secret/mooring_list.txt"
-
-ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 
 ## Wouldn't need the followng ..keys tuples
 ## if/when use sqlAlchemy

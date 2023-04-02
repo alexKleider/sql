@@ -9,7 +9,8 @@ in response to a query.
 
 # getting:
 with engine.connect() as conn:
-    result = conn.execute(text("SELECT x, y FROM some_table WHERE y > :y"), {"y": 2})
+    result = conn.execute(text("SELECT x, y FROM some_table WHERE y > :y"),
+                            {"y": 2})   # paramaterizing dict
     for row in result:
         print(f"x: {row.x}  y: {row.y}")
 # execute many...
@@ -17,7 +18,7 @@ with engine.connect() as conn:
 with engine.connect() as conn:
     conn.execute(
         text("INSERT INTO some_table (x, y) VALUES (:x, :y)"),
-        [{"x": 11, "y": 12}, {"x": 13, "y": 14}],
+        [{"x": 11, "y": 12}, {"x": 13, "y": 14}],  # list of dicts
     )
     conn.commit()
 """
@@ -34,9 +35,11 @@ AlchemyDB = "sqlite+pysqlite:///" + club.DB
 query = "SELECT statusID, key, text FROM Stati;"
 
 
-def alch(sql_source, dic=None,
-                from_file=True,
-                commit=False):
+def alch(sql_source,
+        dic=None,   # a single dict for 'getting'
+                    # a list of dicts for 'setting'
+        from_file=True, # read query from a file
+        commit=False):  # set to True for 'setting'
     if from_file:
         with open(sql_source, 'r') as infile:
             query = infile.read()

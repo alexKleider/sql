@@ -1,0 +1,29 @@
+# File: plan4mailing
+
+%prepare_mailing_command(args)
+    initiate holder: holder = club.Holder()
+    %prepare4mailing(holder)
+        helpers.check_before_deletion & only then...
+        set up holder.mail_dir
+        'which' defaults to 'thank' if not specified in args
+        ck for "cc" in which.keys() (spit on ',' and 'sponsors'
+            set holder.cc_sponsors (True or False)
+            assign holder.cc
+        assign holder.json_data = [] (list of dicts for emails)
+        assign holder.lpr from args
+        assign holder.applicant_stati_set (stati containing 'a')
+        assign holder.email_template   { based on which
+        assign holder.letter_template  {  and holder.lpr
+        if holder.cc_sponsors:
+            run data.populate_sponsor_data(holder)
+            and data.populate_applicant_data(holder)
+    member.prepare_mailing(holder)
+        Traverse records applying funcs
+            populates holder.mail_dir and
+            moves json (email) data to jsonfile
+        if holder.json_data has content: dump to file
+    delete mail dir if it's empty
+    pass
+
+
+

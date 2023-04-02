@@ -1047,18 +1047,18 @@ Please reply telling us which is the one you want the club to use.
 Thanks in advance,
 Membership"""
 
-def ck_assign_printer():
-    class Holder(object):
-        def __init__(self):
-            noval = ''
-    club = Holder()
-    assign_printer(club)
-    print(club.printer)
-    print(printers[club.printer])
-
 
 
 if __name__ == "__main__":
+    def ck_assign_printer():
+        class Holder(object):
+            def __init__(self):
+                noval = ''
+        club = Holder()
+        assign_printer(club)
+        print(club.printer)
+        print(printers[club.printer])
+
     ck_assign_printer()
     # main()
 #   print('\n'.join(contents()))

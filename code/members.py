@@ -91,39 +91,52 @@ def get_owing_by_ID(holder):
     return(ret)
 
 
-def std_mailing_func():
-    pass
+def std_mailing_func(holder):
+    ret = []
+    ret.append('Running std_mailing_func.')
+    return ret
 
 
 def is_member():
     pass
 
+def tobethanked():
+    pass
+
+
 def is_angie():
     pass
 
 
-def testing_func():
-    pass
+def testing_func(holder):
+    ret = []
+    ret.append('Running testing_func.')
+    return ret
 
 
-def bad_address_mailing_func():
-    pass
+def bad_address_mailing_func(holder):
+    ret = []
+    ret.append('Running bad_address_mailing_func.')
+    return ret
 
 
 def letter_returned():
     pass
 
 
-def assign_statement2extra_func():
-    pass
+def assign_statement2extra_func(holder):
+    ret = []
+    ret.append('Running assign_statement2extra_func.')
+    return ret
 
 
 def is_dues_paying():
     pass
 
 
-def thank_func():
-    pass
+def thank_func(holder):
+    ret = ['Running thank_func', ]
+    return ret
 
 
 def not_paid_up():
@@ -153,15 +166,22 @@ def is_new_member():
 def is_terminated():
     pass
 
+def get_statement(personID, byID):
+    query = """SELECT first, last, suffix FROM People
+    WHERE personID = ?;
+    """
+    first, last, suffix = routines.fetch(query,
+            from_file=False, params=(personID, ))[0]
+    total = 0
+    statement = [f'Statement (for {first} {last}) as of {helpers.date}', ]
+    for item, cost in byID[personID].items():
+        total += cost
+        statement.append(f"{item:>20}: ${cost}")
+    statement.append(f"                 TOTAL:  ${total}")
+    return '\n'.join(statement)
+
+
 if __name__ == '__main__':
     owing_by_ID = get_owing_by_ID(None)
-#   for key, value in get_owing_by_ID(None).items():
-#       print(key, value)
-    for key, value in owing_by_ID.items():
-        total = 0
-        statement = [f'Statement (for {key}) as of {helpers.date}', ]
-        for item, cost in value.items():
-            total += cost
-            statement.append(f"{item:>20}: ${cost}")
-        statement.append(f"                 TOTAL:  ${total}")
-        _ = input('\n'.join(statement))
+    for personID in owing_by_ID.keys():
+        _ = input(get_statement(personID, owing_by_ID))
