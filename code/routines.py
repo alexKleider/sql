@@ -75,6 +75,23 @@ def fetch(sql_source, db=db_file_name,
     return ret
 
 
+def display(instance, exclude=None):
+    ret = ["Displaying..", ]
+    for item in instance.__dir__():
+        if item.startswith('__'):
+            continue
+        if item in exclude:
+            continue
+        insertion = eval(f'instance.{item}')
+        if isinstance(insertion, dict):
+            for key, value in insertion.items():
+                ret.append(f"{key}: {value}")
+            else:
+                ret.append(f"{item}: {insertion}")
+    ret.append(".. end of display.")
+    return ret
+
+
 def make_dict(keys, values):
     """
     Parameters are iterables of equal length.
@@ -115,21 +132,6 @@ def get_menu_response(items, header=None, incl0=True):
             return response
 
 
-
-def get_query(sql_source_file, values=None):
-    """
-    Reads a query from a file with option to bind values 
-    to place holders.
-    If <values> is provided: it must consist of either
-    a sequence of length to match number of qmark placeholders
-    or a dict containing all keys needed for named placeholders
-    each of which is prefaced by a colon. eg: (:key1, :key2).
-    """
-    with open(sql_source_file, 'r') as source:
-        ret = source.read()
-        if values:
-            ret = ret.format(*formatting)
-        return ret
 
 
 def execute(cursor, connection, command, params=None):
@@ -204,19 +206,6 @@ def get_people_fields_by_ID(db_file_name, fields=None):
         ret[entry[0]] = entry[1:]
     return ret
     
-
-def get_query(sql_source_file, formatting=None):
-    """
-    Reads a query from a file.
-    If <formatting> is provided: must consist of sequence of
-    length to match number of fields to be formatted.
-    """
-    with open(sql_source_file, 'r') as source:
-        ret = source.read()
-        if formatting:
-            ret = ret.format(*formatting)
-        return ret
-
 
 def get_commands(sql_file):
     """

@@ -10,6 +10,7 @@ Driver of the code is main.py
 import sqlite3
 import sys
 import csv
+
 try: from code import routines
 except ImportError: import routines
 
@@ -141,6 +142,8 @@ def add2dues_cmd():
     """
     A one time only: add $100 to every one's dues.
     """
+    return ['add2dues_cmd is a one time only!',
+            'must not run it again!!!', ]
     query = """
         UPDATE Dues SET dues_owed = dues_owed + 100;
         """
@@ -194,7 +197,7 @@ def populate_payables():
     for memID in memIDs:  # currently listed as strings (not int)
         pass
 
-    return res
+    return ret
 
 
 def id_by_name():
@@ -628,50 +631,19 @@ def assign_templates(holder):
     holder.printer = menu[index]
     ret.append(
         f"          for 'printer'.. {index:>3}: {holder.printer}")
-    ret.append("letter_template follows...")
     holder.letter_template = content.prepare_letter_template(
             holder.which,
             content.printers[holder.printer])
-    ret.append(holder.letter_template)
+    ret.append("letter_template NOT SHOWN...")
+#   ret.append(holder.letter_template)
     ret.append("...end of letter_template for '{holder.which}'.")
-    ret.append("email_template follows...")
     holder.email_template = content.prepare_email_template(
             holder.which)
-    ret.append(holder.email_template)
+#   ret.append("email_template follows...")
+    ret.append("email_template DOESN'T follow...")
+#   ret.append(holder.email_template)
     ret.append("...end of email_template for '{holder.which}'.")
     return ret
-
-def assign_owing(holder):
-    """
-    Assigns holder.owed_by_id dict:
-    Retrieve personID for each person who owes
-    putting their relevant data into a dict keyed by ID.
-    """
-    ret = []
-    byID = dict()
-    # dues owing:
-    for tup in (routines.fetch("Sql/dues.sql")):
-        byID[tup[0]] = {'first': tup[1],
-                        'last': tup[2],
-                        'suffix': tup[3],
-                        'dues_owed': tup[4],
-                        }
-    # dock privileges owing:
-    for tup in routines.fetch("Sql/dock.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['dock'] = tup[1]
-    # kayak storage owing:
-    for tup in routines.fetch("Sql/kayak.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['kayak'] = tup[1]
-    # mooring fee owing:
-    for tup in routines.fetch("Sql/mooring.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['mooring'] = tup[1]
-    # return what's been collected:
-    holder.owed_by_id = byID
-    return ret
-
 
 def prepare_invoice(holder, personID):
     """
@@ -686,12 +658,6 @@ def prepare_invoice(holder, personID):
         total += value
     invoice.append(f"        Total: ${total}")
     return invoice
-
-def run_funcs(holder):
-    ret = []
-    for func in holder.which["funcs"]:
-        ret.extend(func(holder))
-    return ret
 
 
 def prepare_mailing_cmd():
@@ -722,10 +688,11 @@ def prepare_mailing_cmd():
     # now: establish printer to be used and assign templates
     holder.which = content.content_types[which]
     ret.extend(assign_templates(holder))
+#   ret.extend(routines.display(holder,
+#       exclude=('email_template', 'letter_template', )))
 
-    ret.extend(run_funcs(holder))
-#   for key, value in content.content_types[holder.which].items():
-#       ret.append(f"%% {key:>13} %%: {value}")
+    for func in holder.which['holder_funcs']:
+        ret.extend(func(holder))
     return ret
 
 

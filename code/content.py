@@ -39,11 +39,14 @@ into consideration.
 try: from code import helpers
 except ImportError: import helpers
 
-try: from code import members
-except ImportError: import members
-
 try: from code import routines
 except ImportError: import routines
+
+try: from code import club
+except ImportError: import club
+
+try: from code import members
+except ImportError: import members
 
 address_format = """{first} {last}{suffix}
 {address}
@@ -627,6 +630,7 @@ content_types = dict(  # which_letter
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
+        "holder_funcs": (club.assign_owing,),
         "funcs": (members.assign_statement2extra_func,
                   members.std_mailing_func),
         "test": lambda record: True if (

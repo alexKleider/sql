@@ -12,6 +12,9 @@ It provides the <Holder> class which serves largely to keep
 track of global values.  Only one instance at a time.
 """
 
+try: from code import routines
+except ImportError: import routines
+
 ROOT = "/home/alex/Git/Sql/"
 DB = ROOT + "Secret/club.db"
 db_file_name = ROOT + "Secret/club.db"
@@ -74,6 +77,46 @@ date_keys = applicantDB_keys[6:10]
 sponsor_keys = applicantDB_keys[2:4]
 
 yearly_dues = 200
+
+
+def assign_owing(holder):
+    """
+    Assigns holder.owed_by_id dict:
+    Retrieve personID for each person who owes
+    putting their relevant data into a dict keyed by ID.
+    """
+    ret = []
+    byID = dict()
+    # dues owing:
+    for tup in (routines.fetch("Sql/dues.sql")):
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'email': tup[4],
+                        'address': tup[5],
+                        'town': tup[6],
+                        'state': tup[7],
+                        'postal_code': tup[8],
+                        'dues_owed': tup[9],
+                        }
+    # dock privileges owing:
+    for tup in routines.fetch("Sql/dock.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['dock'] = tup[1]
+    # kayak storage owing:
+    for tup in routines.fetch("Sql/kayak.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['kayak'] = tup[1]
+    # mooring fee owing:
+    for tup in routines.fetch("Sql/mooring.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['mooring'] = tup[1]
+    # return what's been collected:
+    holder.owed_by_id = byID
+    for key, value in byID.items():
+        values = [val for val in value.values()]
+        ret.append(f"{key}: {values}")
+    return ret
 
 
 if __name__ == '__main__':
