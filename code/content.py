@@ -513,10 +513,12 @@ attribute of an instance of utils.Club for mailing purposes.
       body: text of the letter which may or may not have
           one or more 'extra' sections.
       post_scripts:  a list of optional postscripts
-      funcs: a list of functions used on each record during
-          the data gathering traversal of the membership csv.
+      holder_funcs: assign 'working_data' attribute to holder.
+      funcs: a list of functions used on each record found
+            in holder.working_data
       test: a (usually 'lambda') function that determines
           if the record is to be considered at all.
+          Probably will be redacted
       e_and_or_p: possibilities are:
           'both' email and usps,
           'email' email only,
@@ -579,7 +581,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             ),
-        "funcs": (members.assign_statement2extra_func,
+        "funcs": (
                   members.std_mailing_func),
         "test": members.is_dues_paying,
         "e_and_or_p": "one_only",
@@ -614,7 +616,7 @@ content_types = dict(  # which_letter
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
-        "funcs": (members.assign_statement2extra_func,
+        "funcs": (
                   members.std_mailing_func),
         "test": lambda record: True if (
             members.is_dues_paying(record) and
@@ -630,12 +632,11 @@ content_types = dict(  # which_letter
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
-        "holder_funcs": (club.assign_owing,),
-        "funcs": (members.assign_statement2extra_func,
-                  members.std_mailing_func),
-        "test": lambda record: True if (
-            members.is_dues_paying(record)
-            ) else False,
+        "holder_funcs": (club.assign_owing, ),
+        "funcs": (members.send_statements, ),
+#       "test": lambda record: True if (
+#           members.is_dues_paying(record)
+#           ) else False,
         "e_and_or_p": "one_only",
         },
     June_request={
@@ -647,7 +648,7 @@ content_types = dict(  # which_letter
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
-        "funcs": (members.assign_statement2extra_func,
+        "funcs": (
                   members.std_mailing_func),
         "test": lambda record: True if (
             members.is_dues_paying(record)
@@ -662,7 +663,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["ref1_email_or_PO"],
             ),
-        "funcs": (members.assign_statement2extra_func,
+        "funcs": (
                   members.std_mailing_func),
         "test": lambda record: True if (
             members.is_dues_paying(record) and
@@ -678,7 +679,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["ref1_email_or_PO"],
             ),
-        "funcs": (members.assign_statement2extra_func,
+        "funcs": (
                   members.std_mailing_func),
         "test": lambda record: True if (
             members.is_dues_paying(record) and
@@ -694,7 +695,7 @@ content_types = dict(  # which_letter
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
-        "funcs": (members.assign_statement2extra_func,
+        "funcs": (
                   members.std_mailing_func),
         "test": lambda record: True if (
             members.is_dues_paying(record) and
@@ -710,7 +711,7 @@ content_types = dict(  # which_letter
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
-        "funcs": (members.assign_statement2extra_func,
+        "funcs": (
                   members.std_mailing_func),
         "test": lambda record: True if (
             members.is_dues_paying(record) and

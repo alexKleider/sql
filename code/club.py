@@ -81,7 +81,7 @@ yearly_dues = 200
 
 def assign_owing(holder):
     """
-    Assigns holder.owed_by_id dict:
+    Assigns holder.working_data dict:
     Retrieve personID for each person who owes
     putting their relevant data into a dict keyed by ID.
     """
@@ -97,7 +97,8 @@ def assign_owing(holder):
                         'town': tup[6],
                         'state': tup[7],
                         'postal_code': tup[8],
-                        'dues_owed': tup[9],
+                        'country': tup[9],
+                        'dues_owed': tup[10],
                         }
     # dock privileges owing:
     for tup in routines.fetch("Sql/dock.sql"):
@@ -111,11 +112,39 @@ def assign_owing(holder):
     for tup in routines.fetch("Sql/mooring.sql"):
         _ = byID.setdefault(tup[0], {})
         byID[tup[0]]['mooring'] = tup[1]
-    # return what's been collected:
-    holder.owed_by_id = byID
+    # save what's been collected: (non need for this!)
+    holder.working_data = byID
+    # the next phrase is for ret (report) only...
     for key, value in byID.items():
         values = [val for val in value.values()]
         ret.append(f"{key}: {values}")
+    # working_data attribute has been assigned (but not needed!)
+    # Now ready to send letters:
+    for dic in byID.values():  # one for each billing
+        total = 0
+        key_set = set(dic.keys())
+        statement = ['Statement:',]
+        if 'dues_owed' in key_set:
+            total += dic['dues_owed']
+            statement.append("Dues...............${:3}"
+                    .format(dic['dues_owed']))
+        if 'dock' in key_set:
+            total += dic['dock']
+            statement.append("Dock Usage fee.....${:3}"
+                    .format(dic['dock']))
+        if 'kayak' in key_set:
+            total += dic['kayak']
+            statement.append("Kayak Storage fee..${:3}"
+                    .format(dic['kayak']))
+        if 'mooring' in key_set:
+            total += dic['mooring']
+            statement.append("Mooring fee........${:3}"
+                    .format(dic['mooring']))
+        statement.append(    "TOTAL...................${}\n"
+                    .format(total))
+        letter = holder.which['body'].format(
+                            **{'extra': '\n'.join(statement)})
+        _ = input(letter)
     return ret
 
 

@@ -692,7 +692,12 @@ def prepare_mailing_cmd():
 #       exclude=('email_template', 'letter_template', )))
 
     for func in holder.which['holder_funcs']:
+        # assigns holder.working_data
+        # will probably end up only needing one 
         ret.extend(func(holder))
+    for dic in holder.working_data.values():
+        for func in holder.which['funcs']:
+            ret.extend(func(holder, dic))
     return ret
 
 

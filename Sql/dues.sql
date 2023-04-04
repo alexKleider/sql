@@ -1,7 +1,7 @@
 /* Sql/dues.sql */
 /* wording on query to collect dues & fees outstanding */
 SELECT P.personID, P.first, P.last, P.suffix, P.email,
-        P.address, P.town, P.state, P.postal_code,
+        P.address, P.town, P.state, P.postal_code, P.country,
         D.dues_owed
 FROM People as P
 JOIN Dues as D
