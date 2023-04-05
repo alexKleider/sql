@@ -628,20 +628,21 @@ def assign_templates(holder):
     for key, lpr in menu.items():
         print(f"{key}: {lpr}")
     index = int(input("Which printer to use? "))
-    holder.printer = menu[index]
+    lpr = menu[index]
     ret.append(
-        f"          for 'printer'.. {index:>3}: {holder.printer}")
+        f"          for 'printer'.. {index:>3}: {lpr}")
+    holder.lpr = content.printers[lpr]
     holder.letter_template = content.prepare_letter_template(
             holder.which,
-            content.printers[holder.printer])
-    ret.append("letter_template NOT SHOWN...")
-#   ret.append(holder.letter_template)
+            holder.lpr)
+#   ret.append("letter_template NOT SHOWN...")
+    ret.append(holder.letter_template)
     ret.append("...end of letter_template for '{holder.which}'.")
     holder.email_template = content.prepare_email_template(
             holder.which)
-#   ret.append("email_template follows...")
-    ret.append("email_template DOESN'T follow...")
-#   ret.append(holder.email_template)
+    ret.append("email_template follows...")
+#   ret.append("email_template DOESN'T follow...")
+    ret.append(holder.email_template)
     ret.append("...end of email_template for '{holder.which}'.")
     return ret
 
@@ -662,10 +663,6 @@ def prepare_invoice(holder, personID):
 
 def prepare_mailing_cmd():
     """
-    Determine content type desired...
-    establish 'which' (add 'thank') letter, 
-    & printer to be used
-    & set up holder.email&letter_templates
     ck for 'cc', especially in response to 'sponsors'
     & assign holder.cc if needed
     insert checks regarding mail dir and email.json
@@ -682,22 +679,31 @@ def prepare_mailing_cmd():
     if response == 0:
         ret.append("Quiting per your choice")
         return
-    which = content.ctypes[response-1]
-    ret = [f"Your choice for 'which'.. {response:>3}: {which}", ]
+    w_key = content.ctypes[response-1]  # which_key
+    ret = [
+        f"Your choice for 'w_key'.. {response:>3}: {w_key}", ]
+    holder.which = content.content_types[w_key]
     # which letter has been established & conveyed to the holder
     # now: establish printer to be used and assign templates
-    holder.which = content.content_types[which]
     ret.extend(assign_templates(holder))
-#   ret.extend(routines.display(holder,
-#       exclude=('email_template', 'letter_template', )))
-
+    holder.letter_template = content.prepare_letter_template(
+            holder.which, holder.lpr)
+    holder.email_template = content.prepare_email_template(
+            holder.which)
+#   d = [item for item in holder.__dict__.keys()
+#           if not '__' in item]
+#   _ = input(f"{d}")
+    holder.emails = []
     for func in holder.which['holder_funcs']:
         # assigns holder.working_data
         # will probably end up only needing one 
         ret.extend(func(holder))
     for dic in holder.working_data.values():
         for func in holder.which['funcs']:
+            # first_notice: members.send_statement(holder, dic)
             ret.extend(func(holder, dic))
+    # send holder.emails to a json file
+    helpers.dump2json_file(holder.emails, holder.email_json)
     return ret
 
 

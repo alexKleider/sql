@@ -533,6 +533,11 @@ def show_json_data(json_data, underlinechar=''):
     return collector
 
 
+def send2file(text, filename):
+    with open(filename, 'w') as outfile:
+        outfile.write(text)
+
+
 def store(collector, filename):
     """
     Sends contents of <collector> (json format) to <filename>.
@@ -544,7 +549,6 @@ def store(collector, filename):
 
 def dump2json_file(data, json_file, verbose=True):
     """
-    !?UNUSED?!  Redact?!
     """
     with open(json_file, "w") as json_file_obj:
         if verbose:

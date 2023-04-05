@@ -19,6 +19,8 @@ ROOT = "/home/alex/Git/Sql/"
 DB = ROOT + "Secret/club.db"
 db_file_name = ROOT + "Secret/club.db"
 ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
+MAIL_DIR = ROOT + 'Secret/MailDir'
+EMAIL_JSON = ROOT + 'Secret/emails.json'
 
 # the following were only for creation of DB
 dock_file = ROOT + "Secret/dock_list.txt"
@@ -38,6 +40,9 @@ class Holder(object):
         if self.n_instances > 0:
             raise NotImplementedError("Only one instance allowed.")
         self.inc_n_instances()
+        self.cc_sponsors = False
+        self.mail_dir = MAIL_DIR
+        self.email_json = EMAIL_JSON
 
 
 ## Wouldn't need the followng ..keys tuples
@@ -142,9 +147,9 @@ def assign_owing(holder):
                     .format(dic['mooring']))
         statement.append(    "TOTAL...................${}\n"
                     .format(total))
-        letter = holder.which['body'].format(
-                            **{'extra': '\n'.join(statement)})
-        _ = input(letter)
+        dic['statement'] =  '\n'.join(statement)
+        letter = holder.letter_template.format(**dic)
+#       _ = input(letter)
     return ret
 
 

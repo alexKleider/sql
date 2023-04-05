@@ -191,7 +191,7 @@ year appears bellow.  (If you've any reason to believe that
 our accounting might be in error, please let us know[1].)
 If the total is zero (or negative) you're all paid up (or more
 than paid up) for the upcoming year and we thank you.
-{{extra}}""".format(helpers.club_year(which='next')),
+{{statement}}""".format(helpers.club_year(which='next')),
 
     # Send with June minutes:
     June_request="""
@@ -633,7 +633,7 @@ content_types = dict(  # which_letter
             post_scripts["ref1_email_or_PO"],
             ),
         "holder_funcs": (club.assign_owing, ),
-        "funcs": (members.send_statements, ),
+        "funcs": (members.send_statement, ),
 #       "test": lambda record: True if (
 #           members.is_dues_paying(record)
 #           ) else False,
