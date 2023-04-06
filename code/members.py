@@ -211,17 +211,24 @@ def send_statement(holder, data):
     and emails are added to holder.emails
     """
     ret = []
-    ret.append('Running send_statements...')
+#   ret.append('Running send_statements...')
     letter = holder.letter_template.format(**data)
     suffix = data['suffix'].strip()
     if suffix: filename = (
         f"{data['last']}_{data['first']}_{suffix}")
     else: filename = f"{data['last']}_{data['first']}"
 #   _ = input(f"filename: {filename}")
-    # file letter into MailDir
+    # indent and then file letter into MailDir
+    letter = letter.split('\n')
+    letter = [" "*holder.lpr['indent'] + line if line
+            else line for line in letter]
+    letter = '\n'.join(letter)
 ############ uncomment next 2 lines ############
 #   helpers.send2file(letter, 
 #           os.path.join(holder.mail_dir, filename))
+    if "Kleider" in filename:
+        helpers.send2file(letter, 
+            os.path.join(holder.mail_dir, filename))
     email_body = holder.email_template.format(**data)
 #   =========================
     sender = holder.which['from']['email']
@@ -254,7 +261,9 @@ def send_statement(holder, data):
     if club.bcc:
         email['Bcc'] = club.bcc
     """
-    holder.emails.append(email)
+#   holder.emails.append(email)
+    if 'kleider' in data['email']:
+        holder.emails.append(email)
     return ret
 
 
