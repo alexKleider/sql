@@ -1,29 +1,8 @@
 #!/usr/bin/env python3
 
-# File: send.py
-
-## Three hard links:
-# this file is used by
-# 1. the ~/Git/Club/Utils code base where it is found
-#    as Pymail/send.py
-# 2. the ~/Git/Lib code base where it is found as
-#    code/send.py.
-# 3. the ~/Git/Sql code base where it is found as
-#    code/Pymail/send.py
-
+# File: send_emails.py
 """
 Used to send an email using Python modules only.
-
-(Utils/utils.py client knows to use this module's send
-function for sending emails when it's command line
-parameter --emailer is set to "python".)
-
-Usage:  (when used from the command line)
-  ./send.py smtp_server [JSON_FILE_NAME]
-
-Options:
-  server  can be any of the keys defined in the
-        Pymail.config.config dict.
 
 Provides send.  (when imported as a module)
 
@@ -46,13 +25,15 @@ import json
 import time
 import random
 
+import config
 try:
-    import config
-except ModuleNotFoundError:
-    try:
-        import Pymail.config as config
-    except ModuleNotFoundError:
-        from code import config
+    from code import club
+except ImportError:
+    import club
+try:
+    from code import helpers
+except ImportError:
+    import helpers
 
 MIN_TIME_TO_SLEEP = 1   #} Seconds between
 MAX_TIME_TO_SLEEP = 5   #} email postings.
@@ -212,7 +193,8 @@ def into_string(header_value):
         return ''
 
 
-def send(emails, mta, report_progress=True,
+def send(emails, mta='easy',
+                report_progress=True,
                             include_wait=True):
     """
     Sends emails using Python modules.
@@ -289,48 +271,42 @@ def send(emails, mta, report_progress=True,
         raise
     s.quit()
 
-
-def main(emails):
-    """
-    email.mime.text.MIMEText
-    email.mime.multipart.MIMEMultipart
-    """
-    pass
-
-if __name__ == "__main__":
+def test_send():
+    print("Running send_emails.py test...")
     test_body_1 = """
     This is a test using Reply-To: gmail.
     Here's hoping it goes well.
     Goog luck.
     """
 
-    argv_length = len(sys.argv)
 
-    if not argv_length > 1:
-        print("Server (MTA) not specified.")
-        sys.exit()
-    mta = sys.argv[1]
+    mta = "easy"
     if not mta in config.config:
         print("MTA server designation invalid.")
         sys.exit()
 
-    if argv_length == 3:
-        print("Second argument not yet implemented")
-        sys.exit()
-        test_emails = get_emails(sys.argv[2])
-    else:
-        test_emails = [
-            {
-            'From': 'alex@kleider.ca',
-            'Reply-To': 'alexkleider@gmail.com',
-            'To': ['akleider@sonic.net',
-                pseudo_recipient('ak', 'alexkleider@gmail.com'),
-                ],
-            'Subject': 'TEST Reply-To',
-            'attachments': [
-            '/home/alex/Downloads/book_club_2020-2021_listing.docx',],
-            'body': test_body_1,
-            },
-        ]
+    test_emails = [
+        {
+        'From': 'alex@kleider.ca',
+        'Reply-To': 'alexkleider@gmail.com',
+        'To': ['akleider@sonic.net',
+            pseudo_recipient('ak', 'alexkleider@gmail.com'),
+            ],
+        'Subject': 'TEST Reply-To',
+        'attachments': [
+        '/home/alex/Notes/Books/to-consider',],
+        'body': test_body_1,
+        },
+    ]
     send(test_emails, mta=mta)
+
+def main():
+    """
+    """
+    holder = club.Holder()
+    data = helpers.get_json(holder.email_json)
+    send(data)
+
+if __name__ == "__main__":
+    main()
 
