@@ -131,7 +131,6 @@ def file_letter(holder, data):
     if suffix: filename = (
         f"{data['last']}_{data['first']}_{suffix}")
     else: filename = f"{data['last']}_{data['first']}"
-#   _ = input(f"filename: {filename}")
     # indent and then file letter into MailDir
     letter = letter.split('\n')
     letter = [" "*holder.lpr['indent'] + line if line
@@ -207,6 +206,39 @@ def q_mailing(holder, data):
                 .format(fstrings['first_last'].format(**dic)))
 
 
+def dict_w_statement(dic):
+    """
+    Returns a new dict with 'statement' key value pair added.
+    """
+    dic_keys = dic.keys()
+    ret_dic = {}
+    for key in dic_keys:
+        ret_dic[key] = dic[key]
+    total = 0
+    key_set = set(dic_keys)
+    statement = ['Statement:',]
+    if 'dues_owed' in key_set:
+        total += ret_dic['dues_owed']
+        statement.append("Dues...............${:3}"
+                .format(ret_dic['dues_owed']))
+    if 'dock' in key_set:
+        total += ret_dic['dock']
+        statement.append("Dock Usage fee.....${:3}"
+                .format(ret_dic['dock']))
+    if 'kayak' in key_set:
+        total += ret_dic['kayak']
+        statement.append("Kayak Storage fee..${:3}"
+                .format(ret_dic['kayak']))
+    if 'mooring' in key_set:
+        total += ret_dic['mooring']
+        statement.append("Mooring fee........${:3}"
+                .format(ret_dic['mooring']))
+    statement.append(    "TOTAL...................${}\n"
+                .format(total))
+    ret_dic['statement'] =  '\n'.join(statement)
+    return ret_dic
+
+
 def send_statement(holder, data):
     """
     Assumes <holder> has attribute <working_data>
@@ -216,10 +248,12 @@ def send_statement(holder, data):
     Places letters into MailingDir
     and emails are added to holder.emails
     """
+    ###### MUST ADD A statement entry to data ########
     ret = []
+    w_statement = dict_w_statement(data)
 #   ret.append('Running send_statements...')
-    file_letter(holder, data)
-    append_email(holder, data)
+    file_letter(holder, w_statement)
+    append_email(holder, w_statement)
     return ret
 
 

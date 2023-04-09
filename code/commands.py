@@ -12,7 +12,6 @@ import sys
 import csv
 import shutil
 import sqlite3
-
 try: from code import routines
 except ImportError: import routines
 
@@ -27,6 +26,7 @@ except ImportError: import content
 
 try: from code import alchemy
 except ImportError: import alchemy
+
 
 def get_command():
     while True:
@@ -266,6 +266,12 @@ There are currently {n} members in good standing:
 
 def show_applicants():
     """
+    query_file = 'Sql/applicants2.sql' ==>
+    P.first, P.last, P.suffix,
+    P.phone, P.address, P.town, P.state, P.postal_code, P.email,
+    sponsor1, sponsor2,
+    app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
+    approved, inducted, dues_paid
     """
     headers = ('No meetings', 'Attended one meeting',    # 0, 1
         'Attended two meetings',                         # 2
@@ -705,9 +711,11 @@ def prepare_mailing_cmd():
     for func in holder.which['holder_funcs']:
         # assigns holder.working_data
         # will probably end up only needing one 
-        ret.extend(func(holder))
+        # first_notice: club.assign_owing   <<<<
+        func(holder)
+#       ret.extend(func(holder))
     for dic in holder.working_data.values():
-        for func in holder.which['funcs']:
+        for func in holder.which['funcs']:  #  vvvvv
             # first_notice: members.send_statement(holder, dic)
             ret.extend(func(holder, dic))
     # send holder.emails to a json file
@@ -789,7 +797,7 @@ def add_date_cmd():
         confirm = input(f"Is {date} correct? (y/n): ")
         if confirm and confirm[0] in 'yY':
             break
-    query = """/* Sql/insert_date.sql */
+    query = """/* Sql/set_date.sql */
     UPDATE Applicants
     SET {0:} = :{0:} 
     WHERE personID = :personID

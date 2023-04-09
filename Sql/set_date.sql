@@ -1,8 +1,7 @@
-/* Sql/insert_date.sql */
+/* Sql/set_date.sql */
 UPDATE Applicants
 SET meeting VALUES :meeting
 WHERE personID = :personID
 ;
 /* {'meeting': '230303',
-    'personID': ,
-    }
+    'personID': pIDA, } */

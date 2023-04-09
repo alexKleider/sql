@@ -6,6 +6,9 @@ Used to send an email using Python modules only.
 
 Provides send.  (when imported as a module)
 
+When run as __main__, sends emails found in the
+emails.json file defined by club.Holder().
+
 Have not yet implemented ability to use
 a second command line argument to specify
 a json file from which to load emails.

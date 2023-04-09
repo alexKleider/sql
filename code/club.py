@@ -84,43 +84,12 @@ sponsor_keys = applicantDB_keys[2:4]
 yearly_dues = 200
 
 
-def assign_owing(holder):
+redact = '''
+def add_statement2dicts(holder):
     """
-    Assigns holder.working_data dict:
-    Retrieve personID for each person who owes
-    putting their relevant data into a dict keyed by ID.
+    ??Not used??
     """
-    ret = []
-    byID = dict()
-    # dues owing:
-    for tup in (routines.fetch("Sql/dues.sql")):
-        byID[tup[0]] = {'first': tup[1],
-                        'last': tup[2],
-                        'suffix': tup[3],
-                        'email': tup[4],
-                        'address': tup[5],
-                        'town': tup[6],
-                        'state': tup[7],
-                        'postal_code': tup[8],
-                        'country': tup[9],
-                        'dues_owed': tup[10],
-                        }
-    # dock privileges owing:
-    for tup in routines.fetch("Sql/dock.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['dock'] = tup[1]
-    # kayak storage owing:
-    for tup in routines.fetch("Sql/kayak.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['kayak'] = tup[1]
-    # mooring fee owing:
-    for tup in routines.fetch("Sql/mooring.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['mooring'] = tup[1]
-    # save what's been collected: (non need for this!)
-    holder.working_data = byID
-    # the next phrase is for ret (report) only...
-    for key, value in byID.items():
+    for key, value in holder.working_data.items():
         values = [val for val in value.values()]
         ret.append(f"{key}: {values}")
     # working_data attribute has been assigned (but not needed!)
@@ -148,9 +117,48 @@ def assign_owing(holder):
         statement.append(    "TOTAL...................${}\n"
                     .format(total))
         dic['statement'] =  '\n'.join(statement)
-        letter = holder.letter_template.format(**dic)
+#       letter = holder.letter_template.format(**dic)
 #       _ = input(letter)
-    return ret
+'''
+
+
+def assign_owing(holder):
+    """
+    Assigns holder.working_data dict:
+    Retrieve personID for each person who owes
+    putting their relevant data into a dict keyed by ID.
+    """
+    byID = dict()
+    # dues owing:
+    for tup in (routines.fetch("Sql/dues.sql")):
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'email': tup[4],
+                        'address': tup[5],
+                        'town': tup[6],
+                        'state': tup[7],
+                        'postal_code': tup[8],
+                        'country': tup[9],
+                        'dues_owed': tup[10],
+                        }
+    # dock privileges owing:
+    for tup in routines.fetch("Sql/dock.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['dock'] = tup[1]
+    # kayak storage owing:
+    for tup in routines.fetch("Sql/kayak.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['kayak'] = tup[1]
+    # mooring fee owing:
+    for tup in routines.fetch("Sql/mooring.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['mooring'] = tup[1]
+    
+    # save what's been collected: (no need for this!)
+    holder.working_data = byID
+    ## holder.working_data has been assigned-
+    ## that's all this function should do!!!!!
 
 
 if __name__ == '__main__':
@@ -159,3 +167,4 @@ if __name__ == '__main__':
     print(f"applicantDB keys: {applicantDB_keys}")
     print(f"meeting keys: {date_keys}")
     print(f"sponsor keys: {sponsor_keys}")
+    print(f"appl keys: {appl_keys}")
