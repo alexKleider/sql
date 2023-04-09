@@ -630,7 +630,8 @@ def get_emailing_dict(personID):
 
 def assign_templates(holder):
     """ assign printer & templates..."""
-    ret = []
+    ret = ["Assigning printer & templates...",
+           "within code.commands.assign_templates",]
     menu = routines.get_menu_dict(content.printers.keys())
     print("Printer to use...")
     for key, lpr in menu.items():
@@ -643,15 +644,8 @@ def assign_templates(holder):
     holder.letter_template = content.prepare_letter_template(
             holder.which,
             holder.lpr)
-#   ret.append("letter_template NOT SHOWN...")
-    ret.append(holder.letter_template)
-    ret.append("...end of letter_template for '{holder.which}'.")
     holder.email_template = content.prepare_email_template(
             holder.which)
-    ret.append("email_template follows...")
-#   ret.append("email_template DOESN'T follow...")
-    ret.append(holder.email_template)
-    ret.append("...end of email_template for '{holder.which}'.")
     return ret
 
 def prepare_invoice(holder, personID):
@@ -685,9 +679,8 @@ def prepare_mailing_cmd():
     ret = []
     # give user opportunity to abort if files are still present:
     helpers.check_before_deletion((holder.email_json,
-                                    holder.mail_dir))
-    if os.path.exists(holder.mail_dir):
-        shutil.rmtree(holder.mail_dir)
+                                    holder.mail_dir),
+                                    delete=True)
     os.mkdir(holder.mail_dir)
     response = routines.get_menu_response(content.ctypes)
     if response == 0:
@@ -700,13 +693,6 @@ def prepare_mailing_cmd():
     # which letter has been established & conveyed to the holder
     # now: establish printer to be used and assign templates
     ret.extend(assign_templates(holder))
-    holder.letter_template = content.prepare_letter_template(
-            holder.which, holder.lpr)
-    holder.email_template = content.prepare_email_template(
-            holder.which)
-#   d = [item for item in holder.__dict__.keys()
-#           if not '__' in item]
-#   _ = input(f"{d}")
     holder.emails = []
     for func in holder.which['holder_funcs']:
         # assigns holder.working_data
@@ -717,7 +703,8 @@ def prepare_mailing_cmd():
     for dic in holder.working_data.values():
         for func in holder.which['funcs']:  #  vvvvv
             # first_notice: members.send_statement(holder, dic)
-            ret.extend(func(holder, dic))
+#           ret.extend(func(holder, dic))
+            func(holder, dic)
     # send holder.emails to a json file
     helpers.dump2json_file(holder.emails, holder.email_json)
     # Delete mailing dir if no letters are filed:

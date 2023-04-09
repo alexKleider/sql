@@ -9,6 +9,7 @@ This version contains what is needed for the SQL version.
 
 import os
 import sys
+import shutil
 import csv
 import json
 import datetime
@@ -74,12 +75,12 @@ def get_attributes(r):
             if not attribute.startswith('__')])
 
 
-def check_before_deletion(file_names):
+def check_before_deletion(file_names, delete=False):
     """
     Parameter <file_names> may be one name or a sequence of names.
     For each- check with user if ok to delete or overwrite.
     Aborts program execution if permission is not granted.
-    Does not itself do any deletion.
+    Does not itself do any deletion unless delete is set to True.
     """
     if isinstance(file_names, str):
         file_names = (file_names, )
@@ -91,6 +92,11 @@ def check_before_deletion(file_names):
             if not(response and response[0] in 'yY'):
                 print('Aborting program execution.')
                 sys.exit()
+            elif delete:
+                if os.path.isdir(f):
+                    shutil.rmtree(f)
+                elif os.path.isfile(f):
+                    os.remove(f)
 
 
 def get_first_friday_of_month(date=None):
@@ -704,7 +710,7 @@ def tabulate(data,
     return new_data
 
 
-def send2file(text, filename, silent=False):
+def send2file(text, filename, silent=True):
     """
     Write <text> to <filename> (silently (or not))
     <text> must be either a string or a list of strings.

@@ -136,11 +136,7 @@ def file_letter(holder, data):
     letter = [" "*holder.lpr['indent'] + line if line
             else line for line in letter]
     letter = '\n'.join(letter)  # LETTER HERE
-############ uncomment next 2 lines ############
-#   helpers.send2file(letter, 
-#           os.path.join(holder.mail_dir, filename))
-    if "Kleider" in filename or "Fly" in filename:
-        helpers.send2file(letter, 
+    helpers.send2file(letter, 
             os.path.join(holder.mail_dir, filename))
 
 def append_email(holder, data):
@@ -176,9 +172,7 @@ def append_email(holder, data):
     if club.bcc:
         email['Bcc'] = club.bcc
     """
-#   holder.emails.append(email)
-    if 'kleider' in data['email'] or "Fly" in data['email']:
-        holder.emails.append(email)
+    holder.emails.append(email)
 
 
 def q_mailing(holder, data):
@@ -252,8 +246,7 @@ def send_statement(holder, data):
     ret = []
     w_statement = dict_w_statement(data)
 #   ret.append('Running send_statements...')
-    file_letter(holder, w_statement)
-    append_email(holder, w_statement)
+    q_mailing(holder, w_statement)
     return ret
 
 

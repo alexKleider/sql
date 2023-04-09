@@ -1,0 +1,5 @@
+
+def introspect(holder):
+    d = [item for item in holder.__dict__.keys()
+            if not '__' in item]
+    _ = input(f"{d}")

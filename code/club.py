@@ -31,6 +31,9 @@ mooring_file = ROOT + "Secret/mooring_list.txt"
 class Holder(object):
 
     n_instances = 0
+    cc_sponsors = False
+    mail_dir = MAIL_DIR
+    email_json = EMAIL_JSON
 
     @classmethod
     def inc_n_instances(cls):
@@ -40,9 +43,6 @@ class Holder(object):
         if self.n_instances > 0:
             raise NotImplementedError("Only one instance allowed.")
         self.inc_n_instances()
-        self.cc_sponsors = False
-        self.mail_dir = MAIL_DIR
-        self.email_json = EMAIL_JSON
 
 
 ## Wouldn't need the followng ..keys tuples
@@ -82,44 +82,6 @@ date_keys = applicantDB_keys[6:10]
 sponsor_keys = applicantDB_keys[2:4]
 
 yearly_dues = 200
-
-
-redact = '''
-def add_statement2dicts(holder):
-    """
-    ??Not used??
-    """
-    for key, value in holder.working_data.items():
-        values = [val for val in value.values()]
-        ret.append(f"{key}: {values}")
-    # working_data attribute has been assigned (but not needed!)
-    # Now ready to send letters:
-    for dic in byID.values():  # one for each billing
-        total = 0
-        key_set = set(dic.keys())
-        statement = ['Statement:',]
-        if 'dues_owed' in key_set:
-            total += dic['dues_owed']
-            statement.append("Dues...............${:3}"
-                    .format(dic['dues_owed']))
-        if 'dock' in key_set:
-            total += dic['dock']
-            statement.append("Dock Usage fee.....${:3}"
-                    .format(dic['dock']))
-        if 'kayak' in key_set:
-            total += dic['kayak']
-            statement.append("Kayak Storage fee..${:3}"
-                    .format(dic['kayak']))
-        if 'mooring' in key_set:
-            total += dic['mooring']
-            statement.append("Mooring fee........${:3}"
-                    .format(dic['mooring']))
-        statement.append(    "TOTAL...................${}\n"
-                    .format(total))
-        dic['statement'] =  '\n'.join(statement)
-#       letter = holder.letter_template.format(**dic)
-#       _ = input(letter)
-'''
 
 
 def assign_owing(holder):
