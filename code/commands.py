@@ -32,15 +32,15 @@ def get_command():
     while True:
         choice = input("""   MAIN MENU
 Choose one of the following:
-  0. Quit (or just return)    1. Show for web site
-  2. Show applicants          3. Show names as table
-  4. Report                   5. Send letter/email
-  6. No email                 7. Get (non member) stati
-  8. Update Status            9. Find ID by name
- 10. Populate Payables       11. Update demographics
- 12. Add Dues                13. Prepare Mailing
- 14. Show Applicant Data     15. Add Meeting Date
- 16. Not implemented
+  0. Quit (or just return)      1. Show for web site
+  2. Show applicants            3. Show names as table
+  4. Report                     5. Send letter/email
+  6. No email                   7. Get (non member) stati
+  8. Update Status              9. Find ID by name
+ 10. Display Fees by person    11. Update demographics
+ 12. Add Dues                  13. Prepare Mailing
+ 14. Show Applicant Data       15. Add Meeting Date
+ 16. Display Fees by category
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -52,12 +52,13 @@ Choose one of the following:
         elif choice ==  '7': return get_stati_cmd
         elif choice ==  '8': return update_status_cmd
         elif choice ==  '9': return id_by_name
-        elif choice == '10': return populate_payables
+        elif choice == '10': return display_fees_by_person_cmd
         elif choice == '11': return update_people_cmd
         elif choice == '12': return add2dues_cmd
         elif choice == '13': return prepare_mailing_cmd
         elif choice == '14': return get_applicant_data_cmd
         elif choice == '15': return add_date_cmd
+        elif choice == '16': return display_fees_by_category_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -156,49 +157,74 @@ def add2dues_cmd():
     return ['executed:', query]
 
 
-def populate_payables():
+def get_fees_by_person(holder):
     """
-    begin with a listing of all member IDs:
-    for each of these, collect their dues and fees
-        ==> a 'statement' for each ID
-    For each of these, prepare either an email or letter
-    File letters (into MailingDir) and
-    store emails (=> emails.json)
+    Sets up working_data attribute of holder.
+    Same as assign_owing but without the dues.
     """
-    query = """SELECT P.personID
-            FROM 
-                People AS P,
-                Person_Status AS PS,
-                Stati AS S
-            WHERE
-                PS.personID = P.personID 
-            AND PS.statusID = S.statusID
-            AND S.key = 'm'
-            ;
-    """
-    ret = routines.fetch(
-                query,
-#               db=club.DB,
-                params=None,
-                data=None,
-                from_file=False,
-                commit=False
-                )
-    memIDs = [str(entry[0]) for entry in ret]
-    l = len(memIDs)
-#   print(res)  # a list of all member IDs
-#   res.append(f"There are {l} members")
-    query4dues = """ -- add dues
-    """
-    query4dock = """ -- add docking fee
-    """
-    query4kayak = """  -- add kayak storage fee
-    """
-    query4mooring = """  -- add mooring fee
-    """
-    for memID in memIDs:  # currently listed as strings (not int)
-        pass
+    byID = dict()
+    # do dock privileges owing first:
+    for tup in routines.fetch("Sql/dock_plus.sql"):
+#       _ = input(tup)
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'dock': tup[4],
+                }
+    # add kayak storage owing:
+    for tup in routines.fetch("Sql/kayak_plus.sql"):
+        if tup[0] in byID.keys():
+            byID[tup[0]]['kayak'] = tup[5]
+        else:
+            byID[tup[0]] = {'first': tup[1],
+                            'last': tup[2],
+                            'suffix': tup[3],
+                            'kayak': tup[5],
+                    }
 
+    # and finally add mooring fee owing:
+    for tup in routines.fetch("Sql/mooring_plus.sql"):
+        if tup[0] in byID.keys():
+            byID[tup[0]]['mooring'] = tup[5]
+        else:
+            byID[tup[0]] = {'first': tup[1],
+                            'last': tup[2],
+                            'suffix': tup[3],
+                            'mooring': tup[5],
+                    }
+    # save what's been collected...
+    holder.working_data = byID
+#   for key, values in byID.items():
+#       print(f"{key}: {values}")
+
+def display_fees_by_person_cmd():
+    """
+    """
+    ret = ['Extra fees being charged',
+           '========================',
+           ]
+    holder = club.Holder()
+    get_fees_by_person(holder)
+    ret = []
+    for person in holder.working_data.values():
+        keys = [key for key in person.keys()]
+#       _ = input(f"keys: {person.keys()}")
+        if person['suffix']:
+            entry = ["{first} {last},{suffix}:"
+                            .format(**person), ]
+        else:
+            entry = ["{first} {last}:"
+                            .format(**person), ]
+        if 'dock' in keys:
+            entry.append("  Dock usage fee .... ${:>3}"
+                    .format(person['dock']))
+        if 'kayak' in keys:
+            entry.append("  Kayak storage fee . ${:>3}"
+                    .format(person['kayak']))
+        if 'mooring' in keys:
+            entry.append("  Mooring fee ....... ${:>3}"
+                    .format(person['mooring']))
+        ret.extend(entry)
     return ret
 
 
@@ -804,6 +830,11 @@ def add_date_cmd():
         alchemy.alch(query, dic=params, from_file=False) 
     else:
         ret.append('Aborting...')
+    return ret
+
+
+def display_fees_by_category_cmd():
+    ret = ['display_fees_by_category_cmd not yet implemented', ]
     return ret
 
 

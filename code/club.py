@@ -116,11 +116,8 @@ def assign_owing(holder):
     for tup in routines.fetch("Sql/mooring.sql"):
         _ = byID.setdefault(tup[0], {})
         byID[tup[0]]['mooring'] = tup[1]
-    
-    # save what's been collected: (no need for this!)
+    # save what's been collected...
     holder.working_data = byID
-    ## holder.working_data has been assigned-
-    ## that's all this function should do!!!!!
 
 
 if __name__ == '__main__':
