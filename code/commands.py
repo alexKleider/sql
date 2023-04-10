@@ -164,7 +164,7 @@ def get_fees_by_person(holder):
     """
     byID = dict()
     # do dock privileges owing first:
-    for tup in routines.fetch("Sql/dock_plus.sql"):
+    for tup in routines.fetch("Sql/dock1.sql"):
 #       _ = input(tup)
         byID[tup[0]] = {'first': tup[1],
                         'last': tup[2],
@@ -172,7 +172,7 @@ def get_fees_by_person(holder):
                         'dock': tup[4],
                 }
     # add kayak storage owing:
-    for tup in routines.fetch("Sql/kayak_plus.sql"):
+    for tup in routines.fetch("Sql/kayak1.sql"):
         if tup[0] in byID.keys():
             byID[tup[0]]['kayak'] = tup[5]
         else:
@@ -183,7 +183,7 @@ def get_fees_by_person(holder):
                     }
 
     # and finally add mooring fee owing:
-    for tup in routines.fetch("Sql/mooring_plus.sql"):
+    for tup in routines.fetch("Sql/mooring1.sql"):
         if tup[0] in byID.keys():
             byID[tup[0]]['mooring'] = tup[5]
         else:
@@ -832,9 +832,39 @@ def add_date_cmd():
         ret.append('Aborting...')
     return ret
 
+def name_from_tup(tup):
+    if tup[3]:
+        name = "{1} {2}{3}".format(*tup)
+    else:
+        name = "{1} {2}".format(*tup)
+    return name
+
 
 def display_fees_by_category_cmd():
-    ret = ['display_fees_by_category_cmd not yet implemented', ]
+    ret = ['Special Fees Being Charged',
+           '==========================',
+           ]
+    dock = ['Dock Usage ($75)',
+            '----------------',
+            ]
+    kayak = ['Kayak Storage /w Slot# ($70)',
+             '----------------------------',
+             ]
+    mooring = ['Mooring Location & Cost',
+               '--------------------------',
+               ]
+    for tup in routines.fetch("Sql/dock1.sql"):
+        dock.append(f"  {name_from_tup(tup)}")
+    for tup in routines.fetch("Sql/kayak1.sql"):
+        kayak.append(f"  {tup[4]} {name_from_tup(tup)}")
+    for tup in routines.fetch("Sql/mooring1.sql"):
+        mooring.append(
+                f"  {tup[4]} @ ${tup[5]} {name_from_tup(tup)}")
+    ret.extend(dock)
+    ret.append('')
+    ret.extend(kayak)
+    ret.append('')
+    ret.extend(mooring)
     return ret
 
 
