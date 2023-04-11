@@ -119,6 +119,48 @@ def assign_owing(holder):
     # save what's been collected...
     holder.working_data = byID
 
+def assign_welcome2full_membership(holder):
+    ret = ['<welcome to full_membership mailing>',
+            ]
+    print("Create list of people to welcome as new member(s):")
+    candidates = []
+    while True:
+        ids = routines.id_by_name()
+        if not ids:
+            break
+        print('\n'.join(ids))
+        print(f"Enter (coma separated if > 1) list of IDs:")
+        response = input("Listing of IDs or blank to quit: ")
+        if not response:
+            break
+        else:
+            _ = input(f"Your response: {response}")
+            candidates.extend([int(entry) for entry in
+                                response.split(",")])
+    if not candidates:  # nothing to do
+        ret.append("No candidate(s) specified. Nothing to do.")
+        return ret
+    _ = input(f"Entries: {candidates}")
+    ret.append('You chose the following: ' + ', '.join(
+            [str(candidate) for candidate in candidates]))
+    # run a query to populate byID ==> holder.data2welcome
+    byID = dict()
+    for personID in candidates:
+        tup = routines.fetch('Sql/find_by_ID.sql',
+                            params=(personID,))[0]
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'phone': tup[4],
+                        'address': tup[5],
+                        'town': tup[6],
+                        'state': tup[7],
+                        'postal_code': tup[8],
+                        'country': tup[9],
+                        'email': tup[10],
+                        }
+    holder.working_data = byID
+    return ret
 
 if __name__ == '__main__':
     print('Running code/club...')

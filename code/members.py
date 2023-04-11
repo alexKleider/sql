@@ -250,6 +250,14 @@ def send_statement(holder, data):
     return ret
 
 
+def send_letter(holder, data):
+    q_mailing(holder, data)
+
+
+def is_new_member():
+    pass
+
+
 def is_dues_paying():
     pass
 

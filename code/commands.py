@@ -40,7 +40,7 @@ Choose one of the following:
  10. Display Fees by person    11. Update demographics
  12. Add Dues                  13. Prepare Mailing
  14. Show Applicant Data       15. Add Meeting Date
- 16. Display Fees by category
+ 16. Display Fees by category  17. Welcome New Member
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -51,7 +51,7 @@ Choose one of the following:
         elif choice ==  '6': return no_email_cmd
         elif choice ==  '7': return get_stati_cmd
         elif choice ==  '8': return update_status_cmd
-        elif choice ==  '9': return id_by_name
+        elif choice ==  '9': return routines.id_by_name
         elif choice == '10': return display_fees_by_person_cmd
         elif choice == '11': return update_people_cmd
         elif choice == '12': return add2dues_cmd
@@ -59,6 +59,7 @@ Choose one of the following:
         elif choice == '14': return get_applicant_data_cmd
         elif choice == '15': return add_date_cmd
         elif choice == '16': return display_fees_by_category_cmd
+        elif choice == '17': return welcome_new_member_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -72,7 +73,7 @@ def update_people_cmd():
     """
     # whom to update?
     print("Whom to update?  ", end='')
-    print('\n'.join(id_by_name()))
+    print('\n'.join(routines.id_by_name()))
     personID = int(input("Enter your choice: "))
 
     # display data as it is currently:
@@ -225,44 +226,6 @@ def display_fees_by_person_cmd():
             entry.append("  Mooring fee ....... ${:>3}"
                     .format(person['mooring']))
         ret.extend(entry)
-    return ret
-
-
-def id_by_name():
-    """
-    Prompts for first letter(s) of first &/or last
-    name(s) and returns a listing of matching entries
-    from the 'People' table (together with IDs.)
-    If both are blank, none will be returned!
-    """
-    query = """
-    SELECT personID, first, last, suffix
-    FROM People
-    WHERE {}
-    ;
-    """
-    print("Looking for people:")
-    print("Narrow the search, use * to eliminate a blank...")
-    first = input("First name (partial or blank): ")
-    last = input("Last name (partial or blank): ")
-    if first and last:
-        query = query.format("first LIKE ? AND last LIKE ? ")
-    elif first:
-        query = query.format("first LIKE ?")
-    elif last:
-        query = query.format("last LIKE ? ") 
-    params = [name+'%' for name in (first, last,) if name]
-#   print(params)
-    ret = routines.fetch(
-                query,
-#               db=club.DB,
-                params=params,
-                data=None,
-                from_file=False,
-                commit=False
-                )
-    ret = ["{:3>} {} {} {}".format(*entry) for entry in ret]
-#   _ = input(ret)
     return ret
 
 
@@ -606,7 +569,7 @@ def update_status_cmd():
     # ...Then present oportunity to pick a name not listed.
     yesorno = input("Do you need another person's ID? (y/n): ")
     if yesorno and yesorno[0] in 'yY':
-        print('\n'.join(id_by_name()))
+        print('\n'.join(routines.id_by_name()))
     personID = int(input("personID who's status to change: "))
     personInfo = routines.fetch('Sql/find_by_ID.sql',
             params = (personID, ))[0]
@@ -762,7 +725,7 @@ def show_applicant_data(ID):
 def get_applicant_data_cmd():
     response = input("Enter ID, blank for prompt: ")
     if not response:
-        ret = id_by_name()
+        ret = routines.id_by_name()
         for line in ret:
             print(line)
     appID = input("Enter ID: ")
@@ -789,7 +752,7 @@ def add_date_cmd():
     ret = ['Adding to applicant dates...']
     # get a personID of the person who's data to modify
     print("Choose from the following...")
-    for line in id_by_name():
+    for line in routines.id_by_name():
         print(line)
     personID = int(input(
         "Pick a personID (must be an integer): "))
@@ -847,11 +810,12 @@ def display_fees_by_category_cmd():
     dock = ['Dock Usage ($75)',
             '----------------',
             ]
-    kayak = ['Kayak Storage /w Slot# ($70)',
+    kayak = ['Kayak Storage /w Slot# ($100)',
              '----------------------------',
              ]
-    mooring = ['Mooring Location & Cost',
-               '--------------------------',
+    mooring = ['  Mooring Location & Cost',
+               '( U)pper, M)iddle and S)tring )',
+               '  ---------------------------',
                ]
     for tup in routines.fetch("Sql/dock1.sql"):
         dock.append(f"  {name_from_tup(tup)}")
@@ -865,6 +829,32 @@ def display_fees_by_category_cmd():
     ret.extend(kayak)
     ret.append('')
     ret.extend(mooring)
+    return ret
+
+def welcome_new_member_cmd():
+    ret = ['<welcome_new_member_cmd>',
+            ]
+    print("Create list of people to welcome as new member(s):")
+    candidates = []
+    while True:
+        ids = routines.id_by_name()
+        if not ids:
+            break
+        print('\n'.join(ids))
+        print(f"Enter (coma separated if > 1) list of IDs:")
+        response = input("Listing of IDs or blank to quit: ")
+        if not response:
+            break
+        else:
+            _ = input(f"Your response: {response}")
+            candidates.extend([int(entry) for entry in
+                                response.split(",")])
+    if not candidates:  # nothing to do
+        ret.append("No candidate(s) specified. Nothing to do.")
+        return ret
+    _ = input(f"Entries: {candidates}")
+    ret.append('You chose the following: ' + ', '.join(
+            [str(candidate) for candidate in candidates]))
     return ret
 
 

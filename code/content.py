@@ -813,7 +813,8 @@ content_types = dict(  # which_letter
         "body": letter_bodies["welcome2full_membership"],
         "post_scripts": (post_scripts["ref1_email_or_PO"],
                          ),
-        "funcs": (members.std_mailing_func,),
+        "holder_funcs": (club.assign_welcome2full_membership,),
+        "funcs": (members.send_letter,),
         "test": (lambda record: True if members.is_new_member(record)
                  else False),        # status 'am'
         "e_and_or_p": "one_only",

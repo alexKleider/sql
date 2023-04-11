@@ -207,6 +207,46 @@ def get_people_fields_by_ID(db_file_name, fields=None):
     return ret
     
 
+def id_by_name():
+    """
+    Prompts for first letter(s) of first &/or last
+    name(s) and returns a listing of matching entries
+    from the 'People' table (together with IDs.)
+    If both are blank, none will be returned!
+    """
+    query = """
+    SELECT personID, first, last, suffix
+    FROM People
+    WHERE {}
+    ;
+    """
+    print("Looking for people:")
+    print("Narrow the search, use * to eliminate a blank...")
+    first = input("First name (partial or blank): ")
+    last = input("Last name (partial or blank): ")
+    if first and last:
+        query = query.format("first LIKE ? AND last LIKE ? ")
+    elif first:
+        query = query.format("first LIKE ?")
+    elif last:
+        query = query.format("last LIKE ? ") 
+    else:  # no entry provided
+        return
+    params = [name+'%' for name in (first, last,) if name]
+#   print(params)
+    ret = fetch(
+                query,
+#               db=club.DB,
+                params=params,
+                data=None,
+                from_file=False,
+                commit=False
+                )
+    ret = ["{:3>} {} {} {}".format(*entry) for entry in ret]
+#   _ = input(ret)
+    return ret
+
+
 def get_commands(sql_file):
     """
     Assumes <in_file> contains valid SQL commands.
