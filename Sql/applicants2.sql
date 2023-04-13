@@ -2,9 +2,9 @@
 SELECT
     P.first, P.last, P.suffix,
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,
-    sponsor1, sponsor2,
+    sponsor1ID, sponsor2ID,
     app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
-    approved, inducted, dues_paid
+    approved, dues_paid, notified
 FROM Applicants AS Ap
 JOIN People AS P
 ON Ap.personID = P.personID

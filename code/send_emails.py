@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# File code/email.py
+# File code/send_emails.py
 
 try: from code import club
 except ImportError: import club

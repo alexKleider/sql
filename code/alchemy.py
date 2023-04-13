@@ -132,6 +132,7 @@ def show_mooring_fees_owed():
         print(f"{repr(d)}")
 
 if __name__ == '__main__':
+    print("Running alchemy.py")
     show_dues_owing()
     _ = input()
     show_dock_fees_owed()

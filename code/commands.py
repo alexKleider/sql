@@ -47,7 +47,7 @@ Choose one of the following:
         elif choice ==  '2': return show_applicants
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
-        elif choice ==  '5': return mailing_cmd
+        elif choice ==  '5': return send_cmd
         elif choice ==  '6': return no_email_cmd
         elif choice ==  '7': return get_stati_cmd
         elif choice ==  '8': return update_status_cmd
@@ -258,7 +258,7 @@ def show_applicants():
     query_file = 'Sql/applicants2.sql' ==>
     P.first, P.last, P.suffix,
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,
-    sponsor1, sponsor2,
+    sponsor1ID, sponsor2ID,
     app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
     approved, inducted, dues_paid
     """
@@ -280,6 +280,13 @@ def show_applicants():
         mapping = {}
         for key, value in key_value_pairs:
             mapping[key] = value
+#       _ = input(f"mapping: {mapping}")
+        for sponsor in ('sponsor1', 'sponsor2'):
+#           _ = input(f"sponsor: {mapping[sponsor]}")
+            names = routines.fetch('Sql/find_1st_last_by_ID.sql',
+                    params = (mapping[sponsor], ))[0]
+#           _ = input(f"names: {names}")
+            mapping[sponsor] = ' '.join(names).strip()
         dics.append(mapping)
     if not dics: print("NO SEQUENCE of DICTS")
     # Divide our sequence of dicts into a mapping
@@ -682,6 +689,11 @@ def prepare_mailing_cmd():
     # which letter has been established & conveyed to the holder
     # now: establish printer to be used and assign templates
     ret.extend(assign_templates(holder))
+    # find out if we need to cc or bcc anyone:
+    which_keys = set(holder.which.keys())
+    if which_keys and {'cc', 'bcc'}:
+        deal_with_copies(holder)
+
     holder.emails = []
     for func in holder.which['holder_funcs']:
         # assigns holder.working_data
@@ -735,7 +747,7 @@ def get_applicant_data_cmd():
     return show_applicant_data(appID)
 
 
-def mailing_cmd():
+def send_cmd():
     ret = ['mailing command is under development', ]
     okrange = range(1,len(content.ctypes)+1)
     choices = zip(okrange, content.ctypes)

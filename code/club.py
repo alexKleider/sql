@@ -159,6 +159,10 @@ def assign_welcome2full_membership(holder):
                         'country': tup[9],
                         'email': tup[10],
                         }
+    if holder.cc_sponsors:
+        for key, dic in byID.items():
+            
+            pass
     holder.working_data = byID
     return ret
 

@@ -2,7 +2,7 @@
 SELECT
     St.key, P.first, P.last, 
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,
-    sponsor1, sponsor2,
+    sponsor1ID, sponsor2ID,
     app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
     approved, inducted, dues_paid, St.text
 FROM Applicants AS Ap

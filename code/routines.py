@@ -299,6 +299,20 @@ def compound_dict_from_query(listings, fields,
         ret[key_name_and_index[0]] = listing[
                             key_name_and_index[1]]
 
+def get_sponsors(applicantID):
+#   print(f" applicantID: {applicantID} {type(applicantID)}")
+    sponsorIDs = fetch("""
+        SELECT sponsor1, sponsor2 FROM oldApplicants
+        WHERE personID = ?; """,
+        params=(applicantID,), from_file=False)
+    sponsors = []
+    for sponsorID in sponsorIDs[0]:
+        _ = input(f"sponsorID: {sponsorID}")
+        sponsors.append(fetch("""
+        SELECT first, last, suffix, email FROM People
+        WHERE personID = ?""",
+        params=(sponsorID,), from_file=False))
+    return sponsors
 
 def exercise_get_people_fields_by_ID():
     id_dict = get_people_fields_by_ID(
@@ -308,6 +322,7 @@ def exercise_get_people_fields_by_ID():
 
 
 if __name__ == '__main__':
-    exercise_get_people_fields_by_ID()
+    print(get_sponsors(119))
+#   exercise_get_people_fields_by_ID()
     pass
 
