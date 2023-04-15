@@ -658,6 +658,8 @@ def prepare_invoice(holder, personID):
     invoice.append(f"        Total: ${total}")
     return invoice
 
+def deal_w_copies(holder):
+    return(['Dealing with cc and bcc.', ])
 
 def prepare_mailing_cmd():
     """
@@ -692,7 +694,7 @@ def prepare_mailing_cmd():
     # find out if we need to cc or bcc anyone:
     which_keys = set(holder.which.keys())
     if which_keys and {'cc', 'bcc'}:
-        deal_with_copies(holder)
+        ret.extend(deal_w_copies(holder))
 
     holder.emails = []
     for func in holder.which['holder_funcs']:

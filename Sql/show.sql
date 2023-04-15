@@ -16,6 +16,7 @@ ON
     St.statusID = PS.statusID
 WHERE 
     St.key = 'm'
+AND PS.end = ''
 ORDER BY
     P.last, P.first
 ;

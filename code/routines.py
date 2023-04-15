@@ -117,13 +117,13 @@ def get_menu_dict(items):
     # '0' is reserved for Q)uit.
     return menu
 
-def get_menu_response(items, header=None, incl0=True):
+def get_menu_response(items, header=None, incl0Q=True):
     menu = get_menu_dict(items)
 #   _ = input(menu)
     while True:
         if header: display = [header, ]
         else: display = []
-        if incl0: display.append('  0: Q)uit')
+        if incl0Q: display.append('  0: Q)uit')
         for key, value in menu.items():
             display.append(f"{key:>3}: {value}")
         print('\n'.join(display))

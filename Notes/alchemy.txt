@@ -118,7 +118,8 @@ value for “:y” is then passed as the second argument to
 Connection.execute() in the form of a dictionary:
 
 >>> with engine.connect() as conn:
-...     result = conn.execute(text("SELECT x, y FROM some_table WHERE y > :y"), {"y": 2})
+...     result = conn.execute(text(
+...         "SELECT x, y FROM some_table WHERE y > :y"), {"y": 2})
 ...     for row in result:
 ...         print(f"x: {row.x}  y: {row.y}")
 BEGIN (implicit)
