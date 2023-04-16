@@ -62,15 +62,16 @@ def fetch(sql_source, db=db_file_name,
     db, cur = initDB(db)
     if data:
         cur.executemany(query, data)
+    elif params:
+#       _ = input(f"params set to '{params}'")
+        cur.execute(query, params)
     else:
-        if params:
-#           _ = input(f"params set to '{params}'")
-            cur.execute(query, params)
-        else:
-            cur.execute(query)
+        cur.execute(query)
 #   _ = input(
 #       f"get_query_result returning the following:\n {ret}")
     ret = cur.fetchall()
+    if commit:
+        db.commit()
     closeDB(db, cur)
     return ret
 
@@ -88,8 +89,8 @@ def display(instance, exclude=None):
                 ret.append(f"{key}: {value}")
             else:
                 ret.append(f"{item}: {insertion}")
-    ret.append(".. end of display.")
-    return ret
+        ret.append(".. end of display.")
+        return ret
 
 
 def make_dict(keys, values):

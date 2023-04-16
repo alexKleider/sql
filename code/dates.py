@@ -70,6 +70,8 @@ def receipts():
     payorID = int(input("Enter ID [0 to abort]: "))
     if not (payorID and not payorID == 0):
         sys(exit)
+    data = {}
+    data['personID'] = payorID
     while True:
         dues = amt_paid(input("Dues: "))
         dock = amt_paid(input("Dock usage: "))
@@ -79,16 +81,26 @@ def receipts():
         if dues + dock + kayak + mooring != total:
             print("Totals don't match; try again!")
         else: break
-    # date paid
     date_received = input("Enter date received (YYYYMMDD): ")
-    # date acknowledged
+    if date_received:
+        data['date_received'] = date_received
     date_acknowledged = input(
             "Enter date acknowledged (YYYYMMDD): ")
+    if date_acknowledged:
+        data['date_acknowledged'] = date_acknowledged
     prompt = ["OK to commit the following:", ]
-    if dues: prompt.append( f"  Dues..........{dues:>3}")
-    if dock: prompt.append( f"  Dock usage....{dock:>3}")
-    if kayak: prompt.append(f"  Kayak storage.{dock:>3}")
-    if dock: prompt.append( f"  Mooring fee...{dock:>3}")
+    if dues:
+        prompt.append( f"  Dues..........{dues:>3}")
+        data['dues'] = dues
+    if dock:
+        prompt.append( f"  Dock usage....{dock:>3}")
+        data['dock'] = dock
+    if kayak:
+        prompt.append(f"  Kayak storage.{kayak:>3}")
+        data['kayak'] = kayak
+    if dock:
+        prompt.append( f"  Mooring fee...{mooring:>3}")
+        data['mooring'] = mooring
     prompt.append(          f"  TOTAL............${total:>3}")
     response = input("Y/N?.. ")
     if response and response[0] in 'yY':
@@ -96,8 +108,12 @@ def receipts():
         for line in prompt[1:]:
             ret.append(line)
         print('\n'.join(ret[:-5]))
-    query = """
-    """
+    f_keys = ', '.join([':'+key for key in data.keys()])
+    query = "INSERT INTO Receipts VALUES ({});".format(f_keys)
+    print(query)
+    ret.append(query)
+    routines.fetch(query, data=data,
+            from_file=False, commit=True)
     return ret
 
 
@@ -114,6 +130,32 @@ def date_entry_cmd():
 
     return ret
 
+def main():
+    """
+CREATE TABLE Receipts (
+    ReceiptID INTEGER PRIMARY KEY,
+    personID INTEGER NOT NULL,
+    date_recieved TEXT NOT NULL,
+    dues INTEGER DEFAULT NULL,
+    dock INTEGER DEFAULT NULL,
+    kayak INTEGER DEFAULT NULL,
+    mooring INTEGER DEFAULT NULL,
+    acknowledged TEXT DEFAULT NULL
+                 --date value
+    """
+    query = "INSERT INTO Receipts VALUES ({});"
+    data = {"personID": 119,
+            "date_recieved": "20230407",
+            "dues": 50,
+            "acknowledged": "20230410",
+            }
+    f_keys = ', '.join([':'+key for key in data.keys()])
+    query = query.format(f_keys)
+    print(query)
+    pass
+
+
 if __name__ == "__main__":
     print(date_entry_cmd())
+#   main()
 
