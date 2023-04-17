@@ -21,6 +21,9 @@ tables_w_dates = (
 try: from code import routines
 except ImportError: import routines
 
+try: from code import multiple
+except ImportError: import multiple
+
 def add_new_applicant():
     ret = ["New applicant entry still under development.", ]
     print(ret[0])
@@ -49,13 +52,13 @@ def attrition():
     ret = ["Attrition entry still under development.", ]
     print(ret[0])
     return ret
-    pass
+
 
 def person_status():
     ret = ["Person status change still under development.", ]
     print(ret[0])
     return ret
-    pass
+
 
 def amt_paid(text):
     if not text:
@@ -106,7 +109,15 @@ def receipts():
     yn = input('\n'.join(prompt))
     if yn and yn[0] in 'yY':
         routines.fetch(query, from_file=False, commit=True)
-    ret.extend(["Query:", query, "successfully executed.",])
+        ret.extend(["Query:", query, "successfully executed.",])
+    else:
+        ret.extend(["Query:", query, "aborted.",])
+        return ret
+    yn = input("Credit accounts and send letters?(y/n: ")
+    if not (yn and yn[0] in 'yY'):
+        return
+    ret.extend(multiple.credit_accounts(data))
+    pass
     return ret
 
 
@@ -116,10 +127,10 @@ def date_entry_cmd():
         tables_w_dates, header="Which table:", incl0Q=True)
     ret.append(
         f"Your choice is #{choice}: {tables_w_dates[choice-1]}")
-    if choice == 1: applicants()
-    elif choice == 2: attrition()
-    elif choice == 3: person_status()
-    elif choice == 4: receipts()
+    if choice == 1: ret.extend(applicants())
+    elif choice == 2: ret.extend(attrition())
+    elif choice == 3: ret.extend(person_status())
+    elif choice == 4: ret.extend(receipts())
 
     return ret
 

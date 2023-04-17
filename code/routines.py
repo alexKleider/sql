@@ -185,8 +185,29 @@ def get_ids_by_name(first, last, db=db_file_name):
         _ = input("No key for {} {}".format(first, last))
     return res
 
+def get_person_fields_by_ID(personID,
+        db_file_name=db_file_name, fields=None):
+    """
+    """
+    ret = {}
+    query = """SELECT {{}} FROM People
+    WHERE personID = {};""".format(personID)
+    if fields:
+        fields = [field for field in fields]
+        var = f"{', '.join(fields)}"
+    else: var = '*'
+    query = query.format(var)
+#   _ = input(query)
+    con = sqlite3.connect(db_file_name)
+    cur = con.cursor()
+    execute(cur, con, query.format(var))
+    res = cur.fetchall()
+#   _ = input(res)
+    return res[0]
 
-def get_people_fields_by_ID(db_file_name, fields=None):
+
+def get_people_fields_by_ID(db_file_name=db_file_name,
+                                    fields=None):
     """
     Select values of the <fields> columns from the People table.
     Default (<fields> not specified) is to select all fields.

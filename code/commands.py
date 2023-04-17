@@ -27,6 +27,8 @@ except ImportError: import content
 try: from code import alchemy
 except ImportError: import alchemy
 
+try: from code import dates
+except ImportError: import dates
 
 def get_command():
     while True:
@@ -38,7 +40,7 @@ Choose one of the following:
   6. No email                   7. Get (non member) stati
   8. Update Status              9. Find ID by name
  10. Display Fees by person    11. Update demographics
- 12. Add Dues                  13. Prepare Mailing
+ 12. Data Entry (Dates)        13. Prepare Mailing
  14. Show Applicant Data       15. Add Meeting Date
  16. Display Fees by category  17. Welcome New Member
 ...... """)
@@ -54,7 +56,7 @@ Choose one of the following:
         elif choice ==  '9': return routines.id_by_name
         elif choice == '10': return display_fees_by_person_cmd
         elif choice == '11': return update_people_cmd
-        elif choice == '12': return add2dues_cmd
+        elif choice == '12': return dates.date_entry_cmd
         elif choice == '13': return prepare_mailing_cmd
         elif choice == '14': return get_applicant_data_cmd
         elif choice == '15': return add_date_cmd
@@ -144,13 +146,19 @@ def update_people_cmd():
 
 def add2dues_cmd():
     """
+    ###     FOR THE FUTURE     ###
     A one time only: add $100 to every one's dues.
+    Taken off the menu.
+    Will need to add entries for fees when year begins.
+    Also will need to restrict the query to members only!!
     """
     return ['add2dues_cmd is a one time only!',
             'must not run it again!!!', ]
     query = """
-        UPDATE Dues SET dues_owed = dues_owed - 100;
+        UPDATE Dues SET dues_owed = dues_owed + 200;
         """
+    return['Following query _not_ executed:',
+            query, ]
     con = sqlite3.connect(club.DB)
     cur = con.cursor()
     cur.execute(query)
