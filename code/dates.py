@@ -64,6 +64,9 @@ def amt_paid(text):
 
 def receipts():
     ret = []
+    report = "entering receipts()"
+    ret.append(report)
+    print(report)
     # payor?
     res = routines.id_by_name()
     print(f"The ID choice(s) is/are {res}")
@@ -72,6 +75,8 @@ def receipts():
         sys(exit)
     data = {}
     data['personID'] = payorID
+    data['date_received'] = input(
+            "Enter date received (YYYYMMDD): ")
     while True:
         dues = amt_paid(input("Dues: "))
         dock = amt_paid(input("Dock usage: "))
@@ -81,39 +86,27 @@ def receipts():
         if dues + dock + kayak + mooring != total:
             print("Totals don't match; try again!")
         else: break
-    date_received = input("Enter date received (YYYYMMDD): ")
-    if date_received:
-        data['date_received'] = date_received
-    date_acknowledged = input(
-            "Enter date acknowledged (YYYYMMDD): ")
-    if date_acknowledged:
-        data['date_acknowledged'] = date_acknowledged
-    prompt = ["OK to commit the following:", ]
     if dues:
-        prompt.append( f"  Dues..........{dues:>3}")
         data['dues'] = dues
     if dock:
-        prompt.append( f"  Dock usage....{dock:>3}")
         data['dock'] = dock
     if kayak:
-        prompt.append(f"  Kayak storage.{kayak:>3}")
         data['kayak'] = kayak
-    if dock:
-        prompt.append( f"  Mooring fee...{mooring:>3}")
+    if mooring:
         data['mooring'] = mooring
-    prompt.append(          f"  TOTAL............${total:>3}")
-    response = input("Y/N?.. ")
-    if response and response[0] in 'yY':
-        ret.append("Processing the following:")
-        for line in prompt[1:]:
-            ret.append(line)
-        print('\n'.join(ret[:-5]))
-    f_keys = ', '.join([':'+key for key in data.keys()])
-    query = "INSERT INTO Receipts VALUES ({});".format(f_keys)
-    print(query)
-    ret.append(query)
-    routines.fetch(query, data=data,
-            from_file=False, commit=True)
+    data["acknowledged"] = input(
+            "Enter date acknowledged (YYYYMMDD): ")
+    prompt = ["OK to commit the following:", ]
+    f_keys = ", ".join([key for key in data.keys()])
+    f_values = ", ".join([repr(value) for value in data.values()])
+    prompt.extend([f_keys, f_values])
+    query = ("INSERT INTO Receipts ({}) VALUES ({});"
+                    .format(f_keys, f_values))
+    prompt.append(query)
+    yn = input('\n'.join(prompt))
+    if yn and yn[0] in 'yY':
+        routines.fetch(query, from_file=False, commit=True)
+    ret.extend(["Query:", query, "successfully executed.",])
     return ret
 
 
@@ -130,18 +123,19 @@ def date_entry_cmd():
 
     return ret
 
-def main():
+def observe():
     """
-CREATE TABLE Receipts (
+    CREATE TABLE Receipts (
     ReceiptID INTEGER PRIMARY KEY,
     personID INTEGER NOT NULL,
-    date_recieved TEXT NOT NULL,
-    dues INTEGER DEFAULT NULL,
-    dock INTEGER DEFAULT NULL,
-    kayak INTEGER DEFAULT NULL,
-    mooring INTEGER DEFAULT NULL,
-    acknowledged TEXT DEFAULT NULL
+    date_received TEXT NOT NULL,
+    dues INTEGER DEFAULT 0,
+    dock INTEGER DEFAULT 0,
+    kayak INTEGER DEFAULT 0,
+    mooring INTEGER DEFAULT 0,
+    acknowledged TEXT DEFAULT 0
                  --date value
+    );
     """
     query = "INSERT INTO Receipts VALUES ({});"
     data = {"personID": 119,
@@ -157,5 +151,5 @@ CREATE TABLE Receipts (
 
 if __name__ == "__main__":
     print(date_entry_cmd())
-#   main()
+#   observe()
 

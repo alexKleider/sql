@@ -1,7 +1,6 @@
 /* Sql/create_applicants_table.sql */
 CREATE TABLE Applicants (
-    applicantID INTEGER PRIMARY KEY,
-    personID INTEGER NOT NULL,
+    personID INTEGER PRIMARY KEY,
     sponsor1ID INTEGER NOT NULL,
     sponsor2ID INTEGER NOT NULL,
     app_rcvd TEXT NOT NULL,
@@ -13,3 +12,4 @@ CREATE TABLE Applicants (
     dues_paid TEXT DEFAULT '',
     notified TEXT DEFAULT ''
     );
+

@@ -72,6 +72,7 @@ def fetch(sql_source, db=db_file_name,
     ret = cur.fetchall()
     if commit:
         db.commit()
+        _ = input("Committed!")
     closeDB(db, cur)
     return ret
 

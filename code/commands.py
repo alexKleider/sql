@@ -149,7 +149,7 @@ def add2dues_cmd():
     return ['add2dues_cmd is a one time only!',
             'must not run it again!!!', ]
     query = """
-        UPDATE Dues SET dues_owed = dues_owed + 100;
+        UPDATE Dues SET dues_owed = dues_owed - 100;
         """
     con = sqlite3.connect(club.DB)
     cur = con.cursor()
