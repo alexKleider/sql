@@ -119,8 +119,16 @@ def get_menu_dict(items):
     # '0' is reserved for Q)uit.
     return menu
 
+
 def get_menu_response(items, header=None, incl0Q=True):
-    menu = get_menu_dict(items)
+    """
+    <items> a sequence of menu options
+    <header>  line (if provided)to insert above the choices
+    <incl0Q> == include a "0 to quit" 'choice'.
+    It's up to client to deal with a "0 to quit" choice.
+    Returns a 1 based integer
+    """
+    menu = get_menu_dict(items)  # see get_menu_dict doc_string
 #   _ = input(menu)
     while True:
         if header: display = [header, ]

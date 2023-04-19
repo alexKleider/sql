@@ -534,6 +534,36 @@ content_types = dict(  # which_letter
     # ## instead of a 'Dear {first} {last},' line.
     # ## The first 4 listed values for each are used for first
     # ## stage formatting.
+    first_notice={
+        "subject": "Bolinas R&B Club fees coming due",
+        "from": authors["membership"],
+        "body": letter_bodies["first_notice"],
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            ),
+        "holder_funcs": (club.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "one_only",
+        },
+    thank={
+        "subject": "Thanks for your payment",
+        "from": authors["membership"],
+        "body": letter_bodies["thank"],
+        "post_scripts": (),
+        "holder_funcs": (),  #holder.data already assigned
+        "funcs": (members.thank_func, ),
+        "e_and_or_p": "one_only",
+        },
+#   thank={
+#       "subject": "Thanks for your payment",
+#       "from": authors["membership"],
+#       "body": letter_bodies["thank"],
+#       "post_scripts": (),
+#       "holder_funcs": (, ),  # holder.data already assigned
+#       "funcs": (members.thank_func,),
+#       "e_and_or_p": "one_only",
+#       },
     angie_print={
         "subject": "Executive Commitee Members Needed",
         "from": authors["membership"],
@@ -594,19 +624,8 @@ content_types = dict(  # which_letter
             post_scripts['ref1_reservations'],
             ),
         "funcs": (members.std_mailing_func,),
-        "test": members.is_dues_paying, 
+#       "test": members.is_dues_paying, 
         "e_and_or_p": "email",
-        },
-    thank={
-        "subject": "Thanks for your payment",
-        "from": authors["membership"],
-        "body": letter_bodies["thank"],
-        "post_scripts": (),
-        "funcs": (
-                members.thank_func,
-                ),
-        "test": members.is_member, 
-        "e_and_or_p": "one_only",
         },
     correction={
         "subject": "Corrected fees statement",
@@ -622,21 +641,6 @@ content_types = dict(  # which_letter
             members.is_dues_paying(record) and
             members.not_paid_up(record)
             ) else False,
-        "e_and_or_p": "one_only",
-        },
-    first_notice={
-        "subject": "Bolinas R&B Club fees coming due",
-        "from": authors["membership"],
-        "body": letter_bodies["first_notice"],
-        "post_scripts": (
-            post_scripts["remittance"],
-            post_scripts["ref1_email_or_PO"],
-            ),
-        "holder_funcs": (club.assign_owing, ),
-        "funcs": (members.send_statement, ),
-#       "test": lambda record: True if (
-#           members.is_dues_paying(record)
-#           ) else False,
         "e_and_or_p": "one_only",
         },
     June_request={

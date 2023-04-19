@@ -233,6 +233,13 @@ def dict_w_statement(dic):
     return ret_dic
 
 
+def send_acknowledgement(holder):
+    """
+    assigns 'payment' & 'extra' to holder.data dict
+    """
+    pass
+
+
 def send_statement(holder, data):
     """
     Assumes <holder> has attribute <working_data>
@@ -243,12 +250,10 @@ def send_statement(holder, data):
     and emails are added to holder.emails
     """
     ###### MUST ADD A statement entry to data ########
-    ret = []
+    ret = ['Running send_statements...', ]
     w_statement = dict_w_statement(data)
-#   ret.append('Running send_statements...')
     q_mailing(holder, w_statement)
     return ret
-
 
 def send_letter(holder, data):
     q_mailing(holder, data)
@@ -262,7 +267,9 @@ def is_dues_paying():
     pass
 
 
-def thank_func(holder):
+def thank_func(holder, data):
+    """
+    """
     ret = ['Running thank_func', ]
     return ret
 
