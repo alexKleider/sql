@@ -84,6 +84,64 @@ sponsor_keys = applicantDB_keys[2:4]
 yearly_dues = 200
 
 
+def get_data4statement(personID):
+    """
+    first, last, suffix,
+    address, town, state, postal_code, country,
+    email, dues_owed);
+    """
+    data = {'total': 0}
+    res = routines.fetch("Sql/dues_et_demographics_by_ID.sql",
+            params=(personID, ) )[0]
+#   print(res)
+    data['first'] = res[0]
+    data['last'] = res[1]
+    data['suffix'] = res[2]
+    data['address'] = res[3]
+    data['town'] = res[4]
+    data['state'] = res[5]
+    data['postal_code'] = res[6]
+    data['country'] = res[7]
+    data['email'] = res[8]
+    data['dues_owed'] = res[9]
+    dock = routines.fetch("Sql/dock_by_ID.sql",
+            params=(personID, ) )
+    total = 0
+    if data['dues_owed']: total += data['dues_owed']
+    if dock:
+        data['dock'] = dock[0][1]
+        total += data['dock']
+    kayak = routines.fetch("Sql/kayak_by_ID.sql",
+            params=(personID, ) )
+    if kayak:
+        data['kayak'] = dock[0][1] 
+        total += data['kayak']
+    mooring = routines.fetch("Sql/mooring_by_ID.sql",
+            params=(personID, ) )
+    if mooring:
+        data['mooring'] = mooring[0][1]
+        total += data['mooring']
+    data['total'] = total
+#   for key, value in data.items():
+#       print(f"{key}: {value}")
+#   print()
+    return data
+
+def add_statement(data):
+    owing = ["Currently owing:", ]
+    keys = set(data.keys())
+    owing.append(    f"  Dues owing..... {data['dues_owed']:>3}")
+    if "dock" in keys:
+        owing.append(f"  Dock usage..... {data['dock']:>3}")
+    if "kayak" in keys:
+        owing.append(f"  Kayak storage.. {data['kayak']:>3}")
+    if "mooring" in keys:
+        owing.append(f"  Mooring fee.... {data['mooring']:>3}")
+    owing.append(f"Total... ${data['total']}")
+    data['statement'] = '\n'.join(owing)
+    return data['statement']
+
+
 def assign_owing(holder):
     """
     Assigns holder.working_data dict:
@@ -166,10 +224,17 @@ def assign_welcome2full_membership(holder):
     holder.working_data = byID
     return ret
 
-if __name__ == '__main__':
+def t1():
     print('Running code/club...')
     print(f"peopleDB keys: {peopleDB_keys}")
     print(f"applicantDB keys: {applicantDB_keys}")
     print(f"meeting keys: {date_keys}")
     print(f"sponsor keys: {sponsor_keys}")
     print(f"appl keys: {appl_keys}")
+
+
+if __name__ == '__main__':
+    print(get_statement(get_data4statement(197)))
+    print(get_statement(get_data4statement(42)))
+    print(get_statement(get_data4statement(157)))
+

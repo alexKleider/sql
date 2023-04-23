@@ -161,7 +161,7 @@ This acknowledges receipt of your recent ${payment} payment.
 Thank you.
 
 A statement of your current standing follows:
-{extra}
+{statement}
 
 All the best!
 """,

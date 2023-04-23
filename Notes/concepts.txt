@@ -257,3 +257,17 @@ sqlite> CREATE TABLE Salary (
    ...> );
 
 
+https://www.sqlite.org/faq.html#q1
+https://www.sqlitetutorial.net/
+
+ How do I create an AUTOINCREMENT field?
+
+    Short answer: A column declared INTEGER PRIMARY KEY will autoincrement.
+
+    Longer answer: If you declare a column of a table to be
+INTEGER PRIMARY KEY, then whenever you insert a NULL into that
+column of the table, the NULL is automatically converted into
+an integer which is one greater than the largest value of that
+column over all other rows in the table, or 1 if the table is
+empty. Or, if the largest existing integer key is in use then
+an unused key value is chosen at random.

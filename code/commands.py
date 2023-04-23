@@ -666,8 +666,10 @@ def prepare_invoice(holder, personID):
     invoice.append(f"        Total: ${total}")
     return invoice
 
+
 def deal_w_copies(holder):
     return(['Dealing with cc and bcc.', ])
+
 
 def prepare_mailing_cmd():
     """

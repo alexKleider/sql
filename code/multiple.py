@@ -62,41 +62,8 @@ def credit_accounts(data):
         ret.extend(update_mooring(data))
     return ret
 
-
-def send_acknowledgement(data):
-    """
-    <holder> must be able to format ${payment} and
-    {extra} (a statement of what's being acknowledged.)
-    """
-    holder = club.Holder()
-    holder.data = data
-    holder.which = content.content_types["thank"]
-    ret = []
-    # give user opportunity to abort if files are still present:
-    helpers.check_before_deletion((holder.email_json,
-                                    holder.mail_dir),
-                                    delete=True)
-    os.mkdir(holder.mail_dir)
-    ret.extend(commands.assign_templates(holder))
-    holder.emails = []
-    # no need for "holder_funcs": we've already got our data
-    members.thank_func()
+def get_current_statement(personID):
     pass
-    # send holder.emails to a json file
-    helpers.dump2json_file(holder.emails, holder.email_json)
-    # Delete mailing dir if no letters are filed:
-    if os.path.isdir(holder.mail_dir) and not len(
-            os.listdir(holder.mail_dir)):
-        os.rmdir(holder.mail_dir)
-        print("Empty mailing directory deleted.")
-    else:
-        print("""..next step might be the following:
-    $ zip -r 4Peter {0:}
-    (... or using tar:
-    $ tar -vczf 4Peter.tar.gz {0:}"""
-            .format(holder.mail_dir))
-    print("send_acknowledgement completed..")
-    return ret
 
 def one_time_test():
     data = dict(
