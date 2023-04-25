@@ -549,6 +549,7 @@ content_types = dict(  # which_letter
     thank={
         "subject": "Thanks for your payment",
         "from": authors["membership"],
+        "cc": "cbsolution@att.net",
         "body": letter_bodies["thank"],
         "post_scripts": (),
         "holder_funcs": (),  #holder.data already assigned

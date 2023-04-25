@@ -15,8 +15,8 @@ Applicants: app_rcvd, fee_rcvd, meeting1,2,3,
 It presents a menu reflected in the <tables_w_dates> listing.
 These are the top level choices of this module.
 So far only working on the receipts_cmd.
-Temporarily allow use of send_acknowledgement_cmd so it can be
-tested separately....
+Temporarily allow use of send_acknowledgement as a command
+so it can be tested separately....
 """
 
 tables_w_dates = (
@@ -98,14 +98,20 @@ def confirm_receipts_query(data):
     Creates a receipts entry _if_ confirmed.
     Step #3# if confirmed
     """
+    expected_keys = ("personID", "date_received", "dues",
+            "dock", "kayak", "mooring", "acknowledged", )
     ret = []
     prompt = ["OK to commit the following:", ]
-    f_keys = ", ".join([key for key in data.keys()])
-    f_values = ", ".join([repr(value) for value in data.values()])
+    keys = [key for key in data.keys()
+        if key in expected_keys]
+    f_keys = ", ".join(keys)
+    values = [data[key] for key in keys]
+    f_values = ", ".join([repr(value) for value in values])
     prompt.extend([f_keys, f_values])
     query = ("INSERT INTO Receipts ({}) VALUES ({});"
                     .format(f_keys, f_values))
     prompt.append(query)
+    prompt.append("Yes or No? ")
     yn = input('\n'.join(prompt))
     if yn and yn[0] in 'yY':
         routines.fetch(query, from_file=False, commit=True)
@@ -121,8 +127,8 @@ def send_acknowledgement(data):
     <data> key/value pairs already present:
     personID, payment, 
     .. still to be added:
-    extra, first, last, suffix, email.
-    (<statement> is a statement of what's being acknowledged.)
+    first, last, suffix, email & other demographics, and
+    (a) statement (of what's being acknowledged.)
     """
     ret = [
 "Preparing to send acknowledgement of following transaction: ",
@@ -211,7 +217,7 @@ def receipts_cmd():
     data["acknowledged"] = input(
             "Enter date acknowledged (YYYYMMDD): ")
     #3# receipt recorded (if confirmed)
-    ret.append(confirm_receipts_query(data, ret))
+    ret.append(confirm_receipts_query(data))
     #4# now decide if to credit accounts...
     yn = input("Credit accounts?(y/n: ")
     if not (yn and yn[0] in 'yY'):
@@ -278,9 +284,17 @@ def test_mailing():
             }
     print('\n'.join(send_acknowledgement(data)))
 
+def nancy_into_receipts():
+    data = {"personID": 210,
+            "date_received": "20230415",
+            "dues": 200,
+            "acknowledged": "20230417",
+            }
+    print('\n'.join(confirm_receipts_query(data)))
 
 if __name__ == "__main__":
-    test_mailing()
+    nancy_into_receipts()
+#   test_mailing()
 #   print(date_entry_cmd())
 #   observe()
 

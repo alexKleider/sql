@@ -193,16 +193,18 @@ def get_ids_by_name(first, last, db=db_file_name):
         _ = input("No key for {} {}".format(first, last))
     return res
 
-def get_person_fields_by_ID(personID,
-        db_file_name=db_file_name, fields=None):
+
+def get_people_fields_by_ID(db_file_name=db_file_name,
+                                    fields=None):
     """
+    Select values of the <fields> columns from the People table.
+    Default (<fields> not specified) is to select all fields.
     """
     ret = {}
-    query = """SELECT {{}} FROM People
-    WHERE personID = {};""".format(personID)
+    query = """SELECT {} FROM People;"""
     if fields:
-        fields = [field for field in fields]
-        var = f"{', '.join(fields)}"
+        fields = ["personID", ] + [field for field in fields]
+        var = ', '.join(fields)
     else: var = '*'
     query = query.format(var)
 #   _ = input(query)
@@ -211,7 +213,40 @@ def get_person_fields_by_ID(personID,
     execute(cur, con, query.format(var))
     res = cur.fetchall()
 #   _ = input(res)
-    return res[0]
+    for entry in res:
+        ret[entry[0]] = entry[1:]
+    return ret
+
+
+def get_person_fields_by_ID(personID, fields=None):
+    """
+    Select values of the <fields> columns from the People table
+    for the personID specified.
+    Returns a dict keyed by names of fields _if_ <fields> is
+    provided, _otherwise_ returns a tuple of all fields.
+    """
+    query = """SELECT {{}} FROM People
+    WHERE personID = {};""".format(personID)
+    if fields:
+        fields = [field for field in fields]
+        var = ', '.join(fields)
+    else: var = '*'
+    query = query.format(var)
+#   _ = input(query)
+    res = fetch(query, from_file=False)[0]
+#   _ = input(res[0])
+    if fields:
+        dic = {}
+        z = zip(fields, range(len(fields)))
+        for field, n in z:
+            dic[field] = res[n]
+        for key, value in dic.items():
+            print(f"'{key}': '{value}'")
+#       _ = input("^dict version of query^")
+        return dic
+    else:
+        _ = input(res)
+        return res
 
 
 def get_people_fields_by_ID(db_file_name=db_file_name,
@@ -236,7 +271,7 @@ def get_people_fields_by_ID(db_file_name=db_file_name,
     for entry in res:
         ret[entry[0]] = entry[1:]
     return ret
-    
+
 
 def id_by_name():
     """
@@ -345,15 +380,14 @@ def get_sponsors(applicantID):
         params=(sponsorID,), from_file=False))
     return sponsors
 
-def exercise_get_people_fields_by_ID():
-    id_dict = get_people_fields_by_ID(
-            db_file_name, ('first', 'last'))
-    for key in id_dict.keys():
-        print(f"{key}:  {id_dict[key]}")
+def exercise_get_person_fields_by_ID(id_n):
+    res = get_person_fields_by_ID(id_n,
+            fields = ('first', 'last', 'suffix'))
+    print(res)
 
 
 if __name__ == '__main__':
-    print(get_sponsors(119))
-#   exercise_get_people_fields_by_ID()
+#   print(get_sponsors(110))
+    exercise_get_person_fields_by_ID(146)
     pass
 

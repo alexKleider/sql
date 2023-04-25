@@ -43,6 +43,7 @@ Choose one of the following:
  12. Data Entry (Dates)        13. Prepare Mailing
  14. Show Applicant Data       15. Add Meeting Date
  16. Display Fees by category  17. Welcome New Member
+ 18. Receipts
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -62,6 +63,7 @@ Choose one of the following:
         elif choice == '15': return add_date_cmd
         elif choice == '16': return display_fees_by_category_cmd
         elif choice == '17': return welcome_new_member_cmd
+        elif choice == '18': return receipts_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -879,6 +881,28 @@ def welcome_new_member_cmd():
     _ = input(f"Entries: {candidates}")
     ret.append('You chose the following: ' + ', '.join(
             [str(candidate) for candidate in candidates]))
+    return ret
+
+def receipts_cmd():
+    ret = [f"Receipts for {helpers.this_year} ...", ]
+    fields = ("personID date_received dues dock kayak "
+            + "mooring acknowledged")
+    keys = fields.split()
+    fields = ', '.join(keys)
+    query = (f"SELECT {fields}  FROM Receipts;")
+#   ret.append(query)
+    report = []
+    for res in routines.fetch(query, from_file=False):
+        data = {}
+        for n in range(len(keys)):
+            data[keys[n]] = res[n]
+        names = routines.get_person_fields_by_ID(
+                    data['personID'],
+                    fields = ("first last suffix".split())  )
+#       _ = input(repr(names))
+        data['personID'] = "{first} {last}{suffix}".format(**names)
+        report.append(data)
+    ret.extend([repr(dic) for dic in report])
     return ret
 
 

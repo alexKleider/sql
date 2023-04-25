@@ -154,6 +154,10 @@ def append_email(holder, data):
         'attachments': [],
         'body': email_body,
     }
+    try:
+        email['Cc'] = holder.which['cc']
+    except IndexError:
+        print("No 'cc' added because of IndexError.")
     sponsor_email_addresses = []
     forLater = """
     if holder.cc_sponsors:
