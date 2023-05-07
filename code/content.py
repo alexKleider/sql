@@ -550,7 +550,8 @@ content_types = dict(  # which_letter
     request_inductee_payment={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
+        "bcc": "alex@kleider.ca",
         "body": letter_bodies["request_inductee_payment"],
         "post_scripts": (
             post_scripts["remittance"],
@@ -752,7 +753,7 @@ content_types = dict(  # which_letter
     waiting4application_fee={
         "subject": "Application Received",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
         "body": letter_bodies["waiting4application_fee"],
         "post_scripts": (post_scripts['remittance'],
                         ),
@@ -766,7 +767,7 @@ content_types = dict(  # which_letter
     new_applicant_welcome={
         "subject": "Welcome to the Club",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
         "body": letter_bodies["new_applicant_welcome"],
         "post_scripts": (),
         "funcs": (members.std_mailing_func,),
@@ -778,7 +779,7 @@ content_types = dict(  # which_letter
     awaiting_vacancy={
         "subject": "Membership pending vacancy",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
         "body": letter_bodies["awaiting_vacancy"],
         "post_scripts": (),
         "funcs": (members.std_mailing_func,),
@@ -789,7 +790,7 @@ content_types = dict(  # which_letter
     vacancy_open={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
         "body": letter_bodies["vacancy_open"],
         "post_scripts": (
             post_scripts["remittance"],
@@ -802,7 +803,7 @@ content_types = dict(  # which_letter
     second_request_inductee_payment={
         "subject": "Still awaiting Club dues",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
         "body": letter_bodies["second_request_inductee_payment"],
         "post_scripts": (
             post_scripts["remittance"],
@@ -815,7 +816,7 @@ content_types = dict(  # which_letter
     welcome2full_membership={
         "subject": "You are a member!",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
         "body": letter_bodies["welcome2full_membership"],
         "post_scripts": (post_scripts["ref1_email_or_PO"],
                          ),
@@ -829,7 +830,7 @@ content_types = dict(  # which_letter
     expired_application={
         "subject": "Application Expired",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": "",
         "body": letter_bodies["expired_application"],
         "post_scripts": (),
         "funcs": (members.std_mailing_func,),

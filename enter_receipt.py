@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# File: enter.py
+# File: enter_receipt.py
 
 import sqlite3
 

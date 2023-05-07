@@ -157,27 +157,20 @@ def append_email(holder, data):
         'body': email_body,
     }
     try:
-        email['Cc'] = holder.which['cc']
-    except IndexError:
-        print("No 'cc' added because of IndexError.")
-    sponsor_email_addresses = []
-    forLater = """
-    if holder.cc_sponsors:
-        record = helpers.Rec(record)
-        name_key = record(fstrings['key'])
-        if name_key in club.applicant_set:
-            sponsors = club.sponsors_by_applicant[name_key]
-            for sponsor in club.sponsors_by_applicant[name_key]:
-                keys = club.sponsor_emails.keys()
-                if sponsor in set(club.sponsor_emails.keys()):
-                    sponsor_email_addresses.append(club.sponsor_emails[sponsor])
-            emails_set = set(sponsor_email_addresses)
-            club.cc = club.cc.union(set(sponsor_email_addresses))
-            club.cc = club.cc.difference({''})
-    email['Cc'] = ','.join(club.cc)
-    if club.bcc:
-        email['Bcc'] = club.bcc
-    """
+        email['Cc'] = data['cc']
+    except KeyError:
+        pass  # no 'cc' specified in data
+    try:
+        email['Cc'] = ','.join((email['Cc'],holder.which['cc']))
+    except KeyError:
+        pass # no 'cc' specified in content
+    print(f"holder.which['bcc']: {holder.which['bcc']}")
+    try:
+        email['Bcc'] = ','.join((email['Bcc'],holder.which['bcc']))
+    except KeyError:
+        pass # no 'cc' specified in content
+    email['Cc'] = email['Cc'].strip(',')
+    email['Bcc'] = email['Bcc'].strip(',')
     holder.emails.append(email)
 
 
