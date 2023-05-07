@@ -14,10 +14,10 @@ def update_dues(data):
     """
     subtract data['dues'] from data['personID']'s dues_owed.
     """
-    _ = input(
-    f"""Running code.multiple.update_dues:
-    The following dict must contain personID and dues:
-        data: {data}""")
+#   _ = input(
+#   f"""Running code.multiple.update_dues:
+#   The following dict must contain personID and dues:
+#       data: {data}""")
     ret = ["Updating dues...", ]
     query = """UPDATE Dues SET
         dues_owed = dues_owed - {dues}
@@ -25,8 +25,8 @@ def update_dues(data):
         """.format(**data)
     ret.extend(["Query is ...", query])
     ret.append("Query returns:")
-    ret.append(routines.fetch(query,
-            from_file=False, commit=True))
+    ret.append(repr(routines.fetch(query,
+            from_file=False, commit=True)))
     return ret
 
 def update_dock(data):
@@ -50,7 +50,7 @@ def credit_accounts(data):
             data['personID'],
             fields=('first', 'last', 'suffix'))
     data["name"] = "{} {} {}".format(*names).strip()
-    ret = [f'Crediting accounts for {data}', ]
+    ret = [f'Crediting accounts for {data["name"]}', ]
     keys = data.keys()
     if 'dues' in keys:
         ret.extend(update_dues(data))

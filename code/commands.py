@@ -669,8 +669,17 @@ def prepare_invoice(holder, personID):
     return invoice
 
 
-def deal_w_copies(holder):
+def global_copies(holder):
+#   if 'bcc' in list(data):
+#       pass
+#   if 'cc' in list(data):
+#       if "sponsors" in list(data):
+#           pass  # add sponsor emails
     return(['Dealing with cc and bcc.', ])
+
+
+def sponsor_copies(holder, data):
+    pass
 
 
 def prepare_mailing_cmd():
@@ -706,7 +715,7 @@ def prepare_mailing_cmd():
     # find out if we need to cc or bcc anyone:
     which_keys = set(holder.which.keys())
     if which_keys and {'cc', 'bcc'}:
-        ret.extend(deal_w_copies(holder))
+        ret.extend(global_copies(holder))
 
     holder.emails = []
     for func in holder.which['holder_funcs']:
@@ -884,14 +893,15 @@ def welcome_new_member_cmd():
     return ret
 
 def receipts_cmd():
-    ret = [f"Receipts for {helpers.this_year} ...", ]
     fields = ("personID date_received dues dock kayak "
             + "mooring acknowledged")
     keys = fields.split()
     fields = ', '.join(keys)
     query = (f"SELECT {fields}  FROM Receipts;")
 #   ret.append(query)
-    report = []
+    report = [f"Receipts for {helpers.this_year} ...", 
+        "Name   payment date, fees, dock, kayak, mooring,  date acknowledged",
+            ]
     for res in routines.fetch(query, from_file=False):
         data = {}
         for n in range(len(keys)):
@@ -901,9 +911,13 @@ def receipts_cmd():
                     fields = ("first last suffix".split())  )
 #       _ = input(repr(names))
         data['personID'] = "{first} {last}{suffix}".format(**names)
-        report.append(data)
-    ret.extend([repr(dic) for dic in report])
-    return ret
+        line = ''.join((
+                "{personID:<17} {date_received:>10} {dues:>5},",
+                "{dock:>5}, {kayak:>5}, {mooring:>5},",
+                "{acknowledged:>10}", ))
+        line = line.format(**data)
+        report.append(line)
+    return report
 
 
 if __name__ == "__main__":

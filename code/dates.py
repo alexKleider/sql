@@ -133,15 +133,18 @@ def send_acknowledgement(data):
     ret = [
 "Preparing to send acknowledgement of following transaction: ",
     ]
+    ## Next 4 lines are for reporting only; not for function ##
     ret.append('<data> passed to dates.send_acknowledgement:')
     for key, value in data.items():
         ret.append(f"{key}: {value}")
     _ = input('\n'.join(ret))
+
+    # Collect demographics and dues & fees:
     for key, value in club.get_data4statement(
             data['personID']).items():
         data[key] = value
-        print(f"{key}: {value}")
-    _ = input()
+#       print(f"{key}: {value}")
+#   _ = input()
     club.add_statement(data)
     holder = club.Holder()
 #   holder.data = data
@@ -170,7 +173,7 @@ def send_acknowledgement(data):
     (... or using tar:
     $ tar -vczf 4Peter.tar.gz {0:}"""
             .format(holder.mail_dir))
-    print("send_acknowledgement completed..")
+    ret.append("...send_acknowledgement completed.")
     return ret
 
 
@@ -206,6 +209,7 @@ def receipts_cmd():
             print("Totals don't match; try again!")
         else: break
     data['total'] = total
+    data['payment'] = total
     if dues:
         data['dues'] = dues
     if dock:
@@ -217,7 +221,7 @@ def receipts_cmd():
     data["acknowledged"] = input(
             "Enter date acknowledged (YYYYMMDD): ")
     #3# receipt recorded (if confirmed)
-    ret.append(confirm_receipts_query(data))
+    ret.extend(confirm_receipts_query(data))
     #4# now decide if to credit accounts...
     yn = input("Credit accounts?(y/n: ")
     if not (yn and yn[0] in 'yY'):

@@ -10,6 +10,8 @@ except ImportError: import routines
 try: from code import helpers
 except ImportError: import helpers
 
+try: from code import club
+except ImportError: import club
 """
 Under old system we had a "member" (no trailing 's') module.
 This will replace it for the current system.
@@ -259,6 +261,19 @@ def send_statement(holder, data):
     q_mailing(holder, w_statement)
     return ret
 
+
+def inductee_payment(holder, data):
+    ###### MUST ADD A 'current_dues' entry to data ########
+    ret = [(
+        'Requesting inductee payment for {first} {last}...'
+        .format(**data)), ]
+    if helpers.month > 6 or helpers.month ==1:
+        data["current_dues"] = club.yearly_dues
+    else:
+        data["current_dues"] = club.yearly_dues/2
+    q_mailing(holder, data)
+    pass
+
 def send_letter(holder, data):
     q_mailing(holder, data)
 
@@ -287,10 +302,6 @@ def is_new_applicant():
 
 
 def is_inductee():
-    pass
-
-
-def inductee_payment_f():
     pass
 
 

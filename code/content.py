@@ -510,12 +510,18 @@ attribute of an instance of utils.Club for mailing purposes.
       from: expect a value from the 'authors' dict
           each value is itself a dict specifying more info...
           names, address, signatures, reply to, ..
+      salutation: an optional key- if provided, it'll be used 
+            instead of 'Dear First Last,'
       body: text of the letter which may or may not have
           one or more 'extra' sections.
       post_scripts:  a list of optional postscripts
-      holder_funcs: assign 'working_data' attribute to holder.
+      holder_funcs: assign 'working_data' attribute to holder,
+            consisting of a dict keyed by personID
+            and each value is a dict containing the info needed
+            for each of the recipients.
       funcs: a list of functions used on each record found
-            in holder.working_data
+            in holder.working_data and provided the data it/they
+            require in that person's endry.
       test: a (usually 'lambda') function that determines
           if the record is to be considered at all.
           Probably will be redacted
@@ -529,11 +535,6 @@ attribute of an instance of utils.Club for mailing purposes.
 """
 
 content_types = dict(  # which_letter
-    # ## If a 'salutation' key/value is provided for any of the
-    # ## following, the value will be used as the salutation
-    # ## instead of a 'Dear {first} {last},' line.
-    # ## The first 4 listed values for each are used for first
-    # ## stage formatting.
     first_notice={
         "subject": "Bolinas R&B Club fees coming due",
         "from": authors["membership"],
@@ -546,10 +547,23 @@ content_types = dict(  # which_letter
         "funcs": (members.send_statement, ),
         "e_and_or_p": "one_only",
         },
+    request_inductee_payment={
+        "subject": "Welcome to the Bolinas Rod & Boat Club",
+        "from": authors["membership"],
+        "cc": "sponsors",
+        "body": letter_bodies["request_inductee_payment"],
+        "post_scripts": (
+            post_scripts["remittance"],
+            ),
+        "holder_funcs": (club.assign_inductees4payment,),
+        "funcs": (members.inductee_payment, ),
+        "e_and_or_p": "one_only",
+        },
+
     thank={
         "subject": "Thanks for your payment",
         "from": authors["membership"],
-        "cc": "cbsolution@att.net",
+        "cc": "",    # "cbsolution@att.net",
         "body": letter_bodies["thank"],
         "post_scripts": (),
         "holder_funcs": (),  #holder.data already assigned
@@ -772,19 +786,6 @@ content_types = dict(  # which_letter
                                  else False),
         "e_and_or_p": "one_only",
         },
-    request_inductee_payment={
-        "subject": "Welcome to the Bolinas Rod & Boat Club",
-        "from": authors["membership"],
-        "cc": "sponsors",
-        "body": letter_bodies["request_inductee_payment"],
-        "post_scripts": (
-            post_scripts["remittance"],
-            ),
-        "funcs": (members.inductee_payment_f,),
-        "test": (lambda record: True if members.is_inductee(record)
-                 else False),
-        "e_and_or_p": "one_only",
-        },
     vacancy_open={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
@@ -793,7 +794,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             ),
-        "funcs": (members.inductee_payment_f,),
+        "funcs": (members.inductee_payment,),
         "test": (lambda record: True if members.vacancy_open(record)
                  else False),
         "e_and_or_p": "one_only",
@@ -806,7 +807,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             ),
-        "funcs": (members.inductee_payment_f,),
+        "funcs": (members.inductee_payment,),
         "test": (lambda record: True if members.is_inductee(record)
                  else False),
         "e_and_or_p": "one_only",

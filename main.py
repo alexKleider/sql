@@ -62,7 +62,9 @@ if __name__ == '__main__':
                     print(f"Results sent to {outstream.name}.")
             else:
                 print("No file selected; output to stdout...")
-                print('\n'.join(res))
+                for line in res:
+                    print(repr(line))
+#               print('\n'.join(res))
         else:
             print("No valid command provided.")
         response = input(

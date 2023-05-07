@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
-# File: code/helpers.py
+# File: helpers.py
 
 """
-Helper functions originally developed for the Club/Utils repo.
-This version contains what is needed for the SQL version.
+Helper functions (initially developed for the Club/Utils repo
+but now used in the following places unified by hard linking.)
+This file appears in
+    ~/Git/Club/Utils
+    ~/Git/Lib/code
+    ~/Git/Sql/code
 """
 
 import os
@@ -60,7 +64,6 @@ def verify(notice, report=None):
 
 def equal_float(a, b):
     """
-    # Not used but might be helpful.
     compares floats for equality to limit of machine's accuracy
     # from Mark Summerfield
     """
@@ -69,7 +72,6 @@ def equal_float(a, b):
 
 def get_attributes(r):
     """
-    # Not used but might be helpful.
     """
     return sorted([attribute for attribute in dir(r)
             if not attribute.startswith('__')])
@@ -160,7 +162,6 @@ def club_year(which='this', now=datetime.date.today()):
 
 def expand_date(date_string):
     """
-    # Not used but might be helpful.
     Assumes date_string is in form yymmdd or yyyymmdd;
     Returns date in 'yyyy-mm-dd' format
     or "BAD DATE" if len(date_string) != 6 or 8.
@@ -192,13 +193,6 @@ def get_datestamp(date=None):
     else:
         d = datetime.date.today()
     return d.strftime(date_template)
-
-
-def do_nothing(text):
-    """
-    !?UNUSED?!  redact!?
-    """
-    print(text)
 
 
 def print_args(args, argument):
@@ -295,6 +289,27 @@ def str_add(*args):
         if arg == '': arg = 0
         total += int(arg)
     return str(total)
+
+
+def join_email_listings(*args):
+    """
+    Accepts any number of args, each of which must be a string.
+    Each string might contain more than one email separated by
+    comas.  Returned is a single string of "," separated emails
+    with no duplicates suitable for placement into a 'cc'
+    (or 'bcc') listing.
+    """
+    res = []
+    for arg in args:
+        if arg:
+            arg = arg.split(',')
+            arg = [item.strip() for item in arg]
+            res.extend(arg)
+    return ','.join(sorted(set(res)))
+
+
+def script_location():
+    return os.getcwd()
 
 
 def useful_lines(stream, comment="#"):
@@ -539,11 +554,6 @@ def show_json_data(json_data, underlinechar=''):
     return collector
 
 
-def send2file(text, filename):
-    with open(filename, 'w') as outfile:
-        outfile.write(text)
-
-
 def store(collector, filename):
     """
     Sends contents of <collector> (json format) to <filename>.
@@ -555,12 +565,34 @@ def store(collector, filename):
 
 def dump2json_file(data, json_file, verbose=True):
     """
+    <json_file> if it exists will be overwritten!!
     """
     with open(json_file, "w") as json_file_obj:
         if verbose:
             print('Dumping (json) data to "{}".'.format(
                   json_file_obj.name))
         json.dump(data, json_file_obj)
+
+
+def add2json_file(data, json_file, verbose=True):
+    """
+    <data> will be appended to <json_file> if it exists,
+    it'll be created with <data> as a dict in a list of 1 item.
+    """
+    if os.path.exists(json_file):
+        with open(json_file, 'r', encoding='utf-8') as j_file:
+            if verbose:
+                print('Loading existing (json) data from "{}".'
+                        .format(j_file.name))
+            data2add = json.load(j_file)
+        data2add.append(data)
+    else:
+        data2add = [data, ]
+    with open(json_file, 'w', encoding='utf-8') as j_file:
+        if verbose:
+            print('Dumping (json) data to "{}".'.format(
+                  j_file.name))
+        json.dump(data2add, j_file)
 
 
 def get_json(file_name, report=False):
@@ -576,7 +608,6 @@ def get_json(file_name, report=False):
 
 def longest(x, y):
     """
-    Not used but could be helpful
     """
     if len(x) > len(y):
         return x
@@ -710,7 +741,7 @@ def tabulate(data,
     return new_data
 
 
-def send2file(text, filename, silent=True):
+def send2file(text, filename, silent=False):
     """
     Write <text> to <filename> (silently (or not))
     <text> must be either a string or a list of strings.
@@ -794,7 +825,6 @@ def loose_spaces(line):
 
 def add_fields(fieldnames, csv_file, prefix='new_'):
     """
-    !?UNUSED?!
     <csv_file> field_names must be a subset of <fieldnames>.
     Output has the same data but with blank entries for
     any field name not previously present.

@@ -225,6 +225,7 @@ def get_person_fields_by_ID(personID, fields=None):
     Returns a dict keyed by names of fields _if_ <fields> is
     provided, _otherwise_ returns a tuple of all fields.
     """
+#   _ = input("Entering code/routines.get_person_fields_by_ID")
     query = """SELECT {{}} FROM People
     WHERE personID = {};""".format(personID)
     if fields:
@@ -233,19 +234,18 @@ def get_person_fields_by_ID(personID, fields=None):
     else: var = '*'
     query = query.format(var)
 #   _ = input(query)
-    res = fetch(query, from_file=False)[0]
-#   _ = input(res[0])
+    res = fetch(query, from_file=False)[0]  # Note the '[0]'
     if fields:
         dic = {}
         z = zip(fields, range(len(fields)))
         for field, n in z:
             dic[field] = res[n]
-        for key, value in dic.items():
-            print(f"'{key}': '{value}'")
+#       for key, value in dic.items():
+#           print(f"'{key}': '{value}'")
 #       _ = input("^dict version of query^")
         return dic
     else:
-        _ = input(res)
+#       _ = input(res)
         return res
 
 

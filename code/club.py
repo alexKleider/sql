@@ -14,6 +14,8 @@ track of global values.  Only one instance at a time.
 
 try: from code import routines
 except ImportError: import routines
+try: from code import helpers
+except ImportError: import helpers
 
 ROOT = "/home/alex/Git/Sql/"
 DB = ROOT + "Secret/club.db"
@@ -176,6 +178,39 @@ def assign_owing(holder):
         byID[tup[0]]['mooring'] = tup[1]
     # save what's been collected...
     holder.working_data = byID
+
+
+def assign_inductees4payment(holder):
+    """
+    Assigns holder.working_data dict keyed by ID pertaining
+    to those recently inducted and yet to be notified.
+    """
+    byID = dict()
+    res = routines.fetch('Sql/inducted.sql')
+    keys = ("personID last first suffix phone address town state"
+    + " postal_code email sponsor1 sponsor2 begin end")
+    keys = keys.split()
+    query = """SELECT last, first, suffix, email FROM People
+                WHERE personID = {};"""
+    sponsor_keys = "last first suffix email"
+    for line in res:
+        data = routines.make_dict(keys[1:],
+                line[1:])
+        data['cc'] = []
+        data['sponsor1'] = routines.make_dict(sponsor_keys.split(),
+                routines.fetch(query.format(data['sponsor1']),
+                from_file=False)[0])
+        if data['sponsor1']['email']:
+            data['cc'].append(data['sponsor1']['email'])
+        data['sponsor2'] = routines.make_dict(sponsor_keys.split(),
+                routines.fetch(query.format(data['sponsor2']),
+                from_file=False)[0])
+        if data['sponsor2']['email']:
+            data['cc'].append(data['sponsor2']['email'])
+        data['cc'] = ','.join((data['cc']))
+        byID[line[0]] = data
+    holder.working_data = byID
+
 
 def assign_welcome2full_membership(holder):
     ret = ['<welcome to full_membership mailing>',
