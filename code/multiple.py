@@ -10,6 +10,13 @@ my code to support entry of dated events: date.py
 try: from code import routines
 except ImportError: import routines
 
+def update_account(query):
+    ret = (["Query is ...", query])
+    ret.append("Query returns:")
+    ret.append(repr(routines.fetch(query,
+            from_file=False, commit=True)))
+    return ret
+
 def update_dues(data):
     """
     subtract data['dues'] from data['personID']'s dues_owed.
@@ -23,22 +30,34 @@ def update_dues(data):
         dues_owed = dues_owed - {dues}
         WHERE personID = {personID};
         """.format(**data)
-    ret.extend(["Query is ...", query])
-    ret.append("Query returns:")
-    ret.append(repr(routines.fetch(query,
-            from_file=False, commit=True)))
+    ret.extend(update_account(query))
     return ret
 
 def update_dock(data):
     ret = ["Updating dock...", ]
+    query = """UPDATE Dock_Privileges SET
+        cost = cost - {dock}
+        WHERE personID = {personID};
+    """.format(**data)
+    ret.extend(update_account(query))
     return ret
 
 def update_kayak(data):
     ret = ["Updating kayak...", ]
+    query = """UPDATE Kayak_Slots SET
+        slot_cost = slot_cost - {kayak}
+        WHERE personID = {personID};
+    """.format(**data)
+    ret.extend(update_account(query))
     return ret
 
 def update_mooring(data):
     ret = ["Updating mooring...", ]
+    query = """UPDATE Moorings SET
+        mooring_cost = mooring_cost - {mooring}
+        WHERE personID = {personID};
+    """.format(**data)
+    ret.extend(update_account(query))
     return ret
 
 def credit_accounts(data):

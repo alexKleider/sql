@@ -36,6 +36,8 @@ class Holder(object):
     cc_sponsors = False
     mail_dir = MAIL_DIR
     email_json = EMAIL_JSON
+    emails = []  # list of dicts
+    entries = 0  # a counter for number of receipts entered
 
     @classmethod
     def inc_n_instances(cls):

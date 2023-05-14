@@ -11,7 +11,9 @@ Attrition: date  (also reason)
 Applicants: app_rcvd, fee_rcvd, meeting1,2,3,
             approved, dues_paid, notified
 
-<date_entry_cmd> is the top level procedure. 
+<date_entry_cmd> is the top level procedure; it and it's
+<receipts_cmd> is the path currently under development. 
+
 It presents a menu reflected in the <tables_w_dates> listing.
 These are the top level choices of this module.
 So far only working on the receipts_cmd.
@@ -29,7 +31,7 @@ tables_w_dates = (
     )
 
 import os
-
+ 
 try: from code import club
 except ImportError: import club
 
@@ -129,6 +131,7 @@ def send_acknowledgement(data):
     .. still to be added:
     first, last, suffix, email & other demographics, and
     (a) statement (of what's being acknowledged.)
+    Assumes mailing dir and emails.json are set up for additions.
     """
     ret = [
 "Preparing to send acknowledgement of following transaction: ",
@@ -147,32 +150,28 @@ def send_acknowledgement(data):
 #   _ = input()
     club.add_statement(data)
     holder = club.Holder()
-#   holder.data = data
+#   holder.working_data = [data, ]
     holder.which = content.content_types["thank"]
-    # give user opportunity to abort if files are still present:
-    helpers.check_before_deletion((holder.email_json,
-                                    holder.mail_dir),
-                                    delete=True)
-    os.mkdir(holder.mail_dir)
     ret.extend(commands.assign_templates(holder))
-    holder.emails = []
+    # holder.emails assumed to be already set up.
     # no need for "holder_funcs": we've already got our data
     members.q_mailing(holder, data)
     # Need for this??? members.thank_func()
     pass
-    # send holder.emails to a json file
-    helpers.dump2json_file(holder.emails, holder.email_json)
-    # Delete mailing dir if no letters are filed:
-    if os.path.isdir(holder.mail_dir) and not len(
-            os.listdir(holder.mail_dir)):
-        os.rmdir(holder.mail_dir)
-        print("Empty mailing directory deleted.")
-    else:
-        print("""..next step might be the following:
-    $ zip -r 4Peter {0:}
-    (... or using tar:
-    $ tar -vczf 4Peter.tar.gz {0:}"""
-            .format(holder.mail_dir))
+#   helpers.add2json_file(data, json_file, verbose=True)
+    # Caller will send holder.emails_json to a json file
+    # and delete mailing dir if no letters are filed:
+#   helpers.dump2json_file(holder.emails, holder.email_json)
+#   if os.path.isdir(holder.mail_dir) and not len(
+#           os.listdir(holder.mail_dir)):
+#       os.rmdir(holder.mail_dir)
+#       print("Empty mailing directory deleted.")
+#   else:
+#       print("""..next step might be the following:
+#   $ zip -r 4Peter {0:}
+#   (... or using tar:
+#   $ tar -vczf 4Peter.tar.gz {0:}"""
+#           .format(holder.mail_dir))
     ret.append("...send_acknowledgement completed.")
     return ret
 
@@ -182,17 +181,31 @@ def adjust_money_tables(data, ret):
     """Credits payments as appropriate"""
     pass
 
-def receipts_cmd():
-    """Deal with a payment."""
-    ret = ["Entering receipts_cmd()", ]
-    print(ret[0])
+    
+def add_receipt_entry(holder, ret):
+    """
+    Deal with a payment:
+    <ret> must be an existing array of strings for reporting.
+    Each receipt is acknowledged by an email &/or letter.
+    Letters go into holder.mail_dir and
+    emails get added to already existing holder.email.json file
+    both of which need to be set up by the caller <receipts_cmd>.
+    ??Returns an "entry"??
+    """
+    if holder.entries:
+        response = input("Enter another receipt? (y/n) " )
+    else:
+        response = input("Enter a receipt? (y/n) " )
+    if not (response and response[0] in 'yY'):
+        return -2  # signal you're done with receipt entry
     #1# payor?
+    print("Choose a payor...")
     res = routines.id_by_name()
     print(f"The ID choice(s) is/are {res}")
     payorID = int(input("Enter ID [0 to abort]: "))
     if not (payorID and not payorID == 0):
-        sys(exit)
-    #2# details of the <data> to be entered
+        return -1  # unable to establish a payor
+    #2# details of the <data> to become an entry
     data = {}
     data['personID'] = payorID
     #0# Should now look up all that is owed by this person
@@ -225,16 +238,53 @@ def receipts_cmd():
     #4# now decide if to credit accounts...
     yn = input("Credit accounts?(y/n: ")
     if not (yn and yn[0] in 'yY'):
-        ret.append("Aborting receipts entry- no action takey.")
-        return ret
+        ret.append(
+            "Receipt entry created but account not credited!")
+        print(ret[-1])
+        return -2
     #4a# Crediting the accounts... (so far only dues)
     ret.extend(multiple.credit_accounts(data))
     #5# Send letter of acknowledgement...
     yn = input("Send acknowledgement?(y/n): ")
     if not (yn and yn[0] in 'yY'):
         ret.append("Letter of acknowledgement NOT being sent.")
-        return ret
+        return -2
     ret.extend(send_acknowledgement(data))
+    holder.entries += 1
+    return data
+
+
+def receipts_cmd():
+    """
+    Since emails/letters are to be stacked...
+    Must set up holder.email_json and MailDir...
+    We then repeatedly call add_receipt_entry which
+    appends letters to the MailDir and adds a record to the
+    json file defined by holder.email_json.
+    It's up to the user to then send the emails
+    and deal with the letters.
+    <add_receipt_entry> needs hoder as a param and also
+    takes an optional param which if provided must be a list
+    to which progress notes are added.
+    """
+    helpers.check_before_deletion(
+            (holder.mail_dir, holder.email_json, ),
+            delete=True)
+    ret = ["Entering receipts_cmd()", ]
+    entries = []
+    while True:
+        # if we are going to keep track of entries perhaps we
+        # should do it as an attribute of holder...
+        entry = add_receipt_entry(holder, ret)
+        if isinstance(entry, int):
+            if entry == -1:  # unable to establish a payor
+                continue
+            break
+        else:
+            entries.append(entry)
+            ret.append("receipt entered")
+    for entry in entries:
+        ret.append(repr(entry))
     return ret
 
 
@@ -244,7 +294,7 @@ def date_entry_cmd():
         tables_w_dates, header="Which table:", incl0Q=True)
     ret.append(
         f"Your choice is #{choice}: {tables_w_dates[choice-1]}")
-    if choice == 1: ret.extend(applicants_cmd())
+    if choice ==   1: ret.extend(applicants_cmd())
     elif choice == 2: ret.extend(attrition_cmd())
     elif choice == 3: ret.extend(person_status_cmd())
     elif choice == 4: ret.extend(receipts_cmd())
@@ -297,7 +347,8 @@ def nancy_into_receipts():
     print('\n'.join(confirm_receipts_query(data)))
 
 if __name__ == "__main__":
-    nancy_into_receipts()
+    print("Dry run of code.dates.py")
+#   nancy_into_receipts()
 #   test_mailing()
 #   print(date_entry_cmd())
 #   observe()

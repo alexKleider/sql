@@ -43,7 +43,7 @@ Choose one of the following:
  12. Data Entry (Dates)        13. Prepare Mailing
  14. Show Applicant Data       15. Add Meeting Date
  16. Display Fees by category  17. Welcome New Member
- 18. Receipts
+ 18. Receipts                  19. Enter payments
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -64,6 +64,7 @@ Choose one of the following:
         elif choice == '16': return display_fees_by_category_cmd
         elif choice == '17': return welcome_new_member_cmd
         elif choice == '18': return receipts_cmd
+        elif choice == '19': return payment_entry_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -281,8 +282,7 @@ def show_applicants():
     date_keys = club.date_keys
     sponsor_keys = club.sponsor_keys
     
-    query_file = 'Sql/applicants2.sql'
-    res = routines.fetch(query_file)
+    res = routines.fetch('Sql/applicants2.sql')
     # convert our returned sequences into...
     dics = []        #  a sequence of dicts:
     for sequence in res:
@@ -918,6 +918,12 @@ def receipts_cmd():
         line = line.format(**data)
         report.append(line)
     return report
+
+
+def payment_entry_cmd():
+    ret = ['Entering payment_entry_cmd...', ]
+    print(ret[0])
+    return(ret)
 
 
 if __name__ == "__main__":
