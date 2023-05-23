@@ -24,9 +24,7 @@ so it can be tested separately....
 import os
  
 try: from code import club
-except ImportError:
-    import club
-    raise
+except ImportError: import club
 
 try: from code import helpers
 except ImportError: import helpers
@@ -266,6 +264,7 @@ def receipts_cmd():
     takes an optional param which if provided must be a list
     to which progress notes are added.
     """
+    ret = ["Entering receipts_cmd()", ]
     holder = club.Holder()
     holder.which = content.content_types["thank"]
     holder.direct2json_file = True
@@ -273,14 +272,13 @@ def receipts_cmd():
     helpers.check_before_deletion(
             (holder.mail_dir, holder.email_json, ),
             delete=True)
-    ret = ["Entering receipts_cmd()", ]
     entries = []
     while True:
         # if we are going to keep track of entries perhaps we
         # should do it as an attribute of holder...
-        ret = add_receipt_entry(holder, ret)
-        if isinstance(ret, int):
-            if ret == -1:  # unable to establish a payor
+        res = add_receipt_entry(holder, ret)
+        if isinstance(res, int):
+            if res == -1:  # unable to establish a payor
                 continue
             break
         else:
