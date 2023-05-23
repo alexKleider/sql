@@ -142,6 +142,9 @@ def file_letter(holder, data):
             os.path.join(holder.mail_dir, filename))
 
 def append_email(holder, data):
+#   for key, value in data.items():
+#       print(f"{key}: {value}")
+#   _ = input()
     email_body = holder.email_template.format(**data)
 #   =========================
     sender = holder.which['from']['email']
@@ -164,14 +167,17 @@ def append_email(holder, data):
         email['Cc'] = ','.join((email['Cc'],holder.which['cc']))
     except KeyError:
         pass # no 'cc' specified in content
-    print(f"holder.which['bcc']: {holder.which['bcc']}")
     try:
         email['Bcc'] = ','.join((email['Bcc'],holder.which['bcc']))
     except KeyError:
-        pass # no 'cc' specified in content
+        pass # no 'bcc' specified in content
     email['Cc'] = email['Cc'].strip(',')
     email['Bcc'] = email['Bcc'].strip(',')
-    holder.emails.append(email)
+    if holder.direct2json_file:
+        helpers.add2json_file(email, holder.email_json,
+                verbose=True)
+    else:
+        holder.emails.append(email)
 
 
 def q_mailing(holder, data):

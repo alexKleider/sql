@@ -18,6 +18,7 @@ import csv
 import json
 import datetime
 import functools
+import collections
 
 date_template = "%b %d, %Y"
 date_w_wk_day_template = "%a, %b %d, %Y"
@@ -293,9 +294,10 @@ def str_add(*args):
 
 def join_email_listings(*args):
     """
-    Accepts any number of args, each of which must be a string.
-    Each string might contain more than one email separated by
-    comas.  Returned is a single string of "," separated emails
+    Accepts any number of args, each of which must be a string
+    consisting of emails, separated by comas if more than one,
+    no spaces.
+    Returned is a single string of "," separated emails
     with no duplicates suitable for placement into a 'cc'
     (or 'bcc') listing.
     """
@@ -508,19 +510,41 @@ def add_sub_list(sub_header, sub_list, main_list,
 
 
 def prepend2file_name(word, file_name):
+    """
+    """
     head, tail = os.path.split(file_name)
     return os.path.join(head, ''.join((word, tail)))
 
+def non_string_iterable(item, debug=False):
+    if isinstance(item, str):
+        if debug:
+            print(f"{item} is a string; returning False")
+        return False
+    if isinstance(item, collections.Iterable):
+        if debug:
+            print(f"{item} is a non string iterable")
+        return True
+    else: return False
 
-def show_dict(d, extra_line=True):
+def show_dict(d, extra_line=True, ordered=True, debug=False):
+    """
+    Returns a list of strings describing the dict key/values.
+    <extra_line> if False: values same line as key.
+    <ordered> if False: keys stay in order presented
+    """
     lines = []
-    for key in sorted(d.keys()):
+    keys = d.keys()
+    if ordered:
+        keys = sorted(keys)
+    for key in keys:
+        value = d[key]
+        if non_string_iterable(value, debug=debug):
+            value = ', '.join([val for val in sorted(value)])
         if extra_line:
-            lines.append("{}\n\t {}\n".format(key, sorted(d[key])))
+            lines.append("{}\n\t {}\n".format(key, value))
         else:
-            lines.append("{}: {}".format(key, sorted(d[key])))
+            lines.append("{}: {}".format(key, value))
     return lines
-
 
 
 def show_json_data(json_data, underlinechar=''):
@@ -576,8 +600,8 @@ def dump2json_file(data, json_file, verbose=True):
 
 def add2json_file(data, json_file, verbose=True):
     """
-    <data> will be appended to <json_file> if it exists,
-    it'll be created with <data> as a dict in a list of 1 item.
+    <data> will be appended to <json_file> (which will be created
+    if it doesn't already exist.
     """
     if os.path.exists(json_file):
         with open(json_file, 'r', encoding='utf-8') as j_file:

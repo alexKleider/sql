@@ -12,14 +12,10 @@ It provides the <Holder> class which serves largely to keep
 track of global values.  Only one instance at a time.
 """
 
-try: from code import routines
-except ImportError: import routines
-try: from code import helpers
-except ImportError: import helpers
-
 ROOT = "/home/alex/Git/Sql/"
 DB = ROOT + "Secret/club.db"
 db_file_name = ROOT + "Secret/club.db"
+temp_db = ROOT + "Secret/temp.db"   # "/home/alex/Git/Sql/Secret/club.db"
 ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 MAIL_DIR = ROOT + 'Secret/MailDir'
 EMAIL_JSON = ROOT + 'Secret/emails.json'
@@ -34,10 +30,14 @@ class Holder(object):
 
     n_instances = 0
     cc_sponsors = False
+    db_file_name = db_file_name
     mail_dir = MAIL_DIR
     email_json = EMAIL_JSON
+    direct2json_file = False
+    #  ?? Next 2 to be redacted ??
     emails = []  # list of dicts
     entries = 0  # a counter for number of receipts entered
+    # is <entries> ever used?
 
     @classmethod
     def inc_n_instances(cls):
@@ -88,179 +88,6 @@ sponsor_keys = applicantDB_keys[2:4]
 yearly_dues = 200
 
 
-def get_data4statement(personID):
-    """
-    first, last, suffix,
-    address, town, state, postal_code, country,
-    email, dues_owed);
-    """
-    data = {'total': 0}
-    res = routines.fetch("Sql/dues_et_demographics_by_ID.sql",
-            params=(personID, ) )[0]
-#   print(res)
-    data['first'] = res[0]
-    data['last'] = res[1]
-    data['suffix'] = res[2]
-    data['address'] = res[3]
-    data['town'] = res[4]
-    data['state'] = res[5]
-    data['postal_code'] = res[6]
-    data['country'] = res[7]
-    data['email'] = res[8]
-    data['dues_owed'] = res[9]
-    dock = routines.fetch("Sql/dock_by_ID.sql",
-            params=(personID, ) )
-    total = 0
-    if data['dues_owed']: total += data['dues_owed']
-    if dock:
-        data['dock'] = dock[0][1]
-        total += data['dock']
-    kayak = routines.fetch("Sql/kayak_by_ID.sql",
-            params=(personID, ) )
-    if kayak:
-        data['kayak'] = dock[0][1] 
-        total += data['kayak']
-    mooring = routines.fetch("Sql/mooring_by_ID.sql",
-            params=(personID, ) )
-    if mooring:
-        data['mooring'] = mooring[0][1]
-        total += data['mooring']
-    data['total'] = total
-#   for key, value in data.items():
-#       print(f"{key}: {value}")
-#   print()
-    return data
-
-def add_statement(data):
-    owing = ["Currently owing:", ]
-    keys = set(data.keys())
-    owing.append(    f"  Dues owing..... {data['dues_owed']:>3}")
-    if "dock" in keys:
-        owing.append(f"  Dock usage..... {data['dock']:>3}")
-    if "kayak" in keys:
-        owing.append(f"  Kayak storage.. {data['kayak']:>3}")
-    if "mooring" in keys:
-        owing.append(f"  Mooring fee.... {data['mooring']:>3}")
-    owing.append(f"Total... ${data['total']}")
-    data['statement'] = '\n'.join(owing)
-    return data['statement']
-
-
-def assign_owing(holder):
-    """
-    Assigns holder.working_data dict:
-    Retrieve personID for each person who owes
-    putting their relevant data into a dict keyed by ID.
-    """
-    byID = dict()
-    # dues owing:
-    for tup in (routines.fetch("Sql/dues.sql")):
-        byID[tup[0]] = {'first': tup[1],
-                        'last': tup[2],
-                        'suffix': tup[3],
-                        'email': tup[4],
-                        'address': tup[5],
-                        'town': tup[6],
-                        'state': tup[7],
-                        'postal_code': tup[8],
-                        'country': tup[9],
-                        'dues_owed': tup[10],
-                        }
-    # dock privileges owing:
-    for tup in routines.fetch("Sql/dock.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['dock'] = tup[1]
-    # kayak storage owing:
-    for tup in routines.fetch("Sql/kayak.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['kayak'] = tup[1]
-    # mooring fee owing:
-    for tup in routines.fetch("Sql/mooring.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['mooring'] = tup[1]
-    # save what's been collected...
-    holder.working_data = byID
-
-
-def assign_inductees4payment(holder):
-    """
-    Assigns holder.working_data dict keyed by ID pertaining
-    to those recently inducted and yet to be notified.
-    """
-    byID = dict()
-    res = routines.fetch('Sql/inducted.sql')
-    keys = ("personID last first suffix phone address town state"
-    + " postal_code email sponsor1 sponsor2 begin end")
-    keys = keys.split()
-    query = """SELECT last, first, suffix, email FROM People
-                WHERE personID = {};"""
-    sponsor_keys = "last first suffix email"
-    for line in res:
-        data = routines.make_dict(keys[1:],
-                line[1:])
-        data['cc'] = []
-        data['sponsor1'] = routines.make_dict(sponsor_keys.split(),
-                routines.fetch(query.format(data['sponsor1']),
-                from_file=False)[0])
-        if data['sponsor1']['email']:
-            data['cc'].append(data['sponsor1']['email'])
-        data['sponsor2'] = routines.make_dict(sponsor_keys.split(),
-                routines.fetch(query.format(data['sponsor2']),
-                from_file=False)[0])
-        if data['sponsor2']['email']:
-            data['cc'].append(data['sponsor2']['email'])
-        data['cc'] = ','.join((data['cc']))
-        byID[line[0]] = data
-    holder.working_data = byID
-
-
-def assign_welcome2full_membership(holder):
-    ret = ['<welcome to full_membership mailing>',
-            ]
-    print("Create list of people to welcome as new member(s):")
-    candidates = []
-    while True:
-        ids = routines.id_by_name()
-        if not ids:
-            break
-        print('\n'.join(ids))
-        print(f"Enter (coma separated if > 1) list of IDs:")
-        response = input("Listing of IDs or blank to quit: ")
-        if not response:
-            break
-        else:
-            _ = input(f"Your response: {response}")
-            candidates.extend([int(entry) for entry in
-                                response.split(",")])
-    if not candidates:  # nothing to do
-        ret.append("No candidate(s) specified. Nothing to do.")
-        return ret
-    _ = input(f"Entries: {candidates}")
-    ret.append('You chose the following: ' + ', '.join(
-            [str(candidate) for candidate in candidates]))
-    # run a query to populate byID ==> holder.data2welcome
-    byID = dict()
-    for personID in candidates:
-        tup = routines.fetch('Sql/find_by_ID.sql',
-                            params=(personID,))[0]
-        byID[tup[0]] = {'first': tup[1],
-                        'last': tup[2],
-                        'suffix': tup[3],
-                        'phone': tup[4],
-                        'address': tup[5],
-                        'town': tup[6],
-                        'state': tup[7],
-                        'postal_code': tup[8],
-                        'country': tup[9],
-                        'email': tup[10],
-                        }
-    if holder.cc_sponsors:
-        for key, dic in byID.items():
-            
-            pass
-    holder.working_data = byID
-    return ret
-
 def t1():
     print('Running code/club...')
     print(f"peopleDB keys: {peopleDB_keys}")
@@ -271,7 +98,5 @@ def t1():
 
 
 if __name__ == '__main__':
-    print(get_statement(get_data4statement(197)))
-    print(get_statement(get_data4statement(42)))
-    print(get_statement(get_data4statement(157)))
+    pass
 

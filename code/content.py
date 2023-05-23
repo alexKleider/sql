@@ -42,9 +42,6 @@ except ImportError: import helpers
 try: from code import routines
 except ImportError: import routines
 
-try: from code import club
-except ImportError: import club
-
 try: from code import members
 except ImportError: import members
 
@@ -157,7 +154,7 @@ If the number is negative or zero, there'll be nothing due in June.
 """,
 
     thank="""
-This acknowledges receipt of your recent ${payment} payment.
+This acknowledges receipt of your recent ${total} payment.
 Thank you.
 
 A statement of your current standing follows:
@@ -543,7 +540,7 @@ content_types = dict(  # which_letter
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
-        "holder_funcs": (club.assign_owing, ),
+        "holder_funcs": (routines.assign_owing, ),
         "funcs": (members.send_statement, ),
         "e_and_or_p": "one_only",
         },
@@ -556,7 +553,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             ),
-        "holder_funcs": (club.assign_inductees4payment,),
+        "holder_funcs": (routines.assign_inductees4payment,),
         "funcs": (members.inductee_payment, ),
         "e_and_or_p": "one_only",
         },
@@ -820,7 +817,7 @@ content_types = dict(  # which_letter
         "body": letter_bodies["welcome2full_membership"],
         "post_scripts": (post_scripts["ref1_email_or_PO"],
                          ),
-        "holder_funcs": (club.assign_welcome2full_membership,),
+        "holder_funcs": (routines.assign_welcome2full_membership,),
         "funcs": (members.send_letter,),
         "test": (lambda record: True if members.is_new_member(record)
                  else False),        # status 'am'
@@ -913,7 +910,7 @@ printers = dict(
    )
 # ## ... end of printers (dict specifying printer being used.)
 
-def assign_printer(club):
+def assign_printer(holder):
     """
     """
     # there's a bug here that hasn't been resolved
@@ -927,7 +924,7 @@ def assign_printer(club):
     for key, lpr in menu.items():
         print(f"{key}: {lpr}")
     index = int(input("Which printer will you be using: "))
-    club.printer = menu[index]
+    holder.printer = menu[index]
 
 def get_postscripts(which_letter):
     """
@@ -1067,10 +1064,10 @@ if __name__ == "__main__":
         class Holder(object):
             def __init__(self):
                 noval = ''
-        club = Holder()
-        assign_printer(club)
-        print(club.printer)
-        print(printers[club.printer])
+        holder = Holder()
+        assign_printer(holder)
+        print(holder.printer)
+        print(printers[holder.printer])
 
     ck_assign_printer()
     # main()

@@ -8,9 +8,10 @@ relational data base management.
 """
 
 import sqlite3
+try: from code import club
+except ImportError: import club
 
-db_file_name = '/home/alex/Git/Sql/Secret/club.db'
-
+db_file_name = club.db_file_name
 
 def initDB(path):
     """
@@ -380,6 +381,192 @@ def get_sponsors(applicantID):
         params=(sponsorID,), from_file=False))
     return sponsors
 
+
+def get_data4statement(personID):
+    """
+    Returns a dict keyed by the following:
+    personID, first, last, suffix,
+    address, town, state, postal_code, country,
+    email, dues_owed
+    and if applicable:
+    dock, kayak, mooring.
+    """
+    data = {'personID': personID,
+            }
+    res = fetch("Sql/dues_et_demographics_by_ID.sql",
+            params=(personID, ) )[0]
+#   print(res)
+    data['first'] = res[0]
+    data['last'] = res[1]
+    data['suffix'] = res[2]
+    data['address'] = res[3]
+    data['town'] = res[4]
+    data['state'] = res[5]
+    data['postal_code'] = res[6]
+    data['country'] = res[7]
+    data['email'] = res[8]
+    data['dues_owed'] = res[9]
+    total = 0
+    if data['dues_owed']: total += data['dues_owed']
+    dock = fetch("Sql/dock_by_ID.sql",
+            params=(personID, ) )
+    if dock:
+        data['dock'] = dock[0][1]
+        total += data['dock']
+    kayak = fetch("Sql/kayak_by_ID.sql",
+            params=(personID, ) )
+    if kayak:
+        data['kayak'] = dock[0][1] 
+        total += data['kayak']
+    mooring = fetch("Sql/mooring_by_ID.sql",
+            params=(personID, ) )
+    _ = input(f"""mooring query ==> 
+    {repr(mooring)}
+            """)
+    if mooring:
+        data['mooring'] = mooring[0][1]
+        total += data['mooring']
+    data['total'] = total
+#   for key, value in data.items():
+#       print(f"{key}: {value}")
+#   print()
+    return data
+
+def get_statement(data):
+    """
+    <data> is a dict returned by get_data4statement.
+    Returns a multiline string: a statement of what's owed.
+    """
+    owing = ["Currently owing:", ]
+    keys = set(data.keys())
+    owing.append(    f"  Dues owing..... {data['dues_owed']:>3}")
+    if "dock" in keys:
+        owing.append(f"  Dock usage..... {data['dock']:>3}")
+    if "kayak" in keys:
+        owing.append(f"  Kayak storage.. {data['kayak']:>3}")
+    if "mooring" in keys:
+        owing.append(f"  Mooring fee.... {data['mooring']:>3}")
+    owing.append(f"Total... ${data['total']}")
+    return '\n'.join(owing)
+
+
+def assign_owing(holder):
+    """
+    Assigns holder.working_data dict:
+    Retrieve personID for each person who owes
+    putting their relevant data into a dict keyed by ID.
+    """
+    byID = dict()
+    # dues owing:
+    for tup in (fetch("Sql/dues.sql")):
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'email': tup[4],
+                        'address': tup[5],
+                        'town': tup[6],
+                        'state': tup[7],
+                        'postal_code': tup[8],
+                        'country': tup[9],
+                        'dues_owed': tup[10],
+                        }
+    # dock privileges owing:
+    for tup in fetch("Sql/dock.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['dock'] = tup[1]
+    # kayak storage owing:
+    for tup in fetch("Sql/kayak.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['kayak'] = tup[1]
+    # mooring fee owing:
+    for tup in fetch("Sql/mooring.sql"):
+        _ = byID.setdefault(tup[0], {})
+        byID[tup[0]]['mooring'] = tup[1]
+    # save what's been collected...
+    holder.working_data = byID
+
+
+def assign_inductees4payment(holder):
+    """
+    Assigns holder.working_data dict keyed by ID pertaining
+    to those recently inducted and yet to be notified.
+    """
+    byID = dict()
+    res = fetch('Sql/inducted.sql')
+    keys = ("personID last first suffix phone address town state"
+    + " postal_code email sponsor1 sponsor2 begin end")
+    keys = keys.split()
+    query = """SELECT last, first, suffix, email FROM People
+                WHERE personID = {};"""
+    sponsor_keys = "last first suffix email"
+    for line in res:
+        data = make_dict(keys[1:],
+                line[1:])
+        data['cc'] = []
+        data['sponsor1'] = make_dict(sponsor_keys.split(),
+                fetch(query.format(data['sponsor1']),
+                from_file=False)[0])
+        if data['sponsor1']['email']:
+            data['cc'].append(data['sponsor1']['email'])
+        data['sponsor2'] = make_dict(sponsor_keys.split(),
+                fetch(query.format(data['sponsor2']),
+                from_file=False)[0])
+        if data['sponsor2']['email']:
+            data['cc'].append(data['sponsor2']['email'])
+        data['cc'] = ','.join((data['cc']))
+        byID[line[0]] = data
+    holder.working_data = byID
+
+
+def assign_welcome2full_membership(holder):
+    ret = ['<welcome to full_membership mailing>',
+            ]
+    print("Create list of people to welcome as new member(s):")
+    candidates = []
+    while True:
+        ids = id_by_name()
+        if not ids:
+            break
+        print('\n'.join(ids))
+        print(f"Enter (coma separated if > 1) list of IDs:")
+        response = input("Listing of IDs or blank to quit: ")
+        if not response:
+            break
+        else:
+            _ = input(f"Your response: {response}")
+            candidates.extend([int(entry) for entry in
+                                response.split(",")])
+    if not candidates:  # nothing to do
+        ret.append("No candidate(s) specified. Nothing to do.")
+        return ret
+    _ = input(f"Entries: {candidates}")
+    ret.append('You chose the following: ' + ', '.join(
+            [str(candidate) for candidate in candidates]))
+    # run a query to populate byID ==> holder.data2welcome
+    byID = dict()
+    for personID in candidates:
+        tup = fetch('Sql/find_by_ID.sql',
+                            params=(personID,))[0]
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'phone': tup[4],
+                        'address': tup[5],
+                        'town': tup[6],
+                        'state': tup[7],
+                        'postal_code': tup[8],
+                        'country': tup[9],
+                        'email': tup[10],
+                        }
+    if holder.cc_sponsors:
+        for key, dic in byID.items():
+            
+            pass
+    holder.working_data = byID
+    return ret
+
+
+
 def exercise_get_person_fields_by_ID(id_n):
     res = get_person_fields_by_ID(id_n,
             fields = ('first', 'last', 'suffix'))
@@ -389,5 +576,9 @@ def exercise_get_person_fields_by_ID(id_n):
 if __name__ == '__main__':
 #   print(get_sponsors(110))
     exercise_get_person_fields_by_ID(146)
+    print("\nWhat follows are three statements:....")
+    print(get_statement(get_data4statement(197)))
+    print(get_statement(get_data4statement(42)))
+    print(get_statement(get_data4statement(157)))
     pass
 
