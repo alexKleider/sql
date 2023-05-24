@@ -893,6 +893,7 @@ def welcome_new_member_cmd():
     return ret
 
 def receipts_cmd():
+    list_of_dicts = []
     fields = ("personID date_received dues dock kayak "
             + "mooring acknowledged")
     keys = fields.split()
@@ -917,6 +918,12 @@ def receipts_cmd():
                 "{acknowledged:>10}", ))
         line = line.format(**data)
         report.append(line)
+        list_of_dicts.append(data)
+    response = input(
+        "Create csv file? (enter a name or leave blank)... ")
+    if response:
+        helpers.save_db(list_of_dicts, response, data.keys(),
+                report="receipts")
     return report
 
 

@@ -432,8 +432,8 @@ def keys_removed(a_dict, iterable_of_keys):
 
 def save_db(new_db, outfile, key_list, report=None):
     """
-    Saves data in <new_db> (a dict) onto a csv file <outfile>
-    with the keys specified by <key_list>.
+    Saves data in <new_db> (a list of dicts) onto a csv file
+    <outfile> with the keys specified by <key_list>.
     Report of data being sent to a file can be augmented by <report>.
     """
     with open(outfile, 'w', newline='') as file_obj:
@@ -444,6 +444,9 @@ def save_db(new_db, outfile, key_list, report=None):
                                 )
         writer.writeheader()
         for record in new_db:
+#           for line in [f"{key}: {value}" for key, value
+#                   in record.items()]:
+#               print(line)
             writer.writerow(record)
         if not report:
             report = ''

@@ -219,8 +219,13 @@ def add_receipt_entry(holder, ret):
     print(data['before_statement'])
     print("...FYI...")
 
-    data['date_received'] = input(
-            "Enter date received (YYYYMMDD): ")
+    if holder.receipt_date:
+        print(
+          f"Using default receipt date '{holder.receipt_date}'")
+        data['date_received'] = holder.receipt_date
+    else:
+        data['date_received'] = input(
+                "Enter date received (YYYYMMDD): ")
     while True:
         dues = amt_paid(input("Dues: "))
         dock = amt_paid(input("Dock usage: "))
@@ -241,11 +246,17 @@ def add_receipt_entry(holder, ret):
         data['kayak'] = kayak
     if mooring:
         data['mooring'] = mooring
-    data["acknowledged"] = input(
-            "Enter date acknowledged (YYYYMMDD): ")
+    if holder.acknowledge_date:
+        data["acknowledged"] = holder.acknowledge_date
+        print("Using default acknowledged date " +
+          f"'{holder.acknowledged_date}'")
+    else:
+        data["acknowledged"] = input(
+                "Enter date acknowledged (YYYYMMDD): ")
     #3# receipt recorded (if confirmed)
     ret.extend(confirm_receipts_query(data))
     #4# now decide if to credit accounts...
+    automate_vs_confirm_each_step = """
     yn = input("Credit accounts?(y/n: ")
     if not (yn and yn[0] in 'yY'):
         ret.append(
@@ -261,6 +272,11 @@ def add_receipt_entry(holder, ret):
     if not (yn and yn[0] in 'yY'):
         ret.append("Letter of acknowledgement NOT being sent.")
         return -2
+    ret.extend(file_acknowledgement(holder, data))
+    holder.entries += 1
+    return data
+    """
+    ret.extend(multiple.credit_accounts(data))
     ret.extend(file_acknowledgement(holder, data))
     holder.entries += 1
     return data
@@ -281,6 +297,11 @@ def receipts_cmd():
     """
     ret = ["Entering receipts_cmd()", ]
     holder = club.Holder()
+    print("Enter blanks if don't want defaults...")
+    holder.receipt_date = input(
+            "Enter a default receipt date: ")
+    holder.acknowledge_date = input(
+        "Enter a default acknowledge date: ")
     holder.which = content.content_types["thank"]
     holder.direct2json_file = True
     ret.extend(commands.assign_templates(holder))
