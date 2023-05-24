@@ -37,7 +37,6 @@ class Holder(object):
     #  ?? Next 2 to be redacted ??
     emails = []  # list of dicts
     entries = 0  # a counter for number of receipts entered
-    # is <entries> ever used?
 
     @classmethod
     def inc_n_instances(cls):

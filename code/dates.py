@@ -11,12 +11,11 @@ Attrition: date  (also reason)
 Applicants: app_rcvd, fee_rcvd, meeting1,2,3,
             approved, dues_paid, notified
 
-<date_entry_cmd> is the top level procedure; it and it's
-<receipts_cmd> is the path currently under development. 
-
+<date_entry_cmd> is the top level procedure:
+    it's driven by option 12 presented by main.py.
 It presents a menu reflected in the <tables_w_dates> listing.
-These are the top level choices of this module.
-So far only working on the receipts_cmd.
+Option 4: the <receipts_cmd> is currently being polished. 
+
 Temporarily allow use of send_acknowledgement as a command
 so it can be tested separately....
 """
@@ -109,18 +108,21 @@ def confirm_receipts_query(data):
     f_keys = ", ".join(keys)
     values = [data[key] for key in keys]
     f_values = ", ".join([repr(value) for value in values])
-    prompt.extend([f_keys, f_values])
     query = ("INSERT INTO Receipts ({}) VALUES ({});"
                     .format(f_keys, f_values))
-    prompt.append(query)
+    prompt.append("Data to be added:")
+    prompt.extend(  # extend method obviates need for '\n'.join
+        helpers.present_listing4approval(keys, values))
+    prompt.append(f"Execute: {query}")
     prompt.append("Yes or No? ")
     yn = input('\n'.join(prompt))
+    ret.extend(prompt)
     if yn and yn[0] in 'yY':
         routines.fetch(query, from_file=False, commit=True)
         ret.extend(["Query:", query, "successfully executed.",])
     else:
         ret.extend(["Query:", query, "aborted.",])
-    print(ret[:-3])
+    print(ret[-1])
     return ret
 
 
@@ -191,17 +193,32 @@ def add_receipt_entry(holder, ret):
     if not (response and response[0] in 'yY'):
         return -2  # signal you're done with receipt entry
     #0# payor?
-    print("Choose a payor...")
-    res = routines.id_by_name()
-    print(f"The ID choice(s) is/are {res}")
-    payorID = int(input("Enter ID [0 to abort]: "))
+    while True:
+        print("Choose a payor...")
+        res = routines.id_by_name()
+        print(f"The ID choice(s) is/are {res}")
+        try:
+            payorID = int(input("Enter ID [0 to abort]: "))
+        except ValueError:
+            print("Must enter an integer, 0 to abort...")
+            continue
+        break
     if not (payorID and not payorID == 0):
         return -1  # unable to establish a payor
     #1# details of the <data> to become an entry
     data = get_demographic_dict(payorID)
-    _ = input(f"""code/dates ln#201: data..
-    {repr(data)}
-    """)
+#   _ = input(f"""code/dates ln#201: data..
+#   {repr(data)}
+#   """)
+### ===  present current statement here as check yet to do !!!
+    #2# now look up all that is owed by this person
+    data['before_statement'] = routines.get_statement(
+            routines.get_data4statement(payorID), 
+            include_header=False)
+    print("What's owed:")
+    print(data['before_statement'])
+    print("...FYI...")
+
     data['date_received'] = input(
             "Enter date received (YYYYMMDD): ")
     while True:
@@ -226,8 +243,6 @@ def add_receipt_entry(holder, ret):
         data['mooring'] = mooring
     data["acknowledged"] = input(
             "Enter date acknowledged (YYYYMMDD): ")
-    #2# now look up all that is owed by this person
-    owed = routines.get_data4statement(payorID)
     #3# receipt recorded (if confirmed)
     ret.extend(confirm_receipts_query(data))
     #4# now decide if to credit accounts...
@@ -269,13 +284,9 @@ def receipts_cmd():
     holder.which = content.content_types["thank"]
     holder.direct2json_file = True
     ret.extend(commands.assign_templates(holder))
-    helpers.check_before_deletion(
-            (holder.mail_dir, holder.email_json, ),
-            delete=True)
-    entries = []
+    helpers.check_file(holder.mail_dir)
+    helpers.check_file(holder.email_json)
     while True:
-        # if we are going to keep track of entries perhaps we
-        # should do it as an attribute of holder...
         res = add_receipt_entry(holder, ret)
         if isinstance(res, int):
             if res == -1:  # unable to establish a payor
@@ -315,17 +326,7 @@ def date_entry_cmd():
 
 def observe():
     """
-    CREATE TABLE Receipts (
-    ReceiptID INTEGER PRIMARY KEY,
-    personID INTEGER NOT NULL,
-    date_received TEXT NOT NULL,
-    dues INTEGER DEFAULT 0,
-    dock INTEGER DEFAULT 0,
-    kayak INTEGER DEFAULT 0,
-    mooring INTEGER DEFAULT 0,
-    acknowledged TEXT DEFAULT 0
-                 --date value
-    );
+    ### NOT USED ###
     """
     query = "INSERT INTO Receipts VALUES ({});"
     data = {"personID": 119,

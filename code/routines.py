@@ -71,9 +71,9 @@ def fetch(sql_source, db=db_file_name,
 #   _ = input(
 #       f"get_query_result returning the following:\n {ret}")
     ret = cur.fetchall()
-    if commit:
-        db.commit()
-        _ = input("Committed!")
+#   if commit:
+#       db.commit()
+#       _ = input("Committed!")
     closeDB(db, cur)
     return ret
 
@@ -416,13 +416,13 @@ def get_data4statement(personID):
     kayak = fetch("Sql/kayak_by_ID.sql",
             params=(personID, ) )
     if kayak:
-        data['kayak'] = dock[0][1] 
+        data['kayak'] = kayak[0][1] 
         total += data['kayak']
     mooring = fetch("Sql/mooring_by_ID.sql",
             params=(personID, ) )
-    _ = input(f"""mooring query ==> 
-    {repr(mooring)}
-            """)
+#   _ = input(f"""mooring query ==> 
+#   {repr(mooring)}
+#           """)
     if mooring:
         data['mooring'] = mooring[0][1]
         total += data['mooring']
@@ -432,12 +432,16 @@ def get_data4statement(personID):
 #   print()
     return data
 
-def get_statement(data):
+def get_statement(data, include_header=True):
     """
     <data> is a dict returned by get_data4statement.
-    Returns a multiline string: a statement of what's owed.
+    Returns a multiline string: a statement of what's owed
+    as reflected in the .
+        "Currently owing" (dues, dock, kayak, mooring),
+        and "total" keys of <data>.
     """
-    owing = ["Currently owing:", ]
+    if include_header: owing = ["Currently owing:", ]
+    else: owing = []
     keys = set(data.keys())
     owing.append(    f"  Dues owing..... {data['dues_owed']:>3}")
     if "dock" in keys:

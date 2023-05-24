@@ -154,7 +154,9 @@ If the number is negative or zero, there'll be nothing due in June.
 """,
 
     thank="""
-This acknowledges receipt of your recent ${total} payment.
+This acknowledges receipt of your recent ${total} payment applied
+to your account as it previously stood:
+{before_statement}.
 Thank you.
 
 A statement of your current standing follows:

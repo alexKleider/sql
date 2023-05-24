@@ -19,6 +19,7 @@ import json
 import datetime
 import functools
 import collections
+from pathlib import Path
 
 date_template = "%b %d, %Y"
 date_w_wk_day_template = "%a, %b %d, %Y"
@@ -77,6 +78,81 @@ def get_attributes(r):
     return sorted([attribute for attribute in dir(r)
             if not attribute.startswith('__')])
 
+#--------
+
+def present_listing4approval(keys, values):
+    """
+    Returns a list of strings: "Key: Value"
+    """
+    d = {key: value for key, value in zip(keys, values)}
+    return [f"    {key}: {value}" for key, value in d.items()]
+
+def test_present_listing4approval():
+    keys = ['first', 'last', 'suffix',]
+    values= ['Alex', 'Kleider', 'MD',]
+    prompt = ['Is the following OK...',]
+    prompt.extend(present_listing4approval(keys, values))
+    prompt.append("....y/n: ")
+    _ = input("\n".join(prompt))
+#--------
+
+
+def check_file(file_name):
+    """
+    If file exists: choices are:
+        leave as is, empty it, or remove it
+    If not: option to create (a file or directory.)
+    """
+    if os.path.exists(file_name):
+        response = input(
+                "'{}' exists! Leave as is?(y/n) "
+                .format(file_name))
+        if (response and response[0] in 'yY'):
+            return
+        else:
+            response = input( "Leave an empty file/dir?(y/n) ")
+            if (response and response[0] in 'yY'):
+                if os.path.isdir(file_name):
+                    shutil.rmtree(file_name)
+                    os.mkdir(file_name)
+                elif os.path.isfile(file_name):
+                    Path(file_name).touch()
+            else:
+                if os.path.isdir(file_name):
+                    shutil.rmtree(file_name)
+                elif os.path.isfile(file_name):
+                    os.remove(file_name)
+    else:
+        response = input(
+        f'Create {file_name} f)ile or d)irectory?(f/d) ')
+        if response and response[0] in 'fF':
+            Path(file_name).touch()
+        if response and response[0] in 'dD':
+            os.mkdir(file_name)
+
+
+def check_dir(directory, delete=False):
+    """
+    Parameter <file_names> may be one name or a sequence of names.
+    For each- check with user if ok to delete or overwrite.
+    Aborts program execution if permission is not granted.
+    Does not itself do any deletion unless delete is set to True.
+    """
+    if isinstance(file_names, str):
+        file_names = (file_names, )
+    for f in file_names:
+        if os.path.exists(f):
+            response = input(
+                    "'{}' exists! Over write &/or delete it?(y/n) "
+                    .format(f))
+            if not(response and response[0] in 'yY'):
+                print('Aborting program execution.')
+                sys.exit()
+            elif delete:
+                if os.path.isdir(f):
+                    shutil.rmtree(f)
+                elif os.path.isfile(f):
+                    os.remove(f)
 
 def check_before_deletion(file_names, delete=False):
     """
@@ -1014,7 +1090,10 @@ def test_show_json_data():
     print('\n'.join(show_json_data(data)))
 
 
+
 if __name__ == "__main__":
+#   test_present_listing4approval()
+
     print(get_os_release())
     print("Module helpers compiles without error.")
     main()
