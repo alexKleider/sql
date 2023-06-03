@@ -179,6 +179,7 @@ def add_receipt_entry(holder, ret):
     """
     Deal with a payment:
     <ret> must be an existing array of strings for reporting.
+
     Each receipt is acknowledged by an email &/or letter.
     Letters go into holder.mail_dir and
     emails get added to already existing holder.email.json file
@@ -249,13 +250,19 @@ def add_receipt_entry(holder, ret):
     if holder.acknowledge_date:
         data["acknowledged"] = holder.acknowledge_date
         print("Using default acknowledged date " +
-          f"'{holder.acknowledged_date}'")
+          f"'{holder.acknowledge_date}'")
     else:
         data["acknowledged"] = input(
                 "Enter date acknowledged (YYYYMMDD): ")
     #3# receipt recorded (if confirmed)
     ret.extend(confirm_receipts_query(data))
     #4# now decide if to credit accounts...
+    ## Initially steps 2 and 3 were done even if receipts
+    ## entry wasn't approved; so they were broght into
+    ## this function. Don't want an entry into receipts
+    ## without a corresponding debit/credit to a member's
+    ## account(s) _and_ a letter (or email) of
+    ## acknowledgement.
     automate_vs_confirm_each_step = """
     yn = input("Credit accounts?(y/n: ")
     if not (yn and yn[0] in 'yY'):
@@ -286,17 +293,34 @@ def receipts_cmd():
     """
     Since emails/letters are to be stacked...
     Must set up holder.email_json and MailDir...
+    <holder.email_json> is created if doesn't exist;
+    emails are appended. If it already exists (and not
+    empty) emails are appended to what's there.
+    MailDir is created if doesn't exist; letters are
+    added to any that might already be there.
+    Provides user with the option to set up default
+    values for <date_received> and <acknowledged>.
     We then repeatedly call add_receipt_entry which
-    appends letters to the MailDir and adds a record to the
-    json file defined by holder.email_json.
+    1. requests an entry (personID) and
+    2. data is collected
+      If verified:
+       i. a receipts entry is made
+      ii. accounts (dues, dock, kayak, mooring) are updated.
+     iii. mailing created: email or letter.
     It's up to the user to then send the emails
     and deal with the letters.
-    <add_receipt_entry> needs hoder as a param and also
-    takes an optional param which if provided must be a list
-    to which progress notes are added.
+    <add_receipt_entry> needs holder as a param and also
+    takes an optional param which, if provided,
+    must be a list to which progress notes are added.
     """
     ret = ["Entering receipts_cmd()", ]
     holder = club.Holder()
+    ## The next two functions not yet implemented:
+    helpers.check_dir_exists(holder.mail_dir)
+    helpers.report_if_file_exists(holder.email_json)
+    ## Eliminate next part once above is implemented.
+    _ = input("Check status of " +
+        f"{holder.email_json} and {holder.mail_dir}")
     print("Enter blanks if don't want defaults...")
     holder.receipt_date = input(
             "Enter a default receipt date: ")
@@ -305,8 +329,6 @@ def receipts_cmd():
     holder.which = content.content_types["thank"]
     holder.direct2json_file = True
     ret.extend(commands.assign_templates(holder))
-    helpers.check_file(holder.mail_dir)
-    helpers.check_file(holder.email_json)
     while True:
         res = add_receipt_entry(holder, ret)
         if isinstance(res, int):

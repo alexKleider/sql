@@ -53,6 +53,7 @@ def fetch(sql_source, db=db_file_name,
             all place holders in the query. Remember place holder
             names are prefaced by a colon in the query.
             eg: (:key1, :key2).
+    Be aware that the query might return an empty list.
     """
     if from_file:
         with open(sql_source, 'r') as source:
@@ -71,9 +72,9 @@ def fetch(sql_source, db=db_file_name,
 #   _ = input(
 #       f"get_query_result returning the following:\n {ret}")
     ret = cur.fetchall()
-#   if commit:
-#       db.commit()
-#       _ = input("Committed!")
+    if commit:
+        db.commit()
+        _ = input("Committed!")
     closeDB(db, cur)
     return ret
 
@@ -390,12 +391,12 @@ def get_data4statement(personID):
     email, dues_owed
     and if applicable:
     dock, kayak, mooring.
+    If no result from the query: returns an empty dict.
     """
     data = {'personID': personID,
             }
-    res = fetch("Sql/dues_et_demographics_by_ID.sql",
-            params=(personID, ) )[0]
-#   print(res)
+    res = fetch("Sql/demographics_by_ID.sql",
+                    params=(personID, ) )[0]
     data['first'] = res[0]
     data['last'] = res[1]
     data['suffix'] = res[2]
@@ -405,31 +406,33 @@ def get_data4statement(personID):
     data['postal_code'] = res[6]
     data['country'] = res[7]
     data['email'] = res[8]
-    data['dues_owed'] = res[9]
     total = 0
-    if data['dues_owed']: total += data['dues_owed']
+    # add dues:
+    dues = fetch("Sql/dues_by_ID.sql",
+            params=(personID, ) )
+    if dues:
+        data['dues_owed'] = dues[0][1]
+        total += data['dues_owed']
+    # add dock:
     dock = fetch("Sql/dock_by_ID.sql",
             params=(personID, ) )
     if dock:
         data['dock'] = dock[0][1]
         total += data['dock']
+    # add kayak:
     kayak = fetch("Sql/kayak_by_ID.sql",
             params=(personID, ) )
     if kayak:
         data['kayak'] = kayak[0][1] 
         total += data['kayak']
+    # add mooring:
     mooring = fetch("Sql/mooring_by_ID.sql",
             params=(personID, ) )
-#   _ = input(f"""mooring query ==> 
-#   {repr(mooring)}
-#           """)
     if mooring:
         data['mooring'] = mooring[0][1]
         total += data['mooring']
+    # done adding dues, dock, kayak & mooring
     data['total'] = total
-#   for key, value in data.items():
-#       print(f"{key}: {value}")
-#   print()
     return data
 
 def get_statement(data, include_header=True):

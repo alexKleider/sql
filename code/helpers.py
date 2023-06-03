@@ -96,39 +96,24 @@ def test_present_listing4approval():
     _ = input("\n".join(prompt))
 #--------
 
+def check_dir_exists(directory, create=True):
+    """
+    If a file caled <directory> already exists, 
+    check that it is a directory and
+    report if it's empty or not.
+    If empty, offer to delete its contents.
+    If it doesn't exist, warn the user and
+    if <create>=True, create it.
+    """
+    pass
 
-def check_file(file_name):
+
+def report_if_file_exists(file_name):
     """
-    If file exists: choices are:
-        leave as is, empty it, or remove it
-    If not: option to create (a file or directory.)
+    Report to the user if a file called <file_name>
+    exists and if it is (or isn't) empty.
     """
-    if os.path.exists(file_name):
-        response = input(
-                "'{}' exists! Leave as is?(y/n) "
-                .format(file_name))
-        if (response and response[0] in 'yY'):
-            return
-        else:
-            response = input( "Leave an empty file/dir?(y/n) ")
-            if (response and response[0] in 'yY'):
-                if os.path.isdir(file_name):
-                    shutil.rmtree(file_name)
-                    os.mkdir(file_name)
-                elif os.path.isfile(file_name):
-                    Path(file_name).touch()
-            else:
-                if os.path.isdir(file_name):
-                    shutil.rmtree(file_name)
-                elif os.path.isfile(file_name):
-                    os.remove(file_name)
-    else:
-        response = input(
-        f'Create {file_name} f)ile or d)irectory?(f/d) ')
-        if response and response[0] in 'fF':
-            Path(file_name).touch()
-        if response and response[0] in 'dD':
-            os.mkdir(file_name)
+    pass
 
 
 def check_dir(directory, delete=False):

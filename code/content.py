@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # File: content.py
 
@@ -384,7 +384,7 @@ anything related to the Club.
 As you already know, general membership meetings are held on the
 first Friday of each month @ 7:30. The February Annual General
 meeting is an exception to this rule. You'll be receiving
-announcemnts from the Club Secretary. Please come and attend
+announcements from the Club Secretary. Please come and attend
 meetings and other functions to enjoy the camaraderie!""",
 
     expired_application="""
