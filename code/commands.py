@@ -44,6 +44,7 @@ Choose one of the following:
  14. Show Applicant Data       15. Add Meeting Date
  16. Display Fees by category  17. Welcome New Member
  18. Receipts                  19. Enter payments
+ 20. Create member csv file
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -65,6 +66,7 @@ Choose one of the following:
         elif choice == '17': return welcome_new_member_cmd
         elif choice == '18': return receipts_cmd
         elif choice == '19': return payment_entry_cmd
+        elif choice == '20': return create_member_csv_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -239,10 +241,31 @@ def display_fees_by_person_cmd():
         ret.extend(entry)
     return ret
 
+def member_listing():
+    """ 
+    Returns a listing of the following values for each member:
+    first, last, suffix, phone, address, town, state, postal_code, email
+    """
+    with open("Sql/show_f.sql", 'r') as infile:
+        return routines.fetch(infile.read().format(helpers.sixdigitdate),
+                        from_file=False)
+
+def create_member_csv_cmd():
+    csv_file_name = input("Name of member csv file to create: ")
+    ret = [f"You've chosen to create '{csv_file_name}'.", ]
+    keys = ("first, last, suffix, phone, address, " +
+            "town, state, postal_code, email").split(", ")
+    with open(csv_file_name, 'w', newline='') as csv_stream:
+        writer = csv.DictWriter(csv_stream, fieldnames=keys)
+        writer.writeheader()
+        for listing in member_listing():
+            writer.writerow(routines.make_dict(keys, listing))
+    ret.append(f"Data sent to {csv_file_name}.")
+    return ret
+
 
 def show_members():
-    res = routines.fetch('Sql/show.sql')
-#   first, last, suffix, phone, address, town, state, postal_code, email
+    res = member_listing()
     n = len(res)
 #   _ = input(f"Number of members: {n}\n")
     report = [f"""FOR MEMBER USE ONLY

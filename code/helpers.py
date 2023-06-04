@@ -22,16 +22,13 @@ import collections
 from pathlib import Path
 
 date_template = "%b %d, %Y"
+template46digit_date = "%y%m%d"
 date_w_wk_day_template = "%a, %b %d, %Y"
 date_year_template = "%y"
 today = datetime.datetime.today()
+sixdigitdate = today.strftime(template46digit_date)
 month = today.month
 this_year = today.year
-fall_back = '''
-s = today.strftime(date_template)
-d = d
-date = d.strftime(date_template)
-'''
 date = datetime.datetime.strptime(
         today.strftime(date_template),
         date_template
@@ -1081,10 +1078,12 @@ def test_show_json_data():
 
 if __name__ == "__main__":
 #   test_present_listing4approval()
-
     print(get_os_release())
+    print(f"sixdigitdate: {sixdigitdate}")
+    print(
+f"today: {today}; month: {month}; this_year: {this_year}; date: {date}")
     print("Module helpers compiles without error.")
-    main()
+#   main()
 #   test_show_json_data()
     sys.exit()
 else:
