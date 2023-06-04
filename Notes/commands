@@ -110,3 +110,16 @@ column-def:
 column-constraint:
     DEFAULT ''
 ## See https://www.sqlite.org/lang_altertable.html
+
+https://www.sqlitetutorial.net/sqlite-update/
+UPDATE table  -- not documented in SQL book!
+SET column_1 = new_value_1,
+    column_2 = new_value_2
+WHERE
+    search_condition
+ORDER column_or_expression  --#
+LIMIT row_count OFFSET offset;  --#
+# Notice that you need to build SQLite with
+# SQLITE_ENABLE_UPDATE_DELETE_LIMIT option in
+# order to perform UPDATE statement with optional
+# ORDER BY and LIMIT clauses.
