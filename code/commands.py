@@ -44,7 +44,7 @@ Choose one of the following:
  14. Show Applicant Data       15. Add Meeting Date
  16. Display Fees by category  17. Welcome New Member
  18. Receipts                  19. Enter payments
- 20. Create member csv file
+ 20. Create member csv file    21. Create applicant csv file
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -67,6 +67,7 @@ Choose one of the following:
         elif choice == '18': return receipts_cmd
         elif choice == '19': return payment_entry_cmd
         elif choice == '20': return create_member_csv_cmd
+        elif choice == '21': return create_applicant_csv_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -244,7 +245,8 @@ def display_fees_by_person_cmd():
 def member_listing():
     """ 
     Returns a listing of the following values for each member:
-    first, last, suffix, phone, address, town, state, postal_code, email
+    first, last, suffix, phone, address,
+    town, state, postal_code, email
     """
     with open("Sql/show_f.sql", 'r') as infile:
         return routines.fetch(infile.read().format(helpers.sixdigitdate),
@@ -286,6 +288,49 @@ There are currently {n} members in good standing:
 """{0} {1} {2} [{3}] [{8}]
 \t{4}, {5}, {6} {7}""".format(*item))
     return report
+
+def get_sponsor_name(sponsorID):
+    query = f"""SELECT first, last, suffix
+                FROM People 
+                WHERE personID = {sponsorID}"""
+    ret = routines.fetch(query, from_file=False)
+    if not ret: return ''
+    return ' '.join(ret[0]).strip()
+
+app_keys = (
+    "status_key, first, last, " +
+    "phone, address, town, state, postal_code, email, " +
+    "sponsor1ID, sponsor2ID, " +
+    "app_rcvd, fee_rcvd, meeting1, meeting2, meeting3, " +
+    "approved, dues_paid, Status_text").split(', ')
+
+def applicant_listing():
+    """
+    Provides a listing of dicts (one for each applicant.)
+    """
+    listings = routines.fetch("Sql/applicants3.sql")
+    ret = []
+    for listing in listings:
+        d = routines.make_dict(
+                app_keys, [value for value in listing])
+        d["sponsor1ID"] = get_sponsor_name(d['sponsor1ID'])
+        d["sponsor2ID"] = get_sponsor_name(d['sponsor2ID'])
+#       print(d)
+        ret.append(d)
+    return ret
+
+def create_applicant_csv_cmd():
+    ret = ["Preparing an applicant CSV file...", ]
+    csv_file_name = input(
+            "Name of applicant csv file to create: ")
+    ret = [f"You've chosen to create '{csv_file_name}'.", ]
+    with open(csv_file_name, 'w', newline='') as csv_stream:
+        writer = csv.DictWriter(csv_stream, fieldnames=app_keys)
+        writer.writeheader()
+        for d in applicant_listing():
+            writer.writerow(d)
+    ret.append(f"Sending applicant CSV file to {csv_file_name}.")
+    return ret
 
 def show_applicants():
     """
@@ -957,6 +1002,10 @@ def payment_entry_cmd():
 
 
 if __name__ == "__main__":
+#   for sponsor_name in (get_sponsor_name(45),
+#           get_sponsor_name(300)):
+#       print(repr(sponsor_name))
+    applicant_listing()
 #   with open("4Angie.csv", 'w', newline='') as csvfile:
 #       fieldnames = ('last', 'first')
 #           writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -966,4 +1015,4 @@ if __name__ == "__main__":
 #                   {'last': entry[0], 'first': entry[1]})
 #   print(for_angie())
 #   try_applicants()
-    print(get_emailing_dict(101))
+#   print(get_emailing_dict(101))

@@ -1,4 +1,4 @@
-/* Sql/applicants.sql */
+/* Sql/applcants3.sql */
 SELECT
     St.key, P.first, P.last, 
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,
@@ -12,7 +12,9 @@ JOIN Person_Status AS PS
 ON P.personID = PS.personID
 JOIN Stati as St
 ON St.statusID = PS.statusID
-WHERE St.key IN ("a-", "a" , "a0", "a1", "a2",
-        "a3", "ai", "ad", "av", "aw", "am")
-ORDER BY St.key
+WHERE Ap.notified = ''
+AND PS.end=''
+--    St.key IN ("a-", "a" , "a0", "a1", "a2",
+--        "a3", "ai", "ad", "av", "aw")
+ORDER BY P.last, P.first
 ;
