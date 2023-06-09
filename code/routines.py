@@ -40,7 +40,8 @@ def closeDB(database, cursor):
 
 def fetch(sql_source, db=db_file_name,
                     params=None, data=None,
-                    from_file=True, commit=False):
+                    from_file=True, commit=False,
+                    verbose=False):
     """
     <sql_source> must be a string: either the name of a file
     containing a valid sqlite3 query or (if <from_file> is set
@@ -74,7 +75,8 @@ def fetch(sql_source, db=db_file_name,
     ret = cur.fetchall()
     if commit:
         db.commit()
-        _ = input("Committed!")
+        if verbose:
+            _ = input("Committed!")
     closeDB(db, cur)
     return ret
 
@@ -275,6 +277,20 @@ def get_people_fields_by_ID(db_file_name=db_file_name,
     return ret
 
 
+def get_name(personID):
+    if not personID:
+        return ""
+    name_query = """SELECT first, last, suffix
+            FROM People
+            WHERE personID = ?;"""
+    res = fetch(name_query, 'Secret/club.db',
+            from_file=False, params=[personID, ])[0]
+    suffix = res[2]
+    if suffix:
+        suffix = f" {suffix}"
+    return "{0:} {1:}".format(*res) + suffix
+
+
 def id_by_name():
     """
     Prompts for first letter(s) of first &/or last
@@ -429,7 +445,7 @@ def get_data4statement(personID):
     mooring = fetch("Sql/mooring_by_ID.sql",
             params=(personID, ) )
     if mooring:
-        data['mooring'] = mooring[0][1]
+        data['mooring'] = mooring[0][2]
         total += data['mooring']
     # done adding dues, dock, kayak & mooring
     data['total'] = total

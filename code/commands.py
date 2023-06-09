@@ -45,6 +45,7 @@ Choose one of the following:
  16. Display Fees by category  17. Welcome New Member
  18. Receipts                  19. Enter payments
  20. Create member csv file    21. Create applicant csv file
+ 22. Occupied moorings csv     23. All moorings csv
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -68,6 +69,8 @@ Choose one of the following:
         elif choice == '19': return payment_entry_cmd
         elif choice == '20': return create_member_csv_cmd
         elif choice == '21': return create_applicant_csv_cmd
+        elif choice == '22': return occupied_moorings_cmd
+        elif choice == '23': return all_moorings_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -75,6 +78,86 @@ Choose one of the following:
 
 def not_implemented():
     return ["Not implemented", ]
+
+
+def occupied_moorings_cmd():
+    """
+    Occupied moorings:  occupied_moorings_cmd
+    Creates a csv file regarding occupied moorings.
+    To be distinguished from all_moorings_cmd.
+    """
+    ret = ["Preparing a mooring CSV file...", ]
+    fname = input("Enter name for csv file: ")
+    if not fname:
+        abort_message = (
+                "No name, no results! Aborting execution")
+        print(abort_message)
+        ret.append(abort_message)
+        return
+    else:
+        ret.append(f"You've chosen to create '{fname}'.")
+    keys = ("personID, first, last, suffix, " +
+            "mooring_code, cost, owing"
+            ).split(', ')
+    query = """
+        SELECT P.personID, P.first, P.last, P.suffix,
+            M.mooring_code, M.mooring_cost, M.owing
+        FROM Moorings as M
+        JOIN People as P
+        WHERE P.personID = M.personID
+        ;"""
+    listing = routines.fetch(query, from_file=False)
+    if not listing:
+        ret.append("No results returned.")
+        return
+    with open(fname, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=keys)
+        writer.writeheader()
+        for entry in listing:
+            d = routines.make_dict(keys, entry)
+            writer.writerow(d)
+            ret.append(repr([row for row in d.items()]))
+    ret.append(f"Sending mooring CSV file to {fname}.")
+    return ret
+
+
+def all_moorings_cmd():
+    """
+    All moorings: all_moorings_cmd
+    Creates a csv file re all club moorings, occupied or not.
+    To be distinguished from occupied_moorings_cmd.
+    """
+    ret = ["Preparing a mooring CSV file...", ]
+    fname = input("\nEnter name for csv file: ")
+    if not fname:
+        abort_message = (
+                "No name, no results! Aborting execution")
+        print(abort_message)
+        ret.append(abort_message)
+        return
+    else:
+        ret.append(f"You've chosen to create '{fname}'.")
+    query_keys = ("mooringID, mooring_code, " + 
+            "mooring_cost, personID, owing")
+    query = "SELECT {} FROM Moorings;".format(query_keys)
+    listing = routines.fetch(query, 'Secret/club.db',
+                from_file=False)
+    if not listing:
+        ret.append("No results returned.")
+        return
+    keys = ("mooring_ID", "code", "cost", "name", "owing")
+    with open(fname, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile,
+                fieldnames=keys)
+        writer.writeheader()
+        for entry in listing:
+            rec = routines.make_dict(keys, entry)
+            rec['name'] = routines.get_name(rec['name'])
+#           ret.append(repr([row for row in rec.items()]))
+            writer.writerow(rec)
+    ret.append(f"Sending mooring CSV file to {fname}.")
+    return ret
+
 
 def update_people_cmd():
     """
@@ -323,7 +406,7 @@ def create_applicant_csv_cmd():
     ret = ["Preparing an applicant CSV file...", ]
     csv_file_name = input(
             "Name of applicant csv file to create: ")
-    ret = [f"You've chosen to create '{csv_file_name}'.", ]
+    ret.append(f"You've chosen to create '{csv_file_name}'.")
     with open(csv_file_name, 'w', newline='') as csv_stream:
         writer = csv.DictWriter(csv_stream, fieldnames=app_keys)
         writer.writeheader()
@@ -420,7 +503,25 @@ def show_applicants():
 
 
 def for_angie(include_blanks=True):
-    res = routines.fetch('Sql/names.sql')
+    query = """
+/* Sql/names_f.sql */
+SELECT first, last
+FROM People AS P
+JOIN Person_Status AS PS
+ON P.personID = PS.personID
+JOIN Stati as St
+ON St.statusID = PS.statusID
+WHERE 
+St.key IN ("m", "a-", "a" , "a0", "a1", "a2",
+        "a3", "ai", "ad", "av", "aw", "am")
+AND (PS.end = 0 OR PS.end < {})
+-- must insert today's date ^^ (helpers.todaysdate)
+ORDER BY P.last, P.first
+;
+    """
+    res = routines.fetch(
+            query.format(helpers.sixdigitdate),
+            from_file=False)
     report = []
     first_letter = 'A'
     for item in res:
@@ -450,7 +551,36 @@ def show_names():
 
 
 def report_cmd():
-    res = routines.fetch('Sql/show.sql')
+    query = """
+/* Sql/show_f.sql */
+-- !! Requires formatting !!
+-- retrieves member demographics
+SELECT
+    first, last, suffix, phone, address,
+    town, state, postal_code, email
+--    St.key, P.first, P.last
+FROM
+    People AS P
+JOIN
+    Person_Status AS PS
+ON
+    P.personID = PS.personID
+JOIN
+    Stati as St
+ON
+    St.statusID = PS.statusID
+WHERE 
+    St.key = 'm'
+    AND (PS.end = '' OR PS.end > {})
+-- must format date membership ended or will end.
+-- use code.helpers.sixdigitdate
+ORDER BY
+    P.last, P.first
+;
+    """
+    res = routines.fetch(
+            query.format(helpers.sixdigitdate),
+            from_file=False)
     n = len(res)
     report = []
     helpers.add_header2list("Membership Report (prepared {})"
@@ -997,6 +1127,7 @@ def receipts_cmd():
 
 def payment_entry_cmd():
     ret = ['Entering payment_entry_cmd...', ]
+    ret.append('For payment entry use 12. Data Entry (Dates)')
     print(ret[0])
     return(ret)
 

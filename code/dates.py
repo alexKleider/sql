@@ -14,7 +14,8 @@ Applicants: app_rcvd, fee_rcvd, meeting1,2,3,
 <date_entry_cmd> is the top level procedure:
     it's driven by option 12 presented by main.py.
 It presents a menu reflected in the <tables_w_dates> listing.
-Option 4: the <receipts_cmd> is currently being polished. 
+Option 4: the <receipts_cmd> is currently the only one
+implemented.
 
 Temporarily allow use of send_acknowledgement as a command
 so it can be tested separately....
@@ -187,12 +188,18 @@ def add_receipt_entry(holder, ret):
     Returns a negative integer: -2 if no more receipts to enter;
     -1 if unable to establish a personID
     """
+    addendum = "(add a 'd' to change dates) "
     if holder.entries:
-        response = input("Enter another receipt? (y/n) " )
+        response = input("Enter another receipt? (y/n) "
+                + addendum)
     else:
-        response = input("Enter a receipt? (y/n) " )
-    if not (response and response[0] in 'yY'):
-        return -2  # signal you're done with receipt entry
+        response = input("Enter a receipt? (y/n) " 
+                + addendum)
+    response = set(response)
+    if set('dD').intersection(response):
+        set_default_dates(holder)
+    if not set('yY').intersection(response):
+        return -12  # signal you're done with receipt entry
     #0# payor?
     while True:
         print("Choose a payor...")
@@ -235,6 +242,9 @@ def add_receipt_entry(holder, ret):
         total = amt_paid(input("Total payment: "))
         if dues + dock + kayak + mooring != total:
             print("Totals don't match; try again!")
+            response = input("Abort this entry? (y/n) ")
+            if response and response[0] in 'yY':
+                return -2
         else: break
     data['total'] = total    #{ eventually to }
     data['payment'] = total  #{   be merged   }
@@ -288,6 +298,12 @@ def add_receipt_entry(holder, ret):
     holder.entries += 1
     return data
 
+def set_default_dates(holder):
+    print("Enter blanks if don't want defaults...")
+    holder.receipt_date = input(
+            "Enter a default receipt date: ")
+    holder.acknowledge_date = input(
+        "Enter a default acknowledge date: ")
 
 def receipts_cmd():
     """
@@ -312,7 +328,7 @@ def receipts_cmd():
     <add_receipt_entry> needs holder as a param and also
     takes an optional param which, if provided,
     must be a list to which progress notes are added.
-    """
+    def receipts_cmd()"""
     ret = ["Entering receipts_cmd()", ]
     holder = club.Holder()
     ## The next two functions not yet implemented:
@@ -321,27 +337,30 @@ def receipts_cmd():
     ## Eliminate next part once above is implemented.
     _ = input("Check status of " +
         f"{holder.email_json} and {holder.mail_dir}")
-    print("Enter blanks if don't want defaults...")
-    holder.receipt_date = input(
-            "Enter a default receipt date: ")
-    holder.acknowledge_date = input(
-        "Enter a default acknowledge date: ")
     holder.which = content.content_types["thank"]
     holder.direct2json_file = True
     ret.extend(commands.assign_templates(holder))
+    set_default_dates(holder)
     while True:
         res = add_receipt_entry(holder, ret)
         if isinstance(res, int):
             if res == -1:  # unable to establish a payor
                 continue
+            if res == -2:  # abort this entry only
+                continue
+            if res == -12:
+                break
             break
         else:
             ret.append("receipt entered")
     # some cleanup is in order...
     if os.path.isdir(holder.mail_dir) and not len(
             os.listdir(holder.mail_dir)):
-        os.rmdir(holder.mail_dir)
-        print("Empty mailing directory deleted.")
+        yn = input(
+            "Mailing directory is empty, delete it?. (y/n) ")
+        if yn and yn[0] in 'yY':
+            os.rmdir(holder.mail_dir)
+            pass
     else:
         print("""..next steps might be the following:
     1. check and dispatch the emails (if there are any!)

@@ -18,6 +18,8 @@ ON
 WHERE 
     St.key = 'm'
     AND (PS.end = '' OR PS.end > {})
+-- must format date membership ended or will end.
+-- use code.helpers.sixdigitdate
 ORDER BY
     P.last, P.first
 ;

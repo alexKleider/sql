@@ -95,14 +95,25 @@ def test_present_listing4approval():
 
 def check_dir_exists(directory, create=True):
     """
-    If a file caled <directory> already exists, 
-    check that it is a directory and
-    report if it's empty or not.
-    If empty, offer to delete its contents.
-    If it doesn't exist, warn the user and
-    if <create>=True, create it.
+    Check for a file called <directory>:
+    if it doesn't exist:
+        if <create>: create it,
+        else: offer to create it.
+    If it already exists: 
+        Report if it is not a directory & offer to abort.
+        Report as to its contents: empty or not.
+    Report results and ask if to continue.
     """
-    pass
+    if os.path.exists(directory):
+        # check that it is a directory
+        if os.path.isdir(directory):
+            print(f"Directory {directory} esists.")
+            # report if it's empty or contains file(s)
+    else:  # no such file:
+        yn = input(
+    f"Directory {directory} does not exist! Create it? (y/n) ")
+        if yn and yn[0] in 'yY':
+            os.mkdir(directory)
 
 
 def report_if_file_exists(file_name):
@@ -670,6 +681,20 @@ def add2json_file(data, json_file, verbose=True):
                 print('Loading existing (json) data from "{}".'
                         .format(j_file.name))
             data2add = json.load(j_file)
+            if not isinstance(data2add, list):
+                warning = [
+                f"Warning: Content of {json_file} is not a list.",
+                "Perhaps it was simply an empty file."
+                "Beginning with an empty list",
+                "Original content, if any, will be lost!"
+                ]
+                for line in warning: print(line)
+                yn = input("Continue? (y/n) ")
+                if yn and yn[0] in 'yY':
+                    data2add = []
+                else:
+                    sys.exit()
+
         data2add.append(data)
     else:
         data2add = [data, ]
