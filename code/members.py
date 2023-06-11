@@ -184,6 +184,7 @@ def q_mailing(holder, data):
     """
     Generates and dispaches email &/or letter.
     """
+    print([item for item in data.items()])
     data["subject"] = holder.which["subject"]
     # ^ the above should be assigned elsewhere!!
     # check how to send:
@@ -204,10 +205,34 @@ def q_mailing(holder, data):
         print("Problem in q_mailing: letter/email not sent to {}."
                 .format(fstrings['first_last'].format(**dic)))
 
+def add_statement_entry(data):
+    """
+    <data> is a dict with dues, dock, kayak and mooring keys as
+    appropriate. A 'statement' entry is added based on the above.
+    """
+    key_set = set(data.keys())
+    statement = ['Statement:', ]
+    if 'dues' in key_set:
+        statement.append(f"  Dues...... ${data['dues']}")
+    if 'dock' in key_set:
+        statement.append(f"  Docking... ${data['dock']}")
+    if 'kayak' in key_set:
+        statement.append(f"  Kayak..... ${data['kayak']}")
+    if 'mooring' in key_set:
+        statement.append(f"  Mooring... ${data['mooring']}")
+    if 'total' in key_set:
+        statement.append(f"TOTAL.... ${data['total']}")
+    if len(statement) > 1:
+        data['statement'] = '\n'.join(statement)
+    else:
+        data['statement'] = "No statement available."
+
+
 
 def dict_w_statement(dic):
     """
     Returns a new dict with 'statement' key value pair added.
+    NOTE: will probably redact in favour of add_statement_entry
     """
     dic_keys = dic.keys()
     ret_dic = {}
@@ -256,8 +281,8 @@ def send_statement(holder, data):
     """
     ###### MUST ADD A statement entry to data ########
     ret = ['Running send_statements...', ]
-    w_statement = dict_w_statement(data)
-    q_mailing(holder, w_statement)
+    add_statement_entry(data)
+    q_mailing(holder, data)
     return ret
 
 

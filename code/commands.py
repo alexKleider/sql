@@ -325,6 +325,7 @@ def display_fees_by_person_cmd():
         ret.extend(entry)
     return ret
 
+
 def member_listing():
     """ 
     Returns a listing of the following values for each member:
@@ -332,8 +333,16 @@ def member_listing():
     town, state, postal_code, email
     """
     with open("Sql/show_f.sql", 'r') as infile:
-        return routines.fetch(infile.read().format(helpers.sixdigitdate),
+        return routines.fetch(infile.read().format(
+                                    helpers.sixdigitdate),
                         from_file=False)
+
+
+def member_demo_dict(listing):
+    """
+    makes a dict from each listing as presented by member_listing
+    """
+    pass
 
 def create_member_csv_cmd():
     csv_file_name = input("Name of member csv file to create: ")
@@ -895,6 +904,7 @@ def prepare_mailing_cmd():
     holder = club.Holder()
     ret = []
     # give user opportunity to abort if files are still present:
+    print("Checking for left over files (must be deleted!) ...")
     helpers.check_before_deletion((holder.email_json,
                                     holder.mail_dir),
                                     delete=True)
@@ -902,7 +912,7 @@ def prepare_mailing_cmd():
     response = routines.get_menu_response(content.ctypes)
     if response == 0:
         ret.append("Quiting per your choice")
-        return
+        return ret
     w_key = content.ctypes[response-1]  # which_key
     ret = [
         f"Your choice for 'w_key'.. {response:>3}: {w_key}", ]
@@ -919,12 +929,12 @@ def prepare_mailing_cmd():
     for func in holder.which['holder_funcs']:
         # assigns holder.working_data
         # will probably end up only needing one 
-        # first_notice: club.assign_owing   <<<<
+        # for billing: routines.assign_owing   <<<<
         func(holder)
 #       ret.extend(func(holder))
     for dic in holder.working_data.values():
         for func in holder.which['funcs']:  #  vvvvv
-            # first_notice: members.send_statement(holder, dic)
+            # for billing: members.send_statement(holder, dic)
 #           ret.extend(func(holder, dic))
             func(holder, dic)
     # send holder.emails to a json file

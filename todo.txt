@@ -2,3 +2,13 @@
 need to have applicant waiting for dues payment to be listed
 separately.
 
+part of data consistency:
+    be sure there is no one paying both for dock privileges and
+    for mooring.
+
+SELECT M.personID FROM Moorings AS M
+JOIN Dock_Privileges AS D
+WHERE M.personID = D.personID;
+
+DELETE FROM Dock_Privileges WHERE personID in ({resuls of above});
+

@@ -10,6 +10,8 @@ relational data base management.
 import sqlite3
 try: from code import club
 except ImportError: import club
+try: from code import helpers
+except ImportError: import helpers
 
 db_file_name = club.db_file_name
 
@@ -79,6 +81,15 @@ def fetch(sql_source, db=db_file_name,
             _ = input("Committed!")
     closeDB(db, cur)
     return ret
+
+
+def import_query(sql_file_name):
+    """
+    Returns the content of <sql_file_name>
+    (assumed to be a text file.)
+    """
+    with open(sql_file_name, 'r') as inf:
+        return(inf.read())
 
 
 def display(instance, exclude=None):
@@ -399,6 +410,40 @@ def get_sponsors(applicantID):
     return sponsors
 
 
+def ret_0statement(personID):
+    """
+    Returns a (possibly empty) dict.
+    Key/value pairs are account (dues, dock, etc)
+    and amount owing (including where value is 0.)
+    """
+    source_files = {
+            # the following files all check for membership.
+            # hence the 'f' for formatted by helpers.sixdigitdate
+            # the "0" indicates that zero balances are included
+            'dues': "Sql/dues0_f_byID.sql",
+            'dock': "Sql/dock0_f_byID.sql",
+            'kayak': "Sql/kayak0_f_byID.sql",
+            'mooring': "Sql/mooring0_f_byID.sql",
+            }
+    ret = {}
+    total = 0
+    entry = False
+    for key in source_files.keys():
+        query = import_query(source_files[key]
+                            ).format(helpers.sixdigitdate)
+        res = fetch(query.format(personID), from_file=False)
+#       if personID == 179:
+#           _ = input(res)
+        if res:
+            amnt = res[0][0]
+            if len(res)>1:
+                assert(False)
+            ret[key] = amnt
+            total += amnt
+            entry = True
+    if entry: ret['total'] = total
+    return ret  # a possibly empty dict
+
 def get_data4statement(personID):
     """
     Returns a dict keyed by the following:
@@ -422,33 +467,9 @@ def get_data4statement(personID):
     data['postal_code'] = res[6]
     data['country'] = res[7]
     data['email'] = res[8]
-    total = 0
-    # add dues:
-    dues = fetch("Sql/dues_by_ID.sql",
-            params=(personID, ) )
-    if dues:
-        data['dues_owed'] = dues[0][1]
-        total += data['dues_owed']
-    # add dock:
-    dock = fetch("Sql/dock_by_ID.sql",
-            params=(personID, ) )
-    if dock:
-        data['dock'] = dock[0][1]
-        total += data['dock']
-    # add kayak:
-    kayak = fetch("Sql/kayak_by_ID.sql",
-            params=(personID, ) )
-    if kayak:
-        data['kayak'] = kayak[0][1] 
-        total += data['kayak']
-    # add mooring:
-    mooring = fetch("Sql/mooring_by_ID.sql",
-            params=(personID, ) )
-    if mooring:
-        data['mooring'] = mooring[0][2]
-        total += data['mooring']
-    # done adding dues, dock, kayak & mooring
-    data['total'] = total
+    data2add = ret_0statement(personID)
+    for key in data2add.keys():
+        data[key] = data2add[key]
     return data
 
 def get_statement(data, include_header=True):
@@ -472,6 +493,17 @@ def get_statement(data, include_header=True):
     owing.append(f"Total... ${data['total']}")
     return '\n'.join(owing)
 
+def get_owing(holder):
+    """
+    Assigns holder.working_data dict:
+    Retrieve personID for each person who owes
+    putting their relevant data into holder.working_data:
+    a dict keyed by ID.
+    """
+    byID = dict()  # to be assigned to holder.working_data
+    res = fetch('Sql/dues0')
+    pass
+
 
 def assign_owing(holder):
     """
@@ -480,32 +512,26 @@ def assign_owing(holder):
     putting their relevant data into a dict keyed by ID.
     """
     byID = dict()
-    # dues owing:
-    for tup in (fetch("Sql/dues.sql")):
-        byID[tup[0]] = {'first': tup[1],
-                        'last': tup[2],
-                        'suffix': tup[3],
-                        'email': tup[4],
-                        'address': tup[5],
-                        'town': tup[6],
-                        'state': tup[7],
-                        'postal_code': tup[8],
-                        'country': tup[9],
-                        'dues_owed': tup[10],
-                        }
-    # dock privileges owing:
-    for tup in fetch("Sql/dock.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['dock'] = tup[1]
-    # kayak storage owing:
-    for tup in fetch("Sql/kayak.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['kayak'] = tup[1]
-    # mooring fee owing:
-    for tup in fetch("Sql/mooring.sql"):
-        _ = byID.setdefault(tup[0], {})
-        byID[tup[0]]['mooring'] = tup[1]
-    # save what's been collected...
+    query = import_query("Sql/members_f.sql"
+                        ).format(helpers.sixdigitdate)
+    for tup in fetch(query,
+            from_file=False):
+        personID = tup[0]
+        data  = {'first': tup[1],
+                 'last': tup[2],
+                 'suffix': tup[3],
+                 'email': tup[4],
+                 'address': tup[5],
+                 'town': tup[6],
+                 'state': tup[7],
+                 'postal_code': tup[8],
+                 'country': tup[9],
+                }
+        data2add = ret_0statement(personID)
+        if data2add:
+            for key in data2add.keys():
+                data[key] = data2add[key]
+            byID[personID] = data
     holder.working_data = byID
 
 

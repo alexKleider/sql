@@ -194,8 +194,8 @@ than paid up) for the upcoming year and we thank you.
 
     # Send with June minutes:
     June_request="""
-The final month of this ({}) Club year is now upon us
-and annual dues (and fees where applicable) are due at the end
+We are now in the final month of this ({}) Club year and
+annual dues (and fees where applicable) are due at the end
 of the month.
 
 This mailing is going out to all members so everyone can know
@@ -205,7 +205,7 @@ where they stand whether already paid up or not.
 in error, please let it be known[1].)
 
 Details are as follows:
-{{extra}}""".format(helpers.club_year(which='this')),
+{{statement}}""".format(helpers.club_year(which='this')),
 
     July_request="""
 The new ({}) Club year has begun. Please send in your dues
@@ -546,6 +546,19 @@ content_types = dict(  # which_letter
         "funcs": (members.send_statement, ),
         "e_and_or_p": "one_only",
         },
+    June_request={
+        "subject": "Bolinas R&B Club dues",
+        "from": authors["membership"],
+        "body": letter_bodies["June_request"],
+        "signature": '',
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            ),
+        "holder_funcs": (routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "one_only",
+        },
     request_inductee_payment={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
@@ -655,22 +668,6 @@ content_types = dict(  # which_letter
         "test": lambda record: True if (
             members.is_dues_paying(record) and
             members.not_paid_up(record)
-            ) else False,
-        "e_and_or_p": "one_only",
-        },
-    June_request={
-        "subject": "Bolinas R&B Club dues",
-        "from": authors["membership"],
-        "body": letter_bodies["June_request"],
-        "signature": '',
-        "post_scripts": (
-            post_scripts["remittance"],
-            post_scripts["ref1_email_or_PO"],
-            ),
-        "funcs": (
-                  members.std_mailing_func),
-        "test": lambda record: True if (
-            members.is_dues_paying(record)
             ) else False,
         "e_and_or_p": "one_only",
         },

@@ -81,8 +81,34 @@ def credit_accounts(data):
         ret.extend(update_mooring(data))
     return ret
 
-def get_current_statement(personID):
-    pass
+
+def ret_0statement_dict():
+    """
+    Returns a dict keyed by personID.
+    Each value is a dict keyed by account (dues, dock, etc)
+    with amount owed as values (including where value is 0)
+    """
+    byID = dict()  # to be assigned to holder.working_data
+    source_files = {
+            # the following files all check for membership.
+            # hence the 'f' for formatted by helpers.sixdigitdate
+            # the "0" indicates that zero balances are included
+            'dues': "Sql/dues0_f.sql",
+            'dock': "Sql/dock0_f.sql",
+            'kayak': "Sql/kayak0_f.sql",
+            'mooring': "Sql/mooring0_f.sql",
+            }
+    for key in source_files.keys():
+        query = routines.import_query(source_files[key]
+                            ).format(helpers.sixdigitdate)
+        res = routines.fetch(query, from_file=False)
+        if res:
+            for entry in res:
+                _ = byID.setdefault(entry[0], {})
+                byID[entry[0]][key] = entry[1]
+    return byID
+
+
 
 def one_time_test():
     data = dict(
