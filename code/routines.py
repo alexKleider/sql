@@ -483,7 +483,7 @@ def get_statement(data, include_header=True):
     if include_header: owing = ["Currently owing:", ]
     else: owing = []
     keys = set(data.keys())
-    owing.append(    f"  Dues owing..... {data['dues_owed']:>3}")
+    owing.append(    f"  Dues owing..... {data['dues']:>3}")
     if "dock" in keys:
         owing.append(f"  Dock usage..... {data['dock']:>3}")
     if "kayak" in keys:

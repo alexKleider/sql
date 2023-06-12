@@ -111,6 +111,11 @@ column-constraint:
     DEFAULT ''
 ## See https://www.sqlite.org/lang_altertable.html
 
+INSERT INTO Table
+(<field names>)
+VALUES
+(<values>);
+
 https://www.sqlitetutorial.net/sqlite-update/
 UPDATE table  -- not documented in SQL book!
 SET column_1 = new_value_1,
