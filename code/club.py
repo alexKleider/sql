@@ -33,7 +33,9 @@ class Holder(object):
     db_file_name = db_file_name
     mail_dir = MAIL_DIR
     email_json = EMAIL_JSON
-    direct2json_file = False
+    direct2json_file = False  # receipts_cmd sets it to True
+    include0 = True  # include 0 balances
+            # set to False if want only still owed amounts
     #  ?? Next 2 to be redacted ??
     emails = []  # list of dicts
     entries = 0  # a counter for number of receipts entered

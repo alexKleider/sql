@@ -46,6 +46,7 @@ Choose one of the following:
  18. Receipts                  19. Enter payments
  20. Create member csv file    21. Create applicant csv file
  22. Occupied moorings csv     23. All moorings csv
+ 24. Display what's still owed
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -71,6 +72,7 @@ Choose one of the following:
         elif choice == '21': return create_applicant_csv_cmd
         elif choice == '22': return occupied_moorings_cmd
         elif choice == '23': return all_moorings_cmd
+        elif choice == '24': return still_owing_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -78,6 +80,38 @@ Choose one of the following:
 
 def not_implemented():
     return ["Not implemented", ]
+
+def still_owing_cmd():
+    """
+    """
+    collector = []
+    ret = ["Still owing command still under development.", ]
+    with open("Sql/memberIDs_f.sql", 'r') as stream:
+        query = stream.read().format(helpers.sixdigitdate)
+    ret.append("query: ......")
+    ret.extend(query.split('\n'))
+    res = routines.fetch(query, from_file=False)
+    ret.append(repr(res))
+    for entry in res:
+        data = routines.ret_statement(entry[0])
+        if data['total'] == 0:
+            continue
+        data['ID'] = entry[0]
+        data['first'] = entry[1]
+        data['last'] = entry[2] + entry[3]
+        collector.append(data)
+    fieldnames = (
+        "ID, first, last, total, dues, dock, kayak, mooring"
+                                                .split(', '))
+    csv_name = input("Name of csv file (owing.csv is default): ")
+    if not csv_name: csv_name = "owing.csv"
+    with open(csv_name, 'w', newline='') as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer.writeheader()
+        for data in collector:
+            writer.writerow(data)
+    ret.append("data writen to {csv_name}")
+    return ret
 
 
 def occupied_moorings_cmd():

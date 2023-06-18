@@ -410,7 +410,7 @@ def get_sponsors(applicantID):
     return sponsors
 
 
-def ret_0statement(personID):
+def ret_statement(personID, incl0=True):
     """
     Returns a (possibly empty) dict.
     Key/value pairs are account (dues, dock, etc)
@@ -467,7 +467,7 @@ def get_data4statement(personID):
     data['postal_code'] = res[6]
     data['country'] = res[7]
     data['email'] = res[8]
-    data2add = ret_0statement(personID)
+    data2add = ret_statement(personID)
     for key in data2add.keys():
         data[key] = data2add[key]
     return data
@@ -527,7 +527,7 @@ def assign_owing(holder):
                  'postal_code': tup[8],
                  'country': tup[9],
                 }
-        data2add = ret_0statement(personID)
+        data2add = ret_statement(personID)
         if data2add:
             for key in data2add.keys():
                 data[key] = data2add[key]
