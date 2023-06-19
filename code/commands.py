@@ -46,7 +46,7 @@ Choose one of the following:
  18. Receipts                  19. Enter payments
  20. Create member csv file    21. Create applicant csv file
  22. Occupied moorings csv     23. All moorings csv
- 24. Display what's still owed
+ 24. Still owing csv           25. Membership < 1 year
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -73,6 +73,7 @@ Choose one of the following:
         elif choice == '22': return occupied_moorings_cmd
         elif choice == '23': return all_moorings_cmd
         elif choice == '24': return still_owing_cmd
+        elif choice == '25': return under1yr_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -81,17 +82,31 @@ Choose one of the following:
 def not_implemented():
     return ["Not implemented", ]
 
+def under1yr_cmd():
+    ret = [
+        "Creating list of members who's tenure is < 1 year...", ]
+    with open("Sql/under1yr_f.sql", 'r') as stream:
+        query = stream.read().format(
+                        int(helpers.sixdigitdate)-10000)
+    ret.append("Query is :")
+    ret.extend(query.split("\n"))
+    ret.append("...as far as we've gotten.")
+    res = routines.fetch(query, from_file=False)
+    for entry in res:
+        ret.append(repr(entry))
+    return ret
+
+
 def still_owing_cmd():
     """
     """
     collector = []
-    ret = ["Still owing command still under development.", ]
+    ret = ["Still owing csv being generated...", ]
     with open("Sql/memberIDs_f.sql", 'r') as stream:
         query = stream.read().format(helpers.sixdigitdate)
     ret.append("query: ......")
     ret.extend(query.split('\n'))
     res = routines.fetch(query, from_file=False)
-    ret.append(repr(res))
     for entry in res:
         data = routines.ret_statement(entry[0])
         if data['total'] == 0:
