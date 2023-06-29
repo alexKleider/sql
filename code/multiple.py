@@ -54,7 +54,7 @@ def update_kayak(data):
 def update_mooring(data):
     ret = ["Updating mooring...", ]
     query = """UPDATE Moorings SET
-        mooring_cost = mooring_cost - {mooring}
+        owing = owing - {mooring}
         WHERE personID = {personID};
     """.format(**data)
     ret.extend(update_account(query))

@@ -129,6 +129,18 @@ if __name__ == '__main__':
     col1, col2 = split_on_FF(schema)
     final_ret.extend(combine(col1, col2))
 
+    yn = input("Add SQL hints? (y/n) ")
+    if yn and yn[0] in 'Yy':
+        final_ret.extend(['', '',
+"Stati: ID/key                UPDATE Table     INSERT INTO",
+"1. no fee    7. ind          SET col = val    Table (key1, ...)",
+"2. apl ok    8. notified       [, co1 = val1  VALUES (val1, ...)",
+"3. a0 (ackn) 9. vacancy         , ... ]       ;",
+"4. a1       11. new member   WHERE .....",
+"5. a2       15. member igs   ;",
+"6. a=>3",
+            ])
+
     # yield the result:
     if outf:
         with open(outf, 'w') as outstream:

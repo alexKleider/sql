@@ -36,6 +36,9 @@ Both the printer and the windowed envelope being used must be taken
 into consideration.
 """
 
+try: from code import club
+except ImportError: import club
+
 try: from code import helpers
 except ImportError: import helpers
 
@@ -209,14 +212,17 @@ Details are as follows:
 
     July_request="""
 The new ({}) Club year has begun. Please send in your dues
-(and any applicable fees) to the Bolinas Rod and Boat Club,
-PO Box 248, Bolinas, CA 94924.
+(and any applicable fees) to the Bolinas Rod and Boat Club
+at the address provided below.
 
-(If you've any reason to believe that our accounting might be
-in error, please let it be known[1].)
+If you've any reason to believe that our accounting might
+be in error, please let it be known[1]. Also keep in mind
+that if you have recently sent in a payment, it may not yet
+have been processed. An acknowledgement letter is generally
+sent when payments are processed.
 
 Details are as follows:
-{{extra}}""".format(helpers.club_year(which='this')),
+{{statement}}""".format(helpers.club_year(which='this')),
 
     interim_request="""
 Club records indicate that you have dues (and/or
@@ -429,8 +435,8 @@ Please respond by either replying to this email or by post:
     The Bolinas Rod & Boat Club
     PO Box 248
     Bolinas, CA 94924
-It's always a good idea to jot down on the check exactly for
-what you are paying in order to prevent any confusion.""",
+It's always a good idea to jot down on the check exactly for whom
+and for what you are paying in order to prevent any confusion.""",
 
     ref1_email_or_PO="""[1] rodandboatclub@gmail.com or PO Box 248, 94924""",
 
@@ -559,6 +565,34 @@ content_types = dict(  # which_letter
         "funcs": (members.send_statement, ),
         "e_and_or_p": "one_only",
         },
+    July_request={
+        "subject": "Bolinas R&B Club dues",
+        "from": authors["membership"],
+        "body": letter_bodies["July_request"],
+        "signature": '',
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            ),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "one_only",
+        },
+    statements4mailing={
+        "subject": "Bolinas R&B Club dues",
+        "from": authors["membership"],
+        "body": letter_bodies["July_request"],
+        "signature": '',
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            ),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "usps",
+        },
     request_inductee_payment={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
@@ -661,22 +695,6 @@ content_types = dict(  # which_letter
         "body": letter_bodies["correction"],
         "post_scripts": (
             post_scripts["remittance"],
-            post_scripts["ref1_email_or_PO"],
-            ),
-        "funcs": (
-                  members.std_mailing_func),
-        "test": lambda record: True if (
-            members.is_dues_paying(record) and
-            members.not_paid_up(record)
-            ) else False,
-        "e_and_or_p": "one_only",
-        },
-    July_request={
-        "subject": "Bolinas R&B Club dues",
-        "from": authors["membership"],
-        "body": letter_bodies["July_request"],
-        "signature": '',
-        "post_scripts": (
             post_scripts["ref1_email_or_PO"],
             ),
         "funcs": (

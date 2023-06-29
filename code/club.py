@@ -49,6 +49,9 @@ class Holder(object):
             raise NotImplementedError("Only one instance allowed.")
         self.inc_n_instances()
 
+def set_include0_false(holder):
+    holder.include0 = False
+
 
 ## Wouldn't need the followng ..keys tuples
 ## if/when use sqlAlchemy

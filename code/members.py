@@ -280,10 +280,14 @@ def send_statement(holder, data):
     and emails are added to holder.emails
     """
     ###### MUST ADD A statement entry to data ########
-    ret = ['Running send_statements...', ]
+    ret = ['Running code.members.send_statement.', ]
     add_statement_entry(data)
+    if ((data['total'] == 0) and
+        (not holder.include0)):
+        return [
+    'Total = 0: no notice sent by code.members.send_statement.',]
     q_mailing(holder, data)
-    return ret
+    return ['Notice sent by code.members.send_statement.', ]
 
 
 def inductee_payment(holder, data):

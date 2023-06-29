@@ -161,7 +161,9 @@ def adjust_money_tables(data, ret):
 
 def get_demographic_dict(personID):
     """
-    Returns a dict keyed by <keys> (see code below.)
+    If a valid personID is provided returns a dict
+    keyed by <keys> (see code below.)
+    If invalid personID: returns None
     """
     keys = ("personID first last suffix address town " +
             "state postal_code country email")
@@ -173,6 +175,8 @@ def get_demographic_dict(personID):
         WHERE personID = {personID};
     """
     res = routines.fetch(query, from_file=False)
+    if not res or not res[0]:
+        return
     return routines.make_dict(key_listing, res[0])
 
     
@@ -185,8 +189,9 @@ def add_receipt_entry(holder, ret):
     Letters go into holder.mail_dir and
     emails get added to already existing holder.email.json file
     both of which need to be set up by the caller <receipts_cmd>.
-    Returns a negative integer: -2 if no more receipts to enter;
-    -1 if unable to establish a personID
+    Returns a negative integer: -12 if no more receipts to enter;
+    -1 if unable to establish a personID; -2 abort current entry
+    Returns data pertaining to entry made (which isn't used?)
     """
     addendum = "(add a 'd' to change dates) "
     if holder.entries:
@@ -210,11 +215,16 @@ def add_receipt_entry(holder, ret):
         except ValueError:
             print("Must enter an integer, 0 to abort...")
             continue
-        break
-    if not (payorID and not payorID == 0):
+        if payorID == 0:
+            return -12
+        data = get_demographic_dict(payorID)
+        if not data:
+            print(f"'{payorID}' is an invalid payorID")
+        else:
+            break
+    if not payorID:
         return -1  # unable to establish a payor
     #1# details of the <data> to become an entry
-    data = get_demographic_dict(payorID)
 #   _ = input(f"""code/dates ln#201: data..
 #   {repr(data)}
 #   """)
@@ -328,7 +338,7 @@ def receipts_cmd():
     <add_receipt_entry> needs holder as a param and also
     takes an optional param which, if provided,
     must be a list to which progress notes are added.
-    def receipts_cmd()"""
+    """
     ret = ["Entering receipts_cmd()", ]
     holder = club.Holder()
     ## The next two functions not yet implemented:
@@ -343,6 +353,7 @@ def receipts_cmd():
     set_default_dates(holder)
     while True:
         res = add_receipt_entry(holder, ret)
+        # res should be the data pertaining to entry (not used.)
         if isinstance(res, int):
             if res == -1:  # unable to establish a payor
                 continue
