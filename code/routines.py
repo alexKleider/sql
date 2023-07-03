@@ -152,8 +152,20 @@ def get_menu_response(items, header=None, incl0Q=True):
         for key, value in menu.items():
             display.append(f"{key:>3}: {value}")
         print('\n'.join(display))
-        response = int(input("Choice (must be an integer): "))
-        if response>=0 and response<=(len(items)+1):
+        if incl0Q: extra = " (or 'Q' to quit)"
+        else: extra = ""
+        response = input(f"Choice (must be an integer{extra}): ")
+        if response and response[0] in "qQ":
+            return 0
+        try:
+            response = int(response)
+        except ValueError:
+            print("Only an integer or 'q' or 'Q' allowed!")
+            continue
+        if incl0Q: lower_limit = 0
+        else: lower_limit = 1
+        if response>=lower_limit and response<=(len(items)+1):
+#           _ = input(f"returning menu choice {response}")
             return response
 
 

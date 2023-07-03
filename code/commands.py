@@ -104,6 +104,7 @@ def still_owing_cmd():
     ret = ["Still owing csv being generated...", ]
     with open("Sql/memberIDs_f.sql", 'r') as stream:
         query = stream.read().format(helpers.sixdigitdate)
+        # query orders by name...
     ret.append("query: ......")
     ret.extend(query.split('\n'))
     res = routines.fetch(query, from_file=False)

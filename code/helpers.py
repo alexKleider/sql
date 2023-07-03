@@ -649,6 +649,21 @@ def show_json_data(json_data, underlinechar=''):
     collect(json_data, indent=indent, collector=collector)
     return collector
 
+def dump2csv_file(list_of_dicts, file_name="new_csv.csv"):
+    """
+
+    """
+    if not len(list_of_dicts) > 0:
+        print("Nothing to store (code/helpers.dump2csv_file).")
+        return
+    else:
+        keys = [key for key in list_of_dicts[0].keys()]
+    with open(file_name, 'w', newline='') as outf:
+        writer = csv.DictWriter(outf, fieldnames=keys)
+        writer.writeheader()
+        for d in list_of_dicts:
+            writer.writerow(d)
+
 
 def store(collector, filename):
     """
