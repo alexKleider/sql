@@ -120,12 +120,17 @@ def get_mooring(owing_only=True, report=None):
     return dict_listing
 
 
-def check_balances(progress_listing):
+def owing_csv_cmd():
+    report = ["Creating csv file(s); owing_csv_cmd", ]
+    yn = input("Owing only (the default)? (y/n) ")
+    if ((not yn) or (yn[0] in 'yY')): owing_only = True
+    else:
+        owing_only = False
+        message = "Zero balances are being included."
+        report.append(message)
     while True:
         print("=====================")
-        yn = input("Owing only? (y/n) ")
-        if yn and yn[0] in 'yY': owing_only = True
-        else: owing_only = False
+        message = ''
         choice = routines.get_menu_response(tables,
                 header="Choose one of the following",
                 incl0Q=True)
@@ -133,24 +138,28 @@ def check_balances(progress_listing):
         elif choice == 1:
             helpers.dump2csv_file(get_dues(owing_only),
                     dues_file_name)
-            print(f"File '{dues_file_name}' created.")
+            message = f"File '{dues_file_name}' created."
         elif choice == 2:
             helpers.dump2csv_file(get_dock(owing_only),
                     dock_file_name)
-            print(f"File '{dock_file_name}' created.")
+            message = f"File '{dock_file_name}' created."
         elif choice == 3:
             helpers.dump2csv_file(get_kayak(owing_only),
                     kayak_file_name)
-            print(f"File '{kayak_file_name}' created.")
+            message = f"File '{kayak_file_name}' created."
         elif choice == 4: 
             helpers.dump2csv_file(get_mooring(owing_only),
                     mooring_file_name)
-            print(f"File '{mooring_file_name}' created.")
+            message = f"File '{mooring_file_name}' created."
         else:  # routines.get_menu_response won't allow this
             print("invalid choice; '0' to quit")
+        if message:
+            report.append(message)
+            print(message)
+    return report
     
 
 
 if __name__ == '__main__':
-    ret = []
-    check_balances(ret)
+    ret = owing_csv_cmd()
+    for line in ret: print(line)

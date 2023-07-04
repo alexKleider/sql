@@ -30,6 +30,9 @@ except ImportError: import alchemy
 try: from code import dates
 except ImportError: import dates
 
+try: from code import fees
+except ImportError: import fees
+
 def get_command():
     while True:
         choice = input("""   MAIN MENU
@@ -47,6 +50,7 @@ Choose one of the following:
  20. Create member csv file    21. Create applicant csv file
  22. Occupied moorings csv     23. All moorings csv
  24. Still owing csv           25. Membership < 1 year
+ 26. Fees (owing or not) csv   27. not implemented
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -74,6 +78,7 @@ Choose one of the following:
         elif choice == '23': return all_moorings_cmd
         elif choice == '24': return still_owing_cmd
         elif choice == '25': return under1yr_cmd
+        elif choice == '26': return fees.owing_csv_cmd
         else: print("Not implemented")
 
 # for add_dues:
