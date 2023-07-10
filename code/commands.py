@@ -497,16 +497,36 @@ def show_applicants():
     date_keys = club.date_keys
     sponsor_keys = club.sponsor_keys
     
+    query = """/* Sql/applicants2.sql */
+        SELECT
+            P.personID, P.first, P.last, P.suffix, P.phone,
+            P.address, P.town, P.state, P.postal_code, P.email,
+            sponsor1ID, sponsor2ID,
+            app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
+            approved, dues_paid, notified ...  """
+    keys = ("ID, first, last, suffix, phone, address, town, " +
+            "state, postal_code, email, " +
+            "sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd, " +
+            "meeting1, meeting2, meeting3, " +
+            "approved, dues_paid, notified").split(', ')
     res = routines.fetch('Sql/applicants2.sql')
     # convert our returned sequences into...
     dics = []        #  a sequence of dicts:
     for sequence in res:
-        key_value_pairs = zip(club.appl_keys, sequence)
+        key_value_pairs = zip(keys, sequence)
         mapping = {}
         for key, value in key_value_pairs:
             mapping[key] = value
+        # Confirm still an applicant!! if not: "continue"
+        query = """ SELECT personID, statusID, begin, end
+            FROM Person_Status WHERE personID = {} and statusID = 26;
+            """.format(mapping['ID'])
+#       _ = input(query)
+        res = routines.fetch(query, from_file=False)
+#       _ = input(res)
+        if res: continue  # no longer an applicant so "continue"
 #       _ = input(f"mapping: {mapping}")
-        for sponsor in ('sponsor1', 'sponsor2'):
+        for sponsor in ('sponsor1ID', 'sponsor2ID'):
 #           _ = input(f"sponsor: {mapping[sponsor]}")
             names = routines.fetch('Sql/find_1st_last_by_ID.sql',
                     params = (mapping[sponsor], ))[0]
@@ -547,20 +567,20 @@ def show_applicants():
                 entry.append(
                 """{first} {last} {suffix} [{phone}] {email}
     {address}, {town}, {state} {postal_code}
-    Sponsors: {sponsor1}, {sponsor2},
+    Sponsors: {sponsor1ID}, {sponsor2ID},
     Meetings: {meeting1} {meeting2} {meeting3}
     Date approved by Executive Committee: {approved}"""
                 .format(**mapping))
             elif mapping['meeting1']:
                 entry.append("""{first} {last} [{phone}] {email}
     {address}, {town}, {state} {postal_code}
-    Sponsors: {sponsor1}, {sponsor2},
+    Sponsors: {sponsor1ID}, {sponsor2ID},
     Meetings: {meeting1} {meeting2} {meeting3} {approved}"""
                 .format(**mapping))
             else:
                 entry.append("""{first} {last} [{phone}] {email}
     {address}, {town}, {state} {postal_code}
-    Sponsors: {sponsor1}, {sponsor2}"""
+    Sponsors: {sponsor1ID}, {sponsor2ID}"""
                 .format(**mapping))
         report.extend(entry)
     return report
@@ -981,6 +1001,7 @@ def prepare_mailing_cmd():
         ret.extend(global_copies(holder))
 
     holder.emails = []
+    _ = input(repr(holder.which))
     for func in holder.which['holder_funcs']:
         # assigns holder.working_data
         # will probably end up only needing one 

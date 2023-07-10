@@ -50,21 +50,22 @@ def closeDB(database, cursor):
  
 
 if __name__ == '__main__':
+    yn = input("Do you wish to see a report? (y/n): ")
     while True:
         cmd = commands.get_command()
         if cmd: 
             res = cmd()
-            outfile = input(
-            "Send result to file (blank if to StdOut:) ")
-            if outfile:
-                with open(outfile, 'w') as outstream:
-                    outstream.write('\n'.join(res))
-                    print(f"Results sent to {outstream.name}.")
-            else:
-                print("No file selected; output to stdout...")
-                for line in res:
-                    print(repr(line))
-#               print('\n'.join(res))
+            if yn and yn[0] in 'Yy':
+                outfile = input(
+                "Send result to file (blank if to StdOut:) ")
+                if outfile:
+                    with open(outfile, 'w') as outstream:
+                        outstream.write('\n'.join(res))
+                        print(f"Results sent to {outstream.name}.")
+                else:
+                    print("No file selected; output to stdout...")
+                    for line in res:
+                        print(repr(line))
         else:
             print("No valid command provided.")
         response = input(

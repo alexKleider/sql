@@ -16,7 +16,7 @@ JOIN
 ON
     St.statusID = PS.statusID
 WHERE St.statusID in (11, 15)
-AND PS.end < {}
+AND (PS.end = '') OR PS.end > {}
 -- must format: use code.helpers.sixdigitdate
 ORDER BY
     P.last, P.first, P.suffix

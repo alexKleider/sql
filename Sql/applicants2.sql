@@ -1,7 +1,7 @@
 /* Sql/applicants2.sql */
 SELECT
-    P.first, P.last, P.suffix,
-    P.phone, P.address, P.town, P.state, P.postal_code, P.email,
+    P.personID, P.first, P.last, P.suffix, P.phone,
+    P.address, P.town, P.state, P.postal_code, P.email,
     sponsor1ID, sponsor2ID,
     app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
     approved, dues_paid, notified
