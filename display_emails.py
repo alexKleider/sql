@@ -13,10 +13,17 @@ import sys
 from code import club
 from code import helpers
 
+default_in_file = 'Secret/emails.json'
+default_out_file = 'emails.txt'
+
 if len(sys.argv) > 1:
     outf = sys.argv[1]
 else:
-    outf = "emails.txt"
+    outf = default_out_file
+
+print(f"Using {default_in_file} as default  input file...")
+inf = input(f"<Enter> to accept or enter an alternative: ")
+if inf: default_in_file = inf
 
 
 def display_emails_cmd(infile=club.Holder.email_json):
@@ -36,6 +43,7 @@ def display_emails_cmd(infile=club.Holder.email_json):
 
 if __name__ == '__main__':
     with open(outf, 'w') as stream:
+        print(f"Opening file '{stream.name}'...")
         stream.write(display_emails_cmd())
     print(f"Ouput written to {outf}")
 

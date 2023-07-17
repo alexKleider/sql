@@ -13,7 +13,7 @@ Applicants: app_rcvd, fee_rcvd, meeting1,2,3,
 
 <date_entry_cmd> is the top level procedure:
     it's driven by option 12 presented by main.py.
-It presents a menu reflected in the <tables_w_dates> listing.
+It presents a menu reflected in the <options> listing.
 Option 4: the <receipts_cmd> is currently the only one
 implemented.
 
@@ -44,7 +44,7 @@ except ImportError: import multiple
 try: from code import commands
 except ImportError: import commands
 
-tables_w_dates = (
+options = (
     "Applicants",    # app_rcvd, fee_rcvd, meeting1,2,3,
                      # approved, dues_paid, notified
     "Attrition",     # date  (also reason)
@@ -385,9 +385,9 @@ def receipts_cmd():
 def date_entry_cmd():
     ret = []
     choice = routines.get_menu_response(
-        tables_w_dates, header="Which table:", incl0Q=True)
+        options, header="Which table:", incl0Q=True)
     ret.append(
-        f"Your choice is #{choice}: {tables_w_dates[choice-1]}")
+        f"Your choice is #{choice}: {options[choice-1]}")
     if choice ==   1: ret.extend(applicants_cmd())
     elif choice == 2: ret.extend(attrition_cmd())
     elif choice == 3: ret.extend(person_status_cmd())
