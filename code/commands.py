@@ -57,7 +57,7 @@ Choose one of the following:
         elif choice ==  '2': return show_applicants
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
-        elif choice ==  '5': return send_cmd
+#       elif choice ==  '5': return send_cmd
         elif choice ==  '6': return no_email_cmd
         elif choice ==  '7': return get_stati_cmd
         elif choice ==  '8': return update_status_cmd
@@ -71,7 +71,7 @@ Choose one of the following:
         elif choice == '16': return display_fees_by_category_cmd
         elif choice == '17': return welcome_new_member_cmd
         elif choice == '18': return receipts_cmd
-        elif choice == '19': return payment_entry_cmd
+#       elif choice == '19': return payment_entry_cmd
         elif choice == '20': return create_member_csv_cmd
         elif choice == '21': return create_applicant_csv_cmd
         elif choice == '22': return occupied_moorings_cmd
@@ -79,6 +79,7 @@ Choose one of the following:
         elif choice == '24': return still_owing_cmd
         elif choice == '25': return under1yr_cmd
         elif choice == '26': return fees.owing_csv_cmd
+        elif choice == '27': return add_new_applicant_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -1055,6 +1056,10 @@ def get_applicant_data_cmd():
 
 
 def send_cmd():
+    """
+    Should be redacted!
+    pre-empted by prepare mailing command
+    """
     ret = ['mailing command is under development', ]
     okrange = range(1,len(content.ctypes)+1)
     choices = zip(okrange, content.ctypes)
@@ -1212,11 +1217,57 @@ def receipts_cmd():
 
 
 def payment_entry_cmd():
+    """
+    Redact- not used.
+    """
     ret = ['Entering payment_entry_cmd...', ]
     ret.append('For payment entry use 12. Data Entry (Dates)')
     print(ret[0])
     return(ret)
 
+
+def add_new_applicant_cmd():
+    """ .schema People:( personID INTEGER PRIMARY KEY,
+            first TEXT NOT NULL,
+            last TEXT NOT NULL,
+            suffix TEXT DEFAULT '',
+            phone TEXT DEFAULT '',
+            address TEXT DEFAULT '',
+            town TEXT DEFAULT '',
+            state TEXT DEFAULT '',
+            postal_code TEXT DEFAULT '',
+            country TEXT DEFAULT 'USA',
+            email TEXT DEFAULT '' );
+    """
+    ds = add_new_applicant_cmd()
+    ret = ["Entering add_new_applicant_cmd...",]
+    ret.append("  == currently under development ==")
+    while True:
+        textOrFile = input(
+                "CLInput or from file? (c,C,f,F,q)uit): ")
+        if source and source[0] in "qQ":
+            ret.append("Aborting addition of new applicant(s)!")
+            return ret
+        if source[0] in "fF":
+            fname = input("File name: ")
+            try:
+                with open(fname, r) as inf:
+                    data = inf.read()
+            except FileNotFoundError:
+                print("Invalid file name, try again.")
+                continue
+            data = data.split('\n')
+            valid_data = []
+            for line in data:
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                valid_data.append(line)
+            if len(valid_data) != len(keys):
+                print(f"{fname} has wrong number of lines")
+                continue
+            pass
+    return ret
 
 if __name__ == "__main__":
 #   for sponsor_name in (get_sponsor_name(45),
