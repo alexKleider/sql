@@ -385,7 +385,7 @@ def script_location():
 
 def useful_lines(stream, comment="#"):
     """
-    A generator which accepts a stream of lines (strings.)
+    A generator which accepts an iterable of lines (strings.)
     Blank lines are ignored.
     If <comment> resolves to true, lines beginning with <comment>
     (after being stripped of leading spaces) are also ignored.
