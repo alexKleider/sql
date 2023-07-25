@@ -3,6 +3,7 @@
 # File: add.py
 
 import sys
+import json
 from code import routines
 from code import helpers
 
@@ -43,15 +44,13 @@ def get_new_applicant_data(file_content, report=None):
     """
     data = [line for line in helpers.useful_lines(
                             file_content)]
-    _ = input(f"data collected from file:\n{data}")
+#   _ = input(f"data collected from file:\n{data}")
     keys = get_keys_from_schema('People', nkeys2ignore=1)
     keys.extend(
         ['sponsor1ID', 'sponsor2ID', 'app_rcvd', 'fee_rcvd'])
-    _ = input(f"keys collected from file:\n{keys}")
-#   print(data)
-#   print(keys)
+#   _ = input(f"keys collected from file:\n{keys}")
     ret = dict(zip(keys, data))
-    _ = input(f"Resulting dict:\n{ret}")
+#   _ = input(f"Resulting dict:\n{ret}")
     if ret['suffix'] == 'No Suffix': ret['suffix'] = ''
     if ret['app_rcvd'] == 0: ret['app_rcvd'] = ''
     if ret['fee_rcvd'] == 0: ret['fee_rcvd'] = ''
@@ -72,8 +71,64 @@ def get_new_applicant_data(file_content, report=None):
     return ret  # returns dict of new applicant data from file
 
 
+def populate_db(data):
+    """
+    <data> is a dict created based on an application.
+    Entries need to be made into the following tables:
+    People: demographics
+    Person_Status: 1. no fee, 2. fee paid, (3. acknowledged (a0))
+    Applicants: sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd
+    """
+    # data for People table is standard demographics
+    #   ... already collected but need assigned personID
+    # data for Person_Status table:
+    all_keys = [key for key in data.keys()]
+    key_params = ', '.join(all_keys[:10])
+    all_values =  [value for value in data.values()]
+    val_params = '"' + '", "'.join(all_values[:10]) + '"'
+    insert_query = f"""
+    INSERT INTO People ({key_params})
+    VALUES ({val_params})
+    ;"""
+#   print(insert_query)
+    res = routines.fetch(insert_query,
+            from_file=False,
+            commit=True)
+    # Need to retrieve newly assigned personID...
+    with open("Sql/id_from_names_fff.sql", 'r') as stream:
+        getIDquery = stream.read()
+    getIDquery = getIDquery.format(**data)
+    res = routines.fetch(getIDquery,
+            from_file=False)
+    data['personID'] = res[0][0]
+#   _ = input(f"personID is {data['personID']}")
+
+    # Set data needed for Person_Status entry...
+    #  /* Sql/person_status_entry_fd.sql */
+    if data["fee_rcvd"]: data['statusID'] = 2
+    else: data['statusID'] = 1  # Will have to add an end date
+                        # and make another status entry
+                        # when fee is paid.
+    data["begin"] = helpers.sixdigitdate
+    # Finally create entry in Applicants table...
+    #  /* Sql/applicant_entry_d.sql */
+    print()
+    for key, value in data.items():
+        print(f"{key}: {value}")
+     
+
+
+def test_populate_db():
+    with open("ap_data.json", 'r') as source:
+        data = json.load(source)
+    populate_db(data)
+
+
 def add_new_applicant_cmd():
     """
+    Plan to have two input methods:
+    1. from a specially formatted file (already implemented,) or
+    2. item by item entry as prompted from the command line.
     """
     ret = ["Entering add_new_applicant_cmd...",]
     print(ret[0])
@@ -98,7 +153,14 @@ def add_new_applicant_cmd():
                 continue
             data = get_new_applicant_data(stream, report=ret)
             break
-    _ = input(f"So far following has been collected:\n{data}")
+        elif answer[0] in "cC":
+            print(
+              "Command line prompted input not yet implemented.")
+            _ = input("   CR to continue... ")
+    print(f"\nSo far following has been collected:\n{data}")
+    yn = input("OK to made data base entries? (y/n) ")
+    if yn and yn[0] in "yY":
+        populate_db(data)
     return ret
 
 
@@ -128,7 +190,8 @@ def test_applicant_data_collection():
 
 
 if __name__ == '__main__':
+    test_populate_db()
 #   test_add_new_applicant_cmd()
 #   test_applicant_data_collection()
-    test_all_schema()
+#   test_all_schema()
 

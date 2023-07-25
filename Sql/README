@@ -1,0 +1,8 @@
+Evolving following suffix (before '.sql') conventions:
+
+using suffix 'f' when query needs formatting before use.
+using suffix 'ff' when two items need formatting.
+using suffix 'fff' when three (or more) need formatting.
+using suffix 'fd' when using a **dict to format.
+in the case of 'ff' and 'fff' will probably switch to use of 'fd'
+
