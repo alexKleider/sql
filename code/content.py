@@ -593,6 +593,17 @@ content_types = dict(  # which_letter
         "funcs": (members.send_statement, ),
         "e_and_or_p": "usps",
         },
+    new_applicant_welcome={
+        "subject": "BR&BC Application",
+        "from": authors["membership"],
+        "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
+        "body": letter_bodies["new_applicant_welcome"],
+        "post_scripts": (),
+        "holder_funcs": (routines.assign_applicants2welcome,),
+        "funcs": (members.std_mailing_func, ),
+        "e_and_or_p": "one_only",
+        },
     request_inductee_payment={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
@@ -775,18 +786,6 @@ content_types = dict(  # which_letter
         "test": (lambda record: True if
                  (record["status"]
                   and 'a-' in record["status"].split("|"))
-                 else False),
-        "e_and_or_p": "one_only",
-        },
-    new_applicant_welcome={
-        "subject": "Welcome to the Club",
-        "from": authors["membership"],
-        "cc": "sponsors",
-        "body": letter_bodies["new_applicant_welcome"],
-        "post_scripts": (),
-        "funcs": (members.std_mailing_func,),
-        "test": (lambda record: True
-                 if members.is_new_applicant(record)
                  else False),
         "e_and_or_p": "one_only",
         },

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# File: add.py
+# File: applicants.py
+#      initially called add.py
 
 import sys
 import json
@@ -38,9 +39,9 @@ def get_new_applicant_data(file_content, report=None):
     sponsor2, date application was received and date fee was
     received (enter '0' if fee did not accompany the application.
     Returns a dict with keys relevant to new applicants.
-    Note: Sponsors in the source are by name (and may have a date
-    after first and last names) but the returned dict has only
-    "personID"s as sponsor entries.
+    Note: Sponsors in the source are by three names (first, last,
+    suffix) and a date (which is not used)
+    but the code translates these into personID numbers.
     """
     data = [line for line in helpers.useful_lines(
                             file_content)]
@@ -54,24 +55,28 @@ def get_new_applicant_data(file_content, report=None):
     if ret['suffix'] == 'No Suffix': ret['suffix'] = ''
     if ret['app_rcvd'] == 0: ret['app_rcvd'] = ''
     if ret['fee_rcvd'] == 0: ret['fee_rcvd'] = ''
-    with open("Sql/id_from_names_ff.sql", 'r') as inf:
+    with open("Sql/id_from_names_fd.sql", 'r') as inf:
         query = inf.read()
     for sponsor in ('sponsor1ID', 'sponsor2ID'):
-        first, last, date = ret[sponsor].split()
-        res = routines.fetch(query.format(first, last),
-                            from_file=False)
+        tup = ret[sponsor].split()
+        l = len(tup)
+        d = {"first": tup[0], "last": tup[1], "suffix": ''}
+        if l == 4:
+            d["suffix"] = tup[2]
+        res = routines.fetch_d_query(
+                "Sql/id_from_names_fd.sql", data=d)
+#       _ = input(f"fetch_d_query on {d} returning {res}")
         ret[sponsor] = res[0][0]
-#       _ = input(ret[sponsor])
     if isinstance(report, list):
-        report.append(
-            f"get_new_applicant_data() called on\n{file_content}")
+#       report.append(
+#           f"get_new_applicant_data() called on\n{file_content}")
         if (not (len(data) == len(keys))):
             report.append("Lengths don't match.")
         report.append(f"get_new_applicant_data returning:\n{ret}")
     return ret  # returns dict of new applicant data from file
 
 
-def populate_db(data):
+def add2AppTable(data, record=None):
     """
     <data> is a dict created based on an application.
     Entries need to be made into the following tables:
@@ -95,33 +100,35 @@ def populate_db(data):
             from_file=False,
             commit=True)
     # Need to retrieve newly assigned personID...
-    with open("Sql/id_from_names_fff.sql", 'r') as stream:
-        getIDquery = stream.read()
-    getIDquery = getIDquery.format(**data)
-    res = routines.fetch(getIDquery,
-            from_file=False)
+    res = routines.fetch_d_query("Sql/id_from_names_fd.sql",
+            data)
     data['personID'] = res[0][0]
 #   _ = input(f"personID is {data['personID']}")
 
-    # Set data needed for Person_Status entry...
-    #  /* Sql/person_status_entry_fd.sql */
+    # Set data needed and then make the Person_Status entry...
     if data["fee_rcvd"]: data['statusID'] = 2
     else: data['statusID'] = 1  # Will have to add an end date
                         # and make another status entry
                         # when fee is paid.
     data["begin"] = helpers.sixdigitdate
+    _ = routines.fetch_d_query(
+            "Sql/person_status_entry_fd.sql", data, commit=True)
     # Finally create entry in Applicants table...
-    #  /* Sql/applicant_entry_d.sql */
-    print()
-    for key, value in data.items():
-        print(f"{key}: {value}")
-     
+    _ = routines.fetch_d_query(
+            "Sql/applicant_entry_fd.sql", data, commit=True)
+    if record and isinstance(record, list):
+        record.extend((
+            "{first} {last} {suffix} added as new applicant."
+                .format(**data),
+            "Tables updated: People, Person_Status & Applicants.",
+            "Still need to mail welcome letter.",
+            ))
 
 
-def test_populate_db():
+def test_add2AppTable():
     with open("ap_data.json", 'r') as source:
         data = json.load(source)
-    populate_db(data)
+    add2AppTable(data)
 
 
 def add_new_applicant_cmd():
@@ -133,6 +140,8 @@ def add_new_applicant_cmd():
     ret = ["Entering add_new_applicant_cmd...",]
     print(ret[0])
     ret.append("  == currently under development ==")
+    # 1st choose method of input- only by file implemented 4 now
+    # and collect the data...
     while True:
         answer = input(
                 "CLInput or from file? (c,C,f,F,q)uit): ")
@@ -151,6 +160,8 @@ def add_new_applicant_cmd():
                 ret.append("File not found, try again.")
                 print(ret[-1])
                 continue
+            # get the data taken from application and transcribed
+            # into a text file one line per data item:
             data = get_new_applicant_data(stream, report=ret)
             break
         elif answer[0] in "cC":
@@ -160,7 +171,16 @@ def add_new_applicant_cmd():
     print(f"\nSo far following has been collected:\n{data}")
     yn = input("OK to made data base entries? (y/n) ")
     if yn and yn[0] in "yY":
-        populate_db(data)
+        add2AppTable(data)  # adds to three tables:
+            #1. People
+            #2. Person_Status
+            #3. Applicants
+    return ret
+
+
+def credit_applicant_meeting_cmd():
+    ret = ["Registering applicant's meeting attendance.", ]
+    pass
     return ret
 
 
@@ -190,8 +210,8 @@ def test_applicant_data_collection():
 
 
 if __name__ == '__main__':
-    test_populate_db()
-#   test_add_new_applicant_cmd()
+#   test_add2AppTable()
+    test_add_new_applicant_cmd()
 #   test_applicant_data_collection()
 #   test_all_schema()
 

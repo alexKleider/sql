@@ -985,6 +985,7 @@ def prepare_mailing_cmd():
                                     holder.mail_dir),
                                     delete=True)
     os.mkdir(holder.mail_dir)
+    # choose letter type and assign to holder.which
     response = routines.get_menu_response(content.ctypes)
     if response == 0:
         ret.append("Quiting per your choice")
@@ -996,19 +997,26 @@ def prepare_mailing_cmd():
     # which letter has been established & conveyed to the holder
     # now: establish printer to be used and assign templates
     ret.extend(assign_templates(holder))
-    # find out if we need to cc or bcc anyone:
+    # find out if we need to cc or bcc anyone: probably being done
+    # elsewhere!!!
     which_keys = set(holder.which.keys())
     if which_keys and {'cc', 'bcc'}:
-        ret.extend(global_copies(holder))
-
+        ret.extend(global_copies(holder)) # NOTE: does nothing!!
+    # prepare holder for emails
     holder.emails = []
-    _ = input(repr(holder.which))
+    # collect data..
     for func in holder.which['holder_funcs']:
         # assigns holder.working_data
-        # will probably end up only needing one 
-        # for billing: routines.assign_owing   <<<<
+        # "holder_funcs": (routines.assign_applicants2welcome,),
         func(holder)
 #       ret.extend(func(holder))
+#   print("holder.__dict__ (after func(holder) follows:")
+#   for key, value in holder.which.items():
+#       print(f"{key}: {value}")
+#   _ = input('any key to continue ')
+#   for item in holder.__dict__:
+#       print(item)
+#   _ = input("end of holder.__dict__")
     for dic in holder.working_data.values():
         for func in holder.which['funcs']:  #  vvvvv
             # for billing: members.send_statement(holder, dic)

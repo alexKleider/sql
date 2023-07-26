@@ -91,6 +91,12 @@ def import_query(sql_file_name):
     with open(sql_file_name, 'r') as inf:
         return(inf.read())
 
+def fetch_d_query(sql_file_name, data, commit=False):
+    query = import_query(sql_file_name)
+    query = query.format(**data)
+#   _ = input(f"fetch_d_query param is\n{query}")
+    return fetch(query, from_file=False, commit=commit)
+
 
 def display(instance, exclude=None):
     ret = ["Displaying..", ]
@@ -414,7 +420,7 @@ def get_sponsors(applicantID):
         params=(applicantID,), from_file=False)
     sponsors = []
     for sponsorID in sponsorIDs[0]:
-        _ = input(f"sponsorID: {sponsorID}")
+#       _ = input(f"sponsorID: {sponsorID}")
         sponsors.append(fetch("""
         SELECT first, last, suffix, email FROM People
         WHERE personID = ?""",
@@ -551,6 +557,7 @@ def assign_inductees4payment(holder):
     """
     Assigns holder.working_data dict keyed by ID pertaining
     to those recently inducted and yet to be notified.
+    REFACTOR to use add_sponsor_cc2data
     """
     byID = dict()
     res = fetch('Sql/inducted.sql')
@@ -558,7 +565,7 @@ def assign_inductees4payment(holder):
     + " postal_code email sponsor1 sponsor2 begin end")
     keys = keys.split()
     query = """SELECT last, first, suffix, email FROM People
-                WHERE personID = {};"""
+            WHERE personID = {};"""  # returns a one entry list
     sponsor_keys = "last first suffix email"
     for line in res:
         data = make_dict(keys[1:],
@@ -566,7 +573,8 @@ def assign_inductees4payment(holder):
         data['cc'] = []
         data['sponsor1'] = make_dict(sponsor_keys.split(),
                 fetch(query.format(data['sponsor1']),
-                from_file=False)[0])
+                from_file=False)[0])  # '[0]' is to get first
+                                    # of a one entry list
         if data['sponsor1']['email']:
             data['cc'].append(data['sponsor1']['email'])
         data['sponsor2'] = make_dict(sponsor_keys.split(),
@@ -576,6 +584,64 @@ def assign_inductees4payment(holder):
             data['cc'].append(data['sponsor2']['email'])
         data['cc'] = ','.join((data['cc']))
         byID[line[0]] = data
+    holder.working_data = byID
+
+def getIDs_by_status(statusID):
+    query = import_query(
+        "Sql/ids_by_status_f.sql").format(
+            statusID, helpers.sixdigitdate)
+    res = fetch(query, from_file=False)
+    return [entry[0] for entry in res]
+
+def add_sponsor_cc2data(data):
+    """
+    <data> must be a dict with sponsor1 and sponsor1 keys
+    who's values are personIDs. 
+    A data['cc'] entry is created as a string with sponsor
+    emails separated by commas. The string could be empty
+    if sponsors don't have email.
+    """
+    query = """SELECT last, first, suffix, email FROM People
+            WHERE personID = {};"""  # returns a one entry list
+    sponsor_keys = "last first suffix email"
+    data['cc'] = []
+    for sponsor in ('sponsor1', 'sponsor2'):
+        sponsor_dict = make_dict(sponsor_keys.split(),
+            fetch(query.format(data[sponsor]),
+                from_file=False)[0])  # '[0]' is to get first
+                                    # of a one entry list
+        if sponsor_dict['email']:
+            data['cc'].append(sponsor_dict['email'])
+    data['cc'] = ','.join(data['cc'])
+
+
+def assign_applicants2welcome(holder):
+#   assignees = getIds_by_status(2)
+    query = import_query("Sql/applicants_of_status_ff.sql")
+    query = query.format(2, helpers.sixdigitdate)
+    res = fetch(query, from_file=False)
+    keys = ("personID, last, first, suffix, phone, " +
+        "address, town, state, postal_code, email, " +
+        "sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd, " +
+        "meeting1, meeting2, meeting3, approved, " +
+        "dues_paid, notified, begin, end").split(', ')
+    print(keys)
+    assignees = [entry[0] for entry in res]
+    byID = dict()
+    for personID in assignees:
+        tup = fetch('Sql/find_by_ID.sql',
+                            params=(personID,))[0]
+        byID[tup[0]] = {'first': tup[1],
+                        'last': tup[2],
+                        'suffix': tup[3],
+                        'phone': tup[4],
+                        'address': tup[5],
+                        'town': tup[6],
+                        'state': tup[7],
+                        'postal_code': tup[8],
+                        'country': tup[9],
+                        'email': tup[10],
+                        }
     holder.working_data = byID
 
 
@@ -629,17 +695,33 @@ def assign_welcome2full_membership(holder):
 
 
 def exercise_get_person_fields_by_ID(id_n):
-    res = get_person_fields_by_ID(id_n,
-            fields = ('first', 'last', 'suffix'))
-    print(res)
+    print(get_person_fields_by_ID(id_n,
+            fields = ('first', 'last', 'suffix')))
+
+def exercise_getIDs_by_status(statusID):
+    print(getIDs_by_status(statusID))
+
+def exercise_assign_applicants2welcome():
+    holder = dict()
+    for entry in assign_applicants2welcome(holder):
+        print(entry)
+
+def exercise_add_sponsor_cc2data():
+    data = {'sponsor1': 4,
+            'sponsor2': 89,
+            }
+    add_sponsor_cc2data(data)
+    for key, value in data.items():
+        print(f"{key}: {value}")
 
 
 if __name__ == '__main__':
 #   print(get_sponsors(110))
-    exercise_get_person_fields_by_ID(146)
-    print("\nWhat follows are three statements:....")
-    print(get_statement(get_data4statement(197)))
-    print(get_statement(get_data4statement(42)))
-    print(get_statement(get_data4statement(157)))
-    pass
-
+#   exercise_get_person_fields_by_ID(146)
+#   print("\nWhat follows are three statements:....")
+#   print(get_statement(get_data4statement(197)))
+#   print(get_statement(get_data4statement(42)))
+#   print(get_statement(get_data4statement(157)))
+#   exercise_getIDs_by_status(200)
+#   exercise_assign_applicants2welcome()
+    exercise_add_sponsor_cc2data()

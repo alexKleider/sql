@@ -95,9 +95,10 @@ def get_owing_by_ID(holder):
     return(ret)
 
 
-def std_mailing_func(holder):
+def std_mailing_func(holder, data):
     ret = []
     ret.append('Running std_mailing_func.')
+    q_mailing(holder, data)
     return ret
 
 
