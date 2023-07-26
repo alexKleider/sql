@@ -625,23 +625,12 @@ def assign_applicants2welcome(holder):
         "sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd, " +
         "meeting1, meeting2, meeting3, approved, " +
         "dues_paid, notified, begin, end").split(', ')
-    print(keys)
-    assignees = [entry[0] for entry in res]
-    byID = dict()
-    for personID in assignees:
-        tup = fetch('Sql/find_by_ID.sql',
-                            params=(personID,))[0]
-        byID[tup[0]] = {'first': tup[1],
-                        'last': tup[2],
-                        'suffix': tup[3],
-                        'phone': tup[4],
-                        'address': tup[5],
-                        'town': tup[6],
-                        'state': tup[7],
-                        'postal_code': tup[8],
-                        'country': tup[9],
-                        'email': tup[10],
-                        }
+    listing = []
+    byID = {}
+    for entry in res:
+        mapping = dict(zip(keys, entry))
+        listing.append(mapping)
+        byID[entry[0]] = mapping
     holder.working_data = byID
 
 

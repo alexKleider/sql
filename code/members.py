@@ -142,10 +142,36 @@ def file_letter(holder, data):
     helpers.send2file(letter, 
             os.path.join(holder.mail_dir, filename))
 
+def get_email(personID):
+    query = f"""SELECT email from People
+            WHERE personID = {personID};"""
+    res = routines.fetch(query, from_file=False)
+    return res[0][0]
+
+def exercise_get_email():
+    print(get_email(112))
+
+
+def sponsor2email(holder, data, email_dic):
+    """
+    adds sponsors (if they have emails) to email_dic
+    """
+    cc = holder.which['cc'].split(',')
+    if "sponsors" in cc:
+        _ = input(f"must cc {cc}")
+        cc = [item for item in cc if item != 'sponsors']
+        for sponsor in (data["sponsor1ID"], data["sponsor2ID"]):
+            email_address = get_email(sponsor)
+            if email_address:
+                cc.append(email_address)
+    email_dic['Cc'] = ','.join(cc)
+
+
 def append_email(holder, data):
-#   for key, value in data.items():
-#       print(f"{key}: {value}")
-#   _ = input()
+    print("In append_email, data holds the following:")
+    for key, value in data.items():
+        print(f"{key}: {value}")
+    _ = input()
     email_body = holder.email_template.format(**data)
 #   =========================
     sender = holder.which['from']['email']
@@ -160,16 +186,10 @@ def append_email(holder, data):
         'attachments': [],
         'body': email_body,
     }
+    sponsor2email(holder, data, email)
     try:
-        email['Cc'] = data['cc']
-    except KeyError:
-        pass  # no 'cc' specified in data
-    try:
-        email['Cc'] = ','.join((email['Cc'],holder.which['cc']))
-    except KeyError:
-        pass # no 'cc' specified in content
-    try:
-        email['Bcc'] = ','.join((email['Bcc'],holder.which['bcc']))
+        email['Bcc'] = ','.join(
+                (email['Bcc'],holder.which['bcc']))
     except KeyError:
         pass # no 'bcc' specified in content
     email['Cc'] = email['Cc'].strip(',')
@@ -361,6 +381,8 @@ def get_statement(personID, byID):
 
 
 if __name__ == '__main__':
-    owing_by_ID = get_owing_by_ID(None)
-    for personID in owing_by_ID.keys():
-        _ = input(get_statement(personID, owing_by_ID))
+    exercise_get_email()
+#   owing_by_ID = get_owing_by_ID(None)
+#   for personID in owing_by_ID.keys():
+#       _ = input(get_statement(personID, owing_by_ID))
+
