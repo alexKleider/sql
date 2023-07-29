@@ -22,11 +22,11 @@ import collections
 from pathlib import Path
 
 date_template = "%b %d, %Y"
-template46digit_date = "%y%m%d"
 date_w_wk_day_template = "%a, %b %d, %Y"
 date_year_template = "%y"
 today = datetime.datetime.today()
-sixdigitdate = today.strftime(template46digit_date)
+# sixdigitdate = today.strftime("%y%m%d")
+eightdigitdate = today.strftime("%Y%m%d")
 month = today.month
 this_year = today.year
 date = datetime.datetime.strptime(
@@ -38,6 +38,19 @@ N_FRIDAY = 4  # ord of Friday: m, t, w, t, f, s, s
 FORMFEED = chr(ord('L') - 64)  # '\x0c'
 
 CURRENT_CENTURY = '20'
+
+
+def eightdigitentry(prompt):
+    """
+    Forces input of an 8 digit entry.
+    Used for YYYYmmdd date entries.
+    """
+    while True:
+        entry = input(prompt)
+        if entry.isdecimal() and len(entry)==8:
+            return entry
+        else:
+            print("Must be an eight digit entry!")
 
 
 def get_os_release():
@@ -331,11 +344,12 @@ def my_print(s, outf):
 
 class Rec(dict):
     """
-    Each instance is a (deep!) copy of the dict type parameter and is
-    callable (with a formatting string as a parameter) returning the
-    populated formatting string. Suitable for displaying the record
-    &/or when one wants to have the record modified without changing
-    the original record (as when passed by reference!!)
+    Each instance is a (deep!) copy of the dict type parameter
+    and is callable (with a formatting string as a parameter)
+    returning the populated formatting string. Suitable for
+    displaying the record &/or when one wants to have the record
+    modified without changing the original record (as when passed
+    by reference!!)
     """
     def __init__(self, rec):
 #       self = {key:value for (key,value) in rec.items()}
@@ -1114,12 +1128,114 @@ def test_show_json_data():
     data = {"Chadwick, Michael": [["Mooring", 114]], "Churchman, Josh": [["Mooring", 114]], "Cowman, Tim": [["Mooring", 114]], "Differding, Gary": [["Mooring", 114]], "Ferraro, Joseph": [["Mooring", 138]], "Mann, Ed": [["Mooring", 114]], "Murch, Don": [["Mooring", 152]], "O'Connor, Daniel": [["Mooring", 138]], "O'Neil, Terry": [["Mooring", 132]], "Rodoni, Fred": [["Mooring", 114]], "Smith, Thornton": [["Mooring", 138]], "Swanson, Eric": [["Mooring", 126]], "Bettini, Rick": [["Dock", 75]], "Buckenmeyer, Robert": [["Dock", 75]], "Dixon, Rupert": [["Dock", 75]], "Ferlinghetti, Leonardo": [["Dock", 75]], "Finney, Scott": [["Dock", 75]], "Heffelfinger, Robert": [["Dock", 75]], "Krakauer, George": [["Dock", 75]], "Krieger, Nicholas": [["Dock", 75]], "Light, Mike": [["Dock", 75]], "MacDonald, Bob": [["Dock", 75]], "Martinelli, Chris": [["Dock", 75]], "McPhail, Jeff": [["Dock", 75], ["Kayak", 70]], "Norton, William": [["Dock", 75]], "O'Connor, Nick": [["Dock", 75]], "Smith, Peter": [["Dock", 75]], "Vantress, John": [["Dock", 75]], "Walker, Kirsten": [["Dock", 75]], "Barth, Doug": [["Kayak", 70]], "Cirincione-Coles, Kathryn": [["Kayak", 70]], "Griffith, Melinda": [["Kayak", 70]], "Martin, Monica": [["Kayak", 70]], "Mott, James": [["Kayak", 70]], "Pedemonte, Richard": [["Kayak", 70]], "Read, Don": [["Kayak", 70]], "Sawyer, Aenor": [["Kayak", 70]], "Straton, Joe": [["Kayak", 70]], "Thompson, Randall": [["Kayak", 70]], "Tremp, Dieter": [["Kayak", 70]]}
     print('\n'.join(show_json_data(data)))
 
+####  menu related ...  ####
+
+def get_menu_dict(items):
+    """
+    Returns a dict keyed by successive integers
+    beginning with 1 (not zero!)
+    """
+    z = zip(range(1, len(items)+1), items)
+    menu = dict()
+    for key, item in z:
+        menu[key] = item
+    # remember: key is an int! (not a string)
+    # '0' is reserved for Q)uit.
+    return menu
+
+
+def get_menu_response(items, header=None, incl0Q=True):
+    """
+    <items> a sequence of menu options
+    <header>  line (if provided)to insert above the choices
+    <incl0Q> == include a "0 to quit" 'choice'.
+    It's up to client to deal with a "0 to quit" choice.
+    Returns a 1 based integer
+    """
+    menu = get_menu_dict(items)  # see get_menu_dict doc_string
+#   _ = input(menu)
+    while True:
+        if header: display = [header, ]
+        else: display = []
+        if incl0Q: display.append('  0: Q)uit')
+        for key, value in menu.items():
+            display.append(f"{key:>3}: {value}")
+        print('\n'.join(display))
+        if incl0Q: extra = " (or 'Q' to quit)"
+        else: extra = ""
+        response = input(f"Choice (must be an integer{extra}): ")
+        if response and response[0] in "qQ":
+            return 0
+        try:
+            response = int(response)
+        except ValueError:
+            print("Only an integer or 'q' or 'Q' allowed!")
+            continue
+        if incl0Q: lower_limit = 0
+        else: lower_limit = 1
+        if response>=lower_limit and response<=(len(items)+1):
+#           _ = input(f"returning menu choice {response}")
+            return response
+
+
+def make_dict(keys, values):
+    """
+    Parameters are iterables of equal length.
+    A dict is returned.
+    Fails if lengths are not equal!
+    """
+    assert len(keys) == len(values)
+    ret = {}
+    for key, value in zip(keys, values):
+        ret[key] = value
+    return ret
+
+
+
+"""
+Work on menu development
+"""
+
+def func1(): print("ran func1")
+def func2(): print("ran func2")
+def func3(): print("ran func3")
+def func4(): print("ran func4")
+
+proto_menu = {
+        "name1": func1,
+        "name2": func2,
+        "name3": func3,
+        "name4": func4,
+        }
+
+def choose_and_run(proto_menu,
+            header=f"Choose 0..{len(proto_menu)}:",
+            prompt="Choice: "):
+    names = [name for name in proto_menu.keys()]
+    menu = get_menu_dict(names)
+    while True:
+        if header:
+            print(header)
+        print("  0: Quit")
+        for key, value in menu.items():
+            print(f"{key:>3}: {value}")
+        choice = int(input(prompt))
+        if choice == 0:
+            print("Leaving menu!")
+            break
+        if choice in range(len(names)+1):
+            return [
+                func for func in proto_menu.values()
+                ][choice-1]()
+
 
 
 if __name__ == "__main__":
+    choose_and_run(proto_menu)
 #   test_present_listing4approval()
     print(get_os_release())
-    print(f"sixdigitdate: {sixdigitdate}")
+#   print(f"sixdigitdate: {sixdigitdate}")
+    print(f"eightdigitdate: {eightdigitdate}")
     print(
 f"today: {today}; month: {month}; this_year: {this_year}; date: {date}")
     print("Module helpers compiles without error.")

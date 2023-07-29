@@ -5,11 +5,15 @@
 
 import sys
 import json
-from code import routines
-from code import helpers
+
+try: from code import routines
+except ImportError: import routines
+
+try: from code import helpers
+except ImportError: import helpers
 
 """
-Temporary file for development of code to deal with applicants:
+File for development of code to deal with applicants:
 - register new applicant(s)
 - enter each meeting when it occurs.
 - deal with "expired" application when appropriate.
@@ -17,18 +21,6 @@ Temporary file for development of code to deal with applicants:
 - possibly move member from 1st year member to member in good
 standing.
 """
-
-
-def get_keys_from_schema(table, nkeys2ignore=0):
-    """
-    query comes from: https://stackoverflow.com/questions/11996394/is-there-a-way-to-get-a-schema-of-a-database-from-within-python
-    <nkeys2ignore> provides ability to ignore any primary keys
-    such as 'personID' (in which case it can be set to 1.
-    """
-    query =  f"pragma table_info({table})"
-    res = routines.fetch(query, from_file=False)
-    return  [item[1] for item in res[nkeys2ignore:]]
-    # item[1] is the column/key.
 
 
 def get_new_applicant_data(file_content, report=None):
@@ -46,7 +38,8 @@ def get_new_applicant_data(file_content, report=None):
     data = [line for line in helpers.useful_lines(
                             file_content)]
 #   _ = input(f"data collected from file:\n{data}")
-    keys = get_keys_from_schema('People', nkeys2ignore=1)
+    keys = routines.get_keys_from_schema(
+                            'People', nkeys2ignore=1)
     keys.extend(
         ['sponsor1ID', 'sponsor2ID', 'app_rcvd', 'fee_rcvd'])
 #   _ = input(f"keys collected from file:\n{keys}")
@@ -110,7 +103,7 @@ def add2AppTable(data, record=None):
     else: data['statusID'] = 1  # Will have to add an end date
                         # and make another status entry
                         # when fee is paid.
-    data["begin"] = helpers.sixdigitdate
+    data["begin"] = helpers.eightdigitdate
     _ = routines.fetch_d_query(
             "Sql/person_status_entry_fd.sql", data, commit=True)
     # Finally create entry in Applicants table...
@@ -184,6 +177,19 @@ def credit_applicant_meeting_cmd():
     return ret
 
 
+def applicant_data_entry_cmd():
+    """
+    """
+
+    main_menu = {
+        "Add new applicant": add_new_applicant_cmd,
+        }
+    ret = ['Entering applicant data entry...',]
+    print(ret[0])
+    ret.extend(helpers.choose_and_run(main_menu))
+    return ret
+
+
 def test_add_new_applicant_cmd():
     for line in add_new_applicant_cmd():
         print(line)
@@ -193,7 +199,7 @@ def test_all_schema():
     for schema in ("People", "Person_Status", "Stati",
             "Attrition", "Applicants", "Receipts", "Dues",
             "Moorings", "Dock_Privileges", "Kayak_Slots" ):
-        print(get_keys_from_schema(schema, 0))
+        print(routines.get_keys_from_schema(schema, 0))
 
 
 def test_applicant_data_collection():

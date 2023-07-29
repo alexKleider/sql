@@ -117,7 +117,7 @@ VALUES
 (<values>);
 
 https://www.sqlitetutorial.net/sqlite-update/
-UPDATE table  -- not documented in SQL book!
+UPDATE table
 SET column_1 = new_value_1,
     column_2 = new_value_2
 WHERE

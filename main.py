@@ -61,9 +61,11 @@ if __name__ == '__main__':
                 if outfile:
                     with open(outfile, 'w') as outstream:
                         outstream.write('\n'.join(res))
-                        print(f"Results sent to {outstream.name}.")
+                        print(
+                            f"Results sent to {outstream.name}.")
                 else:
-                    print("No file selected; output to stdout...")
+                    print(
+                        "No file selected; output to stdout...")
                     for line in res:
                         print(repr(line))
         else:

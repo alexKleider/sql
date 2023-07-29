@@ -98,6 +98,18 @@ def fetch_d_query(sql_file_name, data, commit=False):
     return fetch(query, from_file=False, commit=commit)
 
 
+def get_keys_from_schema(table, nkeys2ignore=0):
+    """
+    query comes from: https://stackoverflow.com/questions/11996394/is-there-a-way-to-get-a-schema-of-a-database-from-within-python
+    <nkeys2ignore> provides ability to ignore any primary keys
+    such as 'personID' (in which case it can be set to 1.
+    """
+    query =  f"pragma table_info({table})"
+    res = fetch(query, from_file=False)
+    return  [item[1] for item in res[nkeys2ignore:]]
+    # item[1] is the column/key.
+
+
 def display(instance, exclude=None):
     ret = ["Displaying..", ]
     for item in instance.__dir__():
@@ -113,68 +125,6 @@ def display(instance, exclude=None):
                 ret.append(f"{item}: {insertion}")
         ret.append(".. end of display.")
         return ret
-
-
-def make_dict(keys, values):
-    """
-    Parameters are iterables of equal length.
-    A dict is returned.
-    """
-    assert len(keys) == len(values)
-    ret = {}
-    for key, value in zip(keys, values):
-        ret[key] = value
-    return ret
-
-
-def get_menu_dict(items):
-    """
-    Returns a dict keyed by successive integers
-    beginning with 1 (not zero!)
-    """
-    z = zip(range(1, len(items)+1), items)
-    menu = dict()
-    for key, item in z:
-        menu[key] = item
-    # remember: key is an int! (not a string)
-    # '0' is reserved for Q)uit.
-    return menu
-
-
-def get_menu_response(items, header=None, incl0Q=True):
-    """
-    <items> a sequence of menu options
-    <header>  line (if provided)to insert above the choices
-    <incl0Q> == include a "0 to quit" 'choice'.
-    It's up to client to deal with a "0 to quit" choice.
-    Returns a 1 based integer
-    """
-    menu = get_menu_dict(items)  # see get_menu_dict doc_string
-#   _ = input(menu)
-    while True:
-        if header: display = [header, ]
-        else: display = []
-        if incl0Q: display.append('  0: Q)uit')
-        for key, value in menu.items():
-            display.append(f"{key:>3}: {value}")
-        print('\n'.join(display))
-        if incl0Q: extra = " (or 'Q' to quit)"
-        else: extra = ""
-        response = input(f"Choice (must be an integer{extra}): ")
-        if response and response[0] in "qQ":
-            return 0
-        try:
-            response = int(response)
-        except ValueError:
-            print("Only an integer or 'q' or 'Q' allowed!")
-            continue
-        if incl0Q: lower_limit = 0
-        else: lower_limit = 1
-        if response>=lower_limit and response<=(len(items)+1):
-#           _ = input(f"returning menu choice {response}")
-            return response
-
-
 
 
 def execute(cursor, connection, command, params=None):
@@ -436,7 +386,8 @@ def ret_statement(personID, incl0=True):
     """
     source_files = {
             # the following files all check for membership.
-            # hence the 'f' for formatted by helpers.sixdigitdate
+            # hence the 'f' for formatted by
+            # helpers.eightdigitdate
             # the "0" indicates that zero balances are included
             'dues': "Sql/dues0_f_byID.sql",
             'dock': "Sql/dock0_f_byID.sql",
@@ -448,7 +399,7 @@ def ret_statement(personID, incl0=True):
     entry = False
     for key in source_files.keys():
         query = import_query(source_files[key]
-                            ).format(helpers.sixdigitdate)
+                            ).format(helpers.eightdigitdate)
         res = fetch(query.format(personID), from_file=False)
 #       if personID == 179:
 #           _ = input(res)
@@ -531,7 +482,7 @@ def assign_owing(holder):
     """
     byID = dict()
     query = import_query("Sql/members_f.sql"
-                        ).format(helpers.sixdigitdate)
+                        ).format(helpers.eightdigitdate)
     for tup in fetch(query,
             from_file=False):
         personID = tup[0]
@@ -589,7 +540,7 @@ def assign_inductees4payment(holder):
 def getIDs_by_status(statusID):
     query = import_query(
         "Sql/ids_by_status_f.sql").format(
-            statusID, helpers.sixdigitdate)
+            statusID, helpers.eightdigitdate)
     res = fetch(query, from_file=False)
     return [entry[0] for entry in res]
 
@@ -618,7 +569,7 @@ def add_sponsor_cc2data(data):
 def assign_applicants2welcome(holder):
 #   assignees = getIds_by_status(2)
     query = import_query("Sql/applicants_of_status_ff.sql")
-    query = query.format(2, helpers.sixdigitdate)
+    query = query.format(2, helpers.eightdigitdate)
     res = fetch(query, from_file=False)
     keys = ("personID, last, first, suffix, phone, " +
         "address, town, state, postal_code, email, " +

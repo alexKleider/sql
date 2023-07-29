@@ -33,6 +33,10 @@ except ImportError: import dates
 try: from code import fees
 except ImportError: import fees
 
+try: from code import applicants
+except ImportError: import applicants
+
+
 def get_command():
     while True:
         choice = input("""   MAIN MENU
@@ -50,7 +54,7 @@ Choose one of the following:
  20. Create member csv file    21. Create applicant csv file
  22. Occupied moorings csv     23. All moorings csv
  24. Still owing csv           25. Membership < 1 year
- 26. Fees (owing or not) csv   27. not implemented
+ 26. Fees (owing or not) csv   27. Enter applicant data
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -79,7 +83,8 @@ Choose one of the following:
         elif choice == '24': return still_owing_cmd
         elif choice == '25': return under1yr_cmd
         elif choice == '26': return fees.owing_csv_cmd
-        elif choice == '27': return add_new_applicant_cmd
+        elif choice == '27':
+            return applicants.applicant_data_entry_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -93,7 +98,7 @@ def under1yr_cmd():
         "Creating list of members who's tenure is < 1 year...", ]
     with open("Sql/under1yr_f.sql", 'r') as stream:
         query = stream.read().format(
-                        int(helpers.sixdigitdate)-10000)
+                        int(helpers.eightdigitdate)-10000)
     ret.append("Query is :")
     ret.extend(query.split("\n"))
     ret.append("...as far as we've gotten.")
@@ -109,7 +114,7 @@ def still_owing_cmd():
     collector = []
     ret = ["Still owing csv being generated...", ]
     with open("Sql/memberIDs_f.sql", 'r') as stream:
-        query = stream.read().format(helpers.sixdigitdate)
+        query = stream.read().format(helpers.eightdigitdate)
         # query orders by name...
     ret.append("query: ......")
     ret.extend(query.split('\n'))
@@ -390,7 +395,7 @@ def member_listing():
     """
     with open("Sql/show_f.sql", 'r') as infile:
         return routines.fetch(infile.read().format(
-                                    helpers.sixdigitdate),
+                                    helpers.eightdigitdate),
                         from_file=False)
 
 
@@ -605,7 +610,7 @@ ORDER BY P.last, P.first
 ;
     """
     res = routines.fetch(
-            query.format(helpers.sixdigitdate),
+            query.format(helpers.eightdigitdate),
             from_file=False)
     report = []
     first_letter = 'A'
@@ -658,13 +663,13 @@ WHERE
     St.key = 'm'
     AND (PS.end = '' OR PS.end > {})
 -- must format date membership ended or will end.
--- use code.helpers.sixdigitdate
+-- use code.helpers.eightdigitdate
 ORDER BY
     P.last, P.first
 ;
     """
     res = routines.fetch(
-            query.format(helpers.sixdigitdate),
+            query.format(helpers.eightdigitdate),
             from_file=False)
     n = len(res)
     report = []
@@ -921,7 +926,7 @@ def assign_templates(holder):
     """ assign printer & templates..."""
     ret = ["Assigning printer & templates...",
            "within code.commands.assign_templates",]
-    menu = routines.get_menu_dict(content.printers.keys())
+    menu = helpers.get_menu_dict(content.printers.keys())
     print("Printer to use...")
     for key, lpr in menu.items():
         print(f"{key}: {lpr}")
@@ -986,7 +991,7 @@ def prepare_mailing_cmd():
                                     delete=True)
     os.mkdir(holder.mail_dir)
     # choose letter type and assign to holder.which
-    response = routines.get_menu_response(content.ctypes)
+    response = helpers.get_menu_response(content.ctypes)
     if response == 0:
         ret.append("Quiting per your choice")
         return ret
@@ -1089,7 +1094,7 @@ def add_date_cmd():
     personID = int(input(
         "Pick a personID (must be an integer): "))
     # get which date key to modify (provides formatting)
-    menu = routines.get_menu_dict(club.date_keys)
+    menu = helpers.get_menu_dict(club.date_keys)
     while True:
         print("Choices:")
         for key, entry in menu.items():
@@ -1233,49 +1238,6 @@ def payment_entry_cmd():
     print(ret[0])
     return(ret)
 
-
-def add_new_applicant_cmd():
-    """ .schema People:( personID INTEGER PRIMARY KEY,
-            first TEXT NOT NULL,
-            last TEXT NOT NULL,
-            suffix TEXT DEFAULT '',
-            phone TEXT DEFAULT '',
-            address TEXT DEFAULT '',
-            town TEXT DEFAULT '',
-            state TEXT DEFAULT '',
-            postal_code TEXT DEFAULT '',
-            country TEXT DEFAULT 'USA',
-            email TEXT DEFAULT '' );
-    """
-    ds = add_new_applicant_cmd()
-    ret = ["Entering add_new_applicant_cmd...",]
-    ret.append("  == currently under development ==")
-    while True:
-        textOrFile = input(
-                "CLInput or from file? (c,C,f,F,q)uit): ")
-        if source and source[0] in "qQ":
-            ret.append("Aborting addition of new applicant(s)!")
-            return ret
-        if source[0] in "fF":
-            fname = input("File name: ")
-            try:
-                with open(fname, r) as inf:
-                    data = inf.read()
-            except FileNotFoundError:
-                print("Invalid file name, try again.")
-                continue
-            data = data.split('\n')
-            valid_data = []
-            for line in data:
-                line = line.strip()
-                if line.startswith("#"):
-                    continue
-                valid_data.append(line)
-            if len(valid_data) != len(keys):
-                print(f"{fname} has wrong number of lines")
-                continue
-            pass
-    return ret
 
 if __name__ == "__main__":
 #   for sponsor_name in (get_sponsor_name(45),

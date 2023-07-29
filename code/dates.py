@@ -177,7 +177,7 @@ def get_demographic_dict(personID):
     res = routines.fetch(query, from_file=False)
     if not res or not res[0]:
         return
-    return routines.make_dict(key_listing, res[0])
+    return helpers.make_dict(key_listing, res[0])
 
     
 def add_receipt_entry(holder, ret):
@@ -308,11 +308,12 @@ def add_receipt_entry(holder, ret):
     holder.entries += 1
     return data
 
+
 def set_default_dates(holder):
     print("Enter blanks if don't want defaults...")
-    holder.receipt_date = input(
+    holder.receipt_date = helpers.eightdigitentry(
             "Enter a default receipt date: ")
-    holder.acknowledge_date = input(
+    holder.acknowledge_date = helpers.eightdigitentry(
         "Enter a default acknowledge date: ")
 
 def receipts_cmd():
@@ -384,7 +385,7 @@ def receipts_cmd():
 
 def date_entry_cmd():
     ret = []
-    choice = routines.get_menu_response(
+    choice = helpers.get_menu_response(
         options, header="Which table:", incl0Q=True)
     ret.append(
         f"Your choice is #{choice}: {options[choice-1]}")
@@ -412,6 +413,7 @@ def observe():
     print(query)
     pass
 
+
 def test_mailing():
     ret = ['Testing acknowledgement mailing...', ]
     data = {"personID": 210,
@@ -422,17 +424,9 @@ def test_mailing():
             }
     print('\n'.join(file_acknowledgement(data)))
 
-def nancy_into_receipts():
-    data = {"personID": 210,
-            "date_received": "20230415",
-            "dues": 200,
-            "acknowledged": "20230417",
-            }
-    print('\n'.join(confirm_receipts_query(data)))
 
 if __name__ == "__main__":
     print("Dry run of code.dates.py")
-#   nancy_into_receipts()
 #   test_mailing()
 #   print(date_entry_cmd())
 #   observe()

@@ -58,3 +58,4 @@ Relationships:
     Each member may have entries in
         Dock, Kayak &/or Mooring tables
     Each member and each applicant may have any number of stati
+    but dates should be exclusive.
