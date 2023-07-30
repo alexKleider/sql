@@ -63,7 +63,7 @@ Choose one of the following:
         elif choice ==  '4': return report_cmd
 #       elif choice ==  '5': return send_cmd
         elif choice ==  '6': return no_email_cmd
-        elif choice ==  '7': return get_stati_cmd
+        elif choice ==  '7': return get_non_member_stati_cmd
         elif choice ==  '8': return update_status_cmd
         elif choice ==  '9': return routines.id_by_name
         elif choice == '10': return display_fees_by_person_cmd
@@ -487,12 +487,6 @@ def create_applicant_csv_cmd():
 
 def show_applicants():
     """
-    query_file = 'Sql/applicants2.sql' ==>
-    P.first, P.last, P.suffix,
-    P.phone, P.address, P.town, P.state, P.postal_code, P.email,
-    sponsor1ID, sponsor2ID,
-    app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
-    approved, inducted, dues_paid
     """
     headers = ('No meetings', 'Attended one meeting',    # 0, 1
         'Attended two meetings',                         # 2
@@ -502,14 +496,6 @@ def show_applicants():
     # not sure the next two are being used!!
     date_keys = club.date_keys
     sponsor_keys = club.sponsor_keys
-    
-    query = """/* Sql/applicants2.sql */
-        SELECT
-            P.personID, P.first, P.last, P.suffix, P.phone,
-            P.address, P.town, P.state, P.postal_code, P.email,
-            sponsor1ID, sponsor2ID,
-            app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
-            approved, dues_paid, notified ...  """
     keys = ("ID, first, last, suffix, phone, address, town, " +
             "state, postal_code, email, " +
             "sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd, " +
@@ -519,27 +505,19 @@ def show_applicants():
     # convert our returned sequences into...
     dics = []        #  a sequence of dicts:
     for sequence in res:
-        key_value_pairs = zip(keys, sequence)
-        mapping = {}
-        for key, value in key_value_pairs:
-            mapping[key] = value
+        mapping = dict(zip(keys, sequence))
         # Confirm still an applicant!! if not: "continue"
         query = """ SELECT personID, statusID, begin, end
             FROM Person_Status WHERE personID = {} and statusID = 26;
             """.format(mapping['ID'])
-#       _ = input(query)
         res = routines.fetch(query, from_file=False)
-#       _ = input(res)
         if res: continue  # no longer an applicant so "continue"
-#       _ = input(f"mapping: {mapping}")
         for sponsor in ('sponsor1ID', 'sponsor2ID'):
-#           _ = input(f"sponsor: {mapping[sponsor]}")
             names = routines.fetch('Sql/find_1st_last_by_ID.sql',
                     params = (mapping[sponsor], ))[0]
-#           _ = input(f"names: {names}")
             mapping[sponsor] = ' '.join(names).strip()
         dics.append(mapping)
-    if not dics: print("NO SEQUENCE of DICTS")
+    if not dics: print("No applicants found!")
     # Divide our sequence of dicts into a mapping
     # where keys are the headers and values are
     # lists of dicts to go under that header.
@@ -574,6 +552,7 @@ def show_applicants():
                 """{first} {last} {suffix} [{phone}] {email}
     {address}, {town}, {state} {postal_code}
     Sponsors: {sponsor1ID}, {sponsor2ID},
+    Applied: {fee_rcvd}
     Meetings: {meeting1} {meeting2} {meeting3}
     Date approved by Executive Committee: {approved}"""
                 .format(**mapping))
@@ -581,21 +560,26 @@ def show_applicants():
                 entry.append("""{first} {last} [{phone}] {email}
     {address}, {town}, {state} {postal_code}
     Sponsors: {sponsor1ID}, {sponsor2ID},
+    Applied: {fee_rcvd}
     Meetings: {meeting1} {meeting2} {meeting3} {approved}"""
                 .format(**mapping))
             else:
                 entry.append("""{first} {last} [{phone}] {email}
     {address}, {town}, {state} {postal_code}
-    Sponsors: {sponsor1ID}, {sponsor2ID}"""
+    Sponsors: {sponsor1ID}, {sponsor2ID}
+    Applied: {fee_rcvd}"""
                 .format(**mapping))
         report.extend(entry)
     return report
 
 
 def for_angie(include_blanks=True):
+    """
+    Returns a table of member and applicant names.
+    """
     query = """
 /* Sql/names_f.sql */
-SELECT first, last
+SELECT first, last, suffix
 FROM People AS P
 JOIN Person_Status AS PS
 ON P.personID = PS.personID
@@ -604,25 +588,28 @@ ON St.statusID = PS.statusID
 WHERE 
 St.key IN ("m", "a-", "a" , "a0", "a1", "a2",
         "a3", "ai", "ad", "av", "aw", "am")
-AND (PS.end = 0 OR PS.end < {})
+AND (PS.end = '' OR PS.end > {})
 -- must insert today's date ^^ (helpers.todaysdate)
-ORDER BY P.last, P.first
+ORDER BY P.last, P.first, P.suffix
 ;
     """
-    res = routines.fetch(
-            query.format(helpers.eightdigitdate),
-            from_file=False)
-    report = []
+    keys = "first, last, suffix".split(', ')
+    report = ['', ]
     first_letter = 'A'
-    for item in res:
-        last_initial = item[1][:1]
-        if ((last_initial != first_letter)
+    for d in routines.query2dict_listing(
+            query.format(helpers.eightdigitdate),
+            keys, from_file=False):
+        if ((d['last'][:1] != first_letter)
         and (include_blanks)):
-            first_letter = last_initial
+            first_letter = d['last'][:1]
             report.append("")
-        report.append(
-        "{1}, {0}".format(*item))
-    return report
+        if d['suffix']:
+            fstring = "{last}, {first} ({suffix})"
+        else: fstring = "{last}, {first}"
+        submission = fstring.format(**d)
+        if submission != report[-1]:
+            report.append(submission)
+    return report[1:]
 
 
 def show_cmd():
@@ -709,55 +696,53 @@ ORDER BY
     return report
 
 
-def get_stati():
+def get_non_member_stati():
     """
     """
-    con, cur = routines.initDB(club.DB)
-    res = routines.fetch(
-            "Sql/get_non_member_stati.sql")
-    # P.personID, P.first, P.last, St.key
-    index = 0
-    ret = {}
-    for item in res:
-        ret[index] = '{:>3}{:>10} {:<15} {}'.format(*item)
-        ret[index] = item
-        index += 1
+    keys = "ID, first, last, status_key".split(', ')
+    query = routines.import_query(
+            "Sql/get_non_member_stati.sql").format(
+                    helpers.eightdigitdate)
+    ret = routines.query2dict_listing(query, keys)
+#   for key, value in ret:
+#       print(f"{key}: {value}")
     return ret
 
 
-def get_stati_cmd(tocsv=True):  # get_non_member_stati.sql
+def get_non_member_stati_cmd(tocsv=True):  # get_non_member_stati.sql
     """
     Returns a header followed by a listing of all
     people with a status OTHER THAN 'm':
     Use for presentation only.
     """
-    res = get_stati()
+    res = get_non_member_stati()
     n = len(res)
     ret = [
 #    13:  34     Angie Calpestri       z4_treasurer
-     "People with non member stati (indexed)",
-     " ##   ID     First Last            Status",
-     "=========================================",
+     "People with non member stati",
+     "ID     First Last            Status",
+     "===================================",
      ]
-    for key in res.keys():
-        # each item: P.personID, P.first, P.last, St.key
-        entry = '{:>3}{:>10} {:<15} {}'.format(*res[key])
-        ret.append(f'{key:>3}: {entry}')
+    for item in res:
+        # each item: ID, first, last, status_key
+        ret.append(
+                '{ID:>3}{first:>10} {last:<15} {status_key}'
+                                .format(**item))
     if tocsv:
         csv_file = input(
             "Name of csv file (return if not needed): ")
         if csv_file:
             with open(csv_file, 'w', newline='') as outf:
-                writer = csv.DictWriter(outf,
-                        fieldnames=('ID', 'first', 'last', 'status' ))
+                writer = csv.DictWriter(outf, fieldnames=(
+                    'ID', 'first', 'last', 'status_key' ))
                 writer.writeheader()
-                for key in res.keys():
-                    writer.writerow(
-                            {'ID': res[key][0],
-                             'first': res[key][1],
-                             'last': res[key][2],
-                             'status': res[key][3],
-                             })
+                for item in res:
+                    writer.writerow(item)
+#                           {'ID': res[key][0],
+#                            'first': res[key][1],
+#                            'last': res[key][2],
+#                            'status': res[key][3],
+#                            })
             print(f"Data written to '{csv_file}'.")
     return ret
 
@@ -869,7 +854,7 @@ _code_ = """
 
 def update_status_cmd():
     # First give user a look at what stati there are to change
-    stati = get_stati_cmd(tocsv=False)
+    stati = get_non_member_stati_cmd(tocsv=False)
     print('\n'.join(stati))
     # ...Then present oportunity to pick a name not listed.
     yesorno = input("Do you need another person's ID? (y/n): ")

@@ -150,7 +150,7 @@ def appl_dicts(cursor):
         "sponsor1", "sponsor2",
         "app_rcvd", "fee_rcvd",
         "meeting1", "meeting2", "meeting3",
-        "approved", "inducted", "dues_paid"
+        "approved", "dues_paid", "notified",
         )
     ret = dict()
     for line in res:
@@ -281,5 +281,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+#   main()
+    print(applicantReport())
 

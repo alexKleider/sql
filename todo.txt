@@ -1,14 +1,18 @@
 
+Done:
 need to have applicant waiting for dues payment to be listed
 separately.
 
+Work on code/consistency.py
 part of data consistency:
     be sure there is no one paying both for dock privileges and
     for mooring.
-
+- the following should be part of code/consistency.py:
 SELECT M.personID FROM Moorings AS M
 JOIN Dock_Privileges AS D
 WHERE M.personID = D.personID;
-
+then...
 DELETE FROM Dock_Privileges WHERE personID in ({resuls of above});
+
+Mechanism to enter application fee into receipts
 

@@ -1,4 +1,4 @@
-/*  File: Sql/get_non_member_stati.sql */
+/*  File: Sql/get_non_member_stati_f.sql */
 /*  Used by code.commands.get_stati_cmd */
 SELECT
     P.personID, P.first, P.last, St.key
@@ -34,5 +34,7 @@ WHERE
         "zae", -- "Application expired or withdrawn",
         "zzz" -- "No longer a member"  # not implemented
     )
+AND
+    ( PS.end = '' OR PS.end > {} )
 ORDER BY St.key
 ;

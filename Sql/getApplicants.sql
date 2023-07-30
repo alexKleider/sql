@@ -4,14 +4,15 @@ SELECT
     P.personID,
     P.first, P.last, P.suffix,  -- 1:4           6
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,
-    sponsor1, sponsor2,       -- -10
+    sponsor1ID, sponsor2ID,       -- -10
     app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,
-    approved, inducted, dues_paid
+    approved, dues_paid, notified
 FROM Applicants AS Ap
 JOIN 
     People AS P
 ON Ap.personID = P.personID
-WHERE
+WHERE 
     Ap.dues_paid = ''  --exclude those already made members
-OR  Ap.dues_paid = 'zae'  -- and those who have dropped out
+AND NOT 
+    Ap.notified = 'dropped'
 ;

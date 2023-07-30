@@ -92,6 +92,11 @@ def import_query(sql_file_name):
         return(inf.read())
 
 def fetch_d_query(sql_file_name, data, commit=False):
+    """
+    Assumes <sql_file_name> is a file containting an SQL query
+    with place holders keyed by key/value pairs s available
+    in <data>, a dict.
+    """
     query = import_query(sql_file_name)
     query = query.format(**data)
 #   _ = input(f"fetch_d_query param is\n{query}")
@@ -108,6 +113,19 @@ def get_keys_from_schema(table, nkeys2ignore=0):
     res = fetch(query, from_file=False)
     return  [item[1] for item in res[nkeys2ignore:]]
     # item[1] is the column/key.
+
+def query2dict_listing(query, keys,
+                       from_file=False):
+    """
+    Assumes len(keys)==length of each tupple returned by the
+    query.
+    """
+    ret = []
+    res = fetch(query, from_file=from_file)
+    for entry in res:
+        d = dict(zip(keys, entry))
+        ret.append(d)
+    return ret
 
 
 def display(instance, exclude=None):

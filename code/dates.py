@@ -44,7 +44,7 @@ except ImportError: import multiple
 try: from code import commands
 except ImportError: import commands
 
-options = (
+options = (  # menu below main menu item 12. Data Entry (Dates)
     "Applicants",    # app_rcvd, fee_rcvd, meeting1,2,3,
                      # approved, dues_paid, notified
     "Attrition",     # date  (also reason)
@@ -53,17 +53,13 @@ options = (
     "Acknowledge",   # temporary to test letter preparation
     )
 
-def add_new_applicant():
-    ret = ["New applicant entry still under development.", ]
-    print(ret[0])
-    return ret
-    pass
 
 def add_applicant_date():
     ret = ["Applicant date entry still under development.", ]
     print(ret[0])
     return ret
     pass
+
 
 def applicants_cmd():
     ret = ["Applicant data entry still under development.", ]
@@ -72,7 +68,7 @@ def applicants_cmd():
     choice = input(
         "New applicant ('yY') or just another date ('')? ")
     if choice and choice[0] in yY:
-        add_new_applicant()
+        return applicants.add_new_applicant_cmd()
     else:
         add_applicant_date()
 
