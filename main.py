@@ -17,40 +17,13 @@ See code/commands/get_command() for what's so far implemented.
 Some development is taking place in utilities.py
 """
 
-import sys
-import sqlite3
 from code import commands
 
-club_db = "/home/alex/Git/Sql/Secret/club.db"
-
-
-def initDB(path):
-    """
-    Returns a connection ("db")
-    and a cursor ("clubcursor")
-    """
-    try:
-        db = sqlite3.connect(path)
-        clubcursor = db.cursor()
-    except sqlite3.OperationalError:
-        print("Failed to connect to database:", path)
-        db, clubcursor = None, None
-        raise
-    return db, clubcursor
-
-
-def closeDB(database, cursor):
-    try:
-       cursor.close()
-       database.commit()
-       database.close()
-    except sqlite3.OperationalError:
-       print( "problem closing database..." )
-       raise
- 
 
 if __name__ == '__main__':
     yn = input("Do you wish to see a report? (y/n): ")
+    # 2do: report has to do with program progress
+    #      data file output should be made independent of it.
     while True:
         cmd = commands.get_command()
         if cmd: 

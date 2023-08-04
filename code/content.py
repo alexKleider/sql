@@ -244,8 +244,8 @@ terminated if dues are not paid by September 1st.
     # Send in early August:
     penultimate_warning="""
 As we enter the month of August it means you've already enjoyed
-two months of Club membership and its benefits but this could end
-if you don't take action soon!
+two months of Club membership and its benefits for free but this
+could end soon if you don't take action!
 
 Club records indicate that your dues (+/or other fees) have
 as yet not been paid.  Please be aware that according to
@@ -256,7 +256,7 @@ error, please let us know[1].)
 Please pay promptly; we'd hate to loose you as a member.
 
 Details follow.
-{extra}""",
+{statement}""",
 
     # Send towards end of August:
     final_warning="""
@@ -593,6 +593,19 @@ content_types = dict(  # which_letter
         "funcs": (members.send_statement, ),
         "e_and_or_p": "usps",
         },
+    penultimate_warning={
+        "subject": "Membership soon to expire",
+        "from": authors["membership"],
+        "body": letter_bodies["penultimate_warning"],
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            ),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "usps",
+        },
     new_applicant_welcome={
         "subject": "BR&BC Application",
         "from": authors["membership"],
@@ -722,22 +735,6 @@ content_types = dict(  # which_letter
         "body": letter_bodies["interim_request"],
         "signature": '',
         "post_scripts": (
-            post_scripts["ref1_email_or_PO"],
-            ),
-        "funcs": (
-                  members.std_mailing_func),
-        "test": lambda record: True if (
-            members.is_dues_paying(record) and
-            members.not_paid_up(record)
-            ) else False,
-        "e_and_or_p": "one_only",
-        },
-    penultimate_warning={
-        "subject": "Membership soon to expire",
-        "from": authors["membership"],
-        "body": letter_bodies["penultimate_warning"],
-        "post_scripts": (
-            post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
             ),
         "funcs": (

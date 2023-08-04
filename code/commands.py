@@ -12,6 +12,7 @@ import sys
 import csv
 import shutil
 import sqlite3
+
 try: from code import routines
 except ImportError: import routines
 
@@ -175,7 +176,7 @@ def occupied_moorings_cmd():
         writer = csv.DictWriter(csvfile, fieldnames=keys)
         writer.writeheader()
         for entry in listing:
-            d = routines.make_dict(keys, entry)
+            d = helpers.make_dict(keys, entry)
             writer.writerow(d)
             ret.append(repr([row for row in d.items()]))
     ret.append(f"Sending mooring CSV file to {fname}.")
@@ -212,7 +213,7 @@ def all_moorings_cmd():
                 fieldnames=keys)
         writer.writeheader()
         for entry in listing:
-            rec = routines.make_dict(keys, entry)
+            rec = helpers.make_dict(keys, entry)
             rec['name'] = routines.get_name(rec['name'])
 #           ret.append(repr([row for row in rec.items()]))
             writer.writerow(rec)
@@ -414,7 +415,7 @@ def create_member_csv_cmd():
         writer = csv.DictWriter(csv_stream, fieldnames=keys)
         writer.writeheader()
         for listing in member_listing():
-            writer.writerow(routines.make_dict(keys, listing))
+            writer.writerow(helpers.make_dict(keys, listing))
     ret.append(f"Data sent to {csv_file_name}.")
     return ret
 
@@ -464,7 +465,7 @@ def applicant_listing():
     listings = routines.fetch("Sql/applicants3.sql")
     ret = []
     for listing in listings:
-        d = routines.make_dict(
+        d = helpers.make_dict(
                 app_keys, [value for value in listing])
         d["sponsor1ID"] = get_sponsor_name(d['sponsor1ID'])
         d["sponsor2ID"] = get_sponsor_name(d['sponsor2ID'])

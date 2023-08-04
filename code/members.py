@@ -154,24 +154,31 @@ def exercise_get_email():
 
 def sponsor2email(holder, data, email_dic):
     """
-    adds sponsors (if they have emails) to email_dic
+    IF holder.which specifies emails: sorts out the sponsors prn
+    and populates email_dic accordingly.
     """
-    cc = holder.which['cc'].split(',')
-    if "sponsors" in cc:
-        _ = input(f"must cc {cc}")
-        cc = [item for item in cc if item != 'sponsors']
-        for sponsor in (data["sponsor1ID"], data["sponsor2ID"]):
-            email_address = get_email(sponsor)
-            if email_address:
-                cc.append(email_address)
-    email_dic['Cc'] = ','.join(cc)
+    d = {'cc': 'Cc', 'bcc': 'Bcc'}
+    for copy in d.keys()
+        # change 'cc' to copy 
+        # change cc to recipients
+        if copy in holder.which.keys():
+            recipients = holder.which[copy].split(',')
+            if "sponsors" in recipients:
+                _ = input(f"must [B]cc sponsors in {recipients}")
+                recipients = [item for item in recipients
+                        if item != 'sponsors']
+                for sponsor in (data["sponsor1ID"], data["sponsor2ID"]):
+                    email_address = get_email(sponsor)
+                    if email_address:
+                        recipients.append(email_address)
+            email_dic[d[copy]] = ','.join(recipients)
 
 
 def append_email(holder, data):
-    print("In append_email, data holds the following:")
-    for key, value in data.items():
-        print(f"{key}: {value}")
-    _ = input()
+#   print("In append_email, data holds the following:")
+#   for key, value in data.items():
+#       print(f"{key}: {value}")
+#   _ = input()
     email_body = holder.email_template.format(**data)
 #   =========================
     sender = holder.which['from']['email']
@@ -186,14 +193,24 @@ def append_email(holder, data):
         'attachments': [],
         'body': email_body,
     }
-    sponsor2email(holder, data, email)
-    try:
-        email['Bcc'] = ','.join(
-                (email['Bcc'],holder.which['bcc']))
-    except KeyError:
-        pass # no 'bcc' specified in content
-    email['Cc'] = email['Cc'].strip(',')
-    email['Bcc'] = email['Bcc'].strip(',')
+    holder_keys = holder.which.keys()
+    if 'cc' in holder_keys:
+        sponsor2email(holder, data, email)
+    if 'bcc' in holder_keys:
+        email['Bcc'] = holder.which['bcc']
+#   try:
+#       email['Cc'] = email['Cc'].strip(',')
+#   except KeyError:
+#       pass # no 'bcc' specified in content
+#   else:
+#       sponsor2email(holder, data, email)
+#   try:
+#       email['Bcc'] = ','.join(
+#               (email['Bcc'],holder.which['bcc']))
+#   except KeyError:
+#       pass # no 'bcc' specified in content
+#   else:
+#       email['Bcc'] = email['Bcc'].strip(',')
     if holder.direct2json_file:
         helpers.add2json_file(email, holder.email_json,
                 verbose=True)
