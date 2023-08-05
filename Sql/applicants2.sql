@@ -8,6 +8,9 @@ SELECT
 FROM Applicants AS Ap
 JOIN People AS P
 ON Ap.personID = P.personID
-WHERE Ap.dues_paid = ''
+WHERE
+    Ap.notified = ''
+AND
+    NOT Ap.notified LIKE "drop%"
 ORDER BY P.last, P.first
 ;

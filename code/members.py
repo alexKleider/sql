@@ -98,7 +98,7 @@ def get_owing_by_ID(holder):
 def std_mailing_func(holder, data):
     ret = []
     ret.append('Running std_mailing_func.')
-    q_mailing(holder, data)
+    q_mailing(holder, data) # KeyError: sponsor1ID
     return ret
 
 
@@ -158,7 +158,7 @@ def sponsor2email(holder, data, email_dic):
     and populates email_dic accordingly.
     """
     d = {'cc': 'Cc', 'bcc': 'Bcc'}
-    for copy in d.keys()
+    for copy in d.keys():
         # change 'cc' to copy 
         # change cc to recipients
         if copy in holder.which.keys():
@@ -195,22 +195,9 @@ def append_email(holder, data):
     }
     holder_keys = holder.which.keys()
     if 'cc' in holder_keys:
-        sponsor2email(holder, data, email)
+        sponsor2email(holder, data, email) # KeyError: sponsor1ID
     if 'bcc' in holder_keys:
         email['Bcc'] = holder.which['bcc']
-#   try:
-#       email['Cc'] = email['Cc'].strip(',')
-#   except KeyError:
-#       pass # no 'bcc' specified in content
-#   else:
-#       sponsor2email(holder, data, email)
-#   try:
-#       email['Bcc'] = ','.join(
-#               (email['Bcc'],holder.which['bcc']))
-#   except KeyError:
-#       pass # no 'bcc' specified in content
-#   else:
-#       email['Bcc'] = email['Bcc'].strip(',')
     if holder.direct2json_file:
         helpers.add2json_file(email, holder.email_json,
                 verbose=True)
@@ -234,7 +221,7 @@ def q_mailing(holder, data):
         file_letter(holder, data)
     elif how == 'one_only':
         if data['email']:
-            append_email(holder, data)
+            append_email(holder, data) # KeyError: sponsor1ID
         else:
             file_letter(holder, data)
     elif how == 'usps':

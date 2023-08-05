@@ -288,11 +288,64 @@ def get_name(personID):
     return "{0:} {1:}".format(*res) + suffix
 
 
+def pick_People_record(header_prompt=None):
+    """
+    Prompts for name clues and either:
+    Returns a record from the People table
+    or returns None
+    """
+    query = " SELECT * FROM People WHERE {};"
+    keys = get_keys_from_schema("People")
+    if header_prompt: print(header_prompt)
+    print("Narrow the search...")
+    first = input("First name (partial or blank): ")
+    last = input("Last name (partial or blank): ")
+    if first and last:
+        query = query.format(
+                f"first LIKE '{first}%' AND last LIKE '{last}%'")
+    elif first:
+        query = query.format(f"first LIKE '{first}%'")
+    elif last:
+        query = query.format(f"last LIKE '{last}%'") 
+    else:  # no entry provided
+        return
+    res = fetch(
+                query,
+#               db=club.DB,
+                from_file=False,
+                )
+    listing = [helpers.make_dict(keys, entry) for entry in res]
+    if not listing: return
+    while True:
+        choices = [d['personID'] for d in listing]
+        print("Choose an ID from one of the following:")
+        for d in listing:
+            print("{personID:3>} {first} {last} {suffix}"
+                                        .format(**d))
+        ID = input("Your choice? (blank to exit)  ")
+        try:
+            ID = int(ID)
+        except ValueError:
+            print("Must be an integer!")
+            continue
+        print(f"You chose {ID}")
+        if not ID:
+            print("No ID entered, returning")
+            return
+        if ID in choices:
+            for d in listing:
+                if d['personID'] == ID:
+                    print(f"returning: {d}")
+                    return d
+        else:
+            print(f"{ID} not one of the choices")
+
+
 def id_by_name():
     """
-    Prompts for first letter(s) of first &/or last
-    name(s) and returns a listing of matching entries
+    Returns a listing of strings: '{Id} {first} {last} {suffix}'
     from the 'People' table (together with IDs.)
+    Prompts for first letter(s) of first &/or last name(s).
     If both are blank, none will be returned!
     """
     query = """
@@ -379,22 +432,6 @@ def compound_dict_from_query(listings, fields,
         d_from_list = dict_from_list(listing, fields)
         ret[key_name_and_index[0]] = listing[
                             key_name_and_index[1]]
-
-def get_sponsors(applicantID):
-#   print(f" applicantID: {applicantID} {type(applicantID)}")
-    sponsorIDs = fetch("""
-        SELECT sponsor1, sponsor2 FROM oldApplicants
-        WHERE personID = ?; """,
-        params=(applicantID,), from_file=False)
-    sponsors = []
-    for sponsorID in sponsorIDs[0]:
-#       _ = input(f"sponsorID: {sponsorID}")
-        sponsors.append(fetch("""
-        SELECT first, last, suffix, email FROM People
-        WHERE personID = ?""",
-        params=(sponsorID,), from_file=False))
-    return sponsors
-
 
 def ret_statement(personID, incl0=True):
     """
@@ -492,6 +529,39 @@ def get_owing(holder):
     pass
 
 
+def assign_mannually(holder):
+    """
+    User gets to select recipients from the command line.
+    """
+    candidates = {}
+    while True:
+        rec = pick_People_record(
+                header_prompt="Selecting records...")
+        if rec:
+            candidates[rec['personID']] = rec
+        else:
+            response = input("Done with entries? (y/n) ")
+            if response and response[0] in 'yY':
+                break
+    holder.working_data = candidates
+
+def add_sponsors2holder_data(holder):
+    """
+    """
+    query = "SELECT * from Applicants where personID = {};"
+    ap_keys = get_keys_from_schema("Applicants")
+    for key in holder.working_data.keys():
+        res = fetch(query.format(key), from_file=False)
+        if res:
+            ap_dict = helpers.make_dict(ap_keys, res[0])
+            for sponsor in ("sponsor1ID", "sponsor2ID"):
+                holder.working_data[key][sponsor] = (
+                        ap_dict[sponsor])
+        else:
+            for sponsor in ("sponsor1ID", "sponsor2ID"):
+                holder.working_data[key][sponsor] = ''
+
+
 def assign_owing(holder):
     """
     Assigns holder.working_data dict:
@@ -561,6 +631,23 @@ def getIDs_by_status(statusID):
             statusID, helpers.eightdigitdate)
     res = fetch(query, from_file=False)
     return [entry[0] for entry in res]
+
+
+def get_sponsors(applicantID):
+#   print(f" applicantID: {applicantID} {type(applicantID)}")
+    sponsorIDs = fetch("""
+        SELECT sponsor1, sponsor2 FROM oldApplicants
+        WHERE personID = ?; """,
+        params=(applicantID,), from_file=False)
+    sponsors = []
+    for sponsorID in sponsorIDs[0]:
+#       _ = input(f"sponsorID: {sponsorID}")
+        sponsors.append(fetch("""
+        SELECT first, last, suffix, email FROM People
+        WHERE personID = ?""",
+        params=(sponsorID,), from_file=False))
+    return sponsors
+
 
 def add_sponsor_cc2data(data):
     """
@@ -672,6 +759,12 @@ def exercise_add_sponsor_cc2data():
     for key, value in data.items():
         print(f"{key}: {value}")
 
+def exercise_pick_People_record():
+    while True:
+        res = pick_People_record(
+            header_prompt="Exercising pick_People_record")
+        print(f"{res}")
+
 
 if __name__ == '__main__':
 #   print(get_sponsors(110))
@@ -682,4 +775,5 @@ if __name__ == '__main__':
 #   print(get_statement(get_data4statement(157)))
 #   exercise_getIDs_by_status(200)
 #   exercise_assign_applicants2welcome()
-    exercise_add_sponsor_cc2data()
+#   exercise_add_sponsor_cc2data()
+    exercise_pick_People_record()

@@ -509,7 +509,10 @@ def show_applicants():
         mapping = dict(zip(keys, sequence))
         # Confirm still an applicant!! if not: "continue"
         query = """ SELECT personID, statusID, begin, end
-            FROM Person_Status WHERE personID = {} and statusID = 26;
+            FROM Person_Status
+            WHERE personID = {}
+            AND statusID = 26
+            AND end = '';
             """.format(mapping['ID'])
         res = routines.fetch(query, from_file=False)
         if res: continue  # no longer an applicant so "continue"

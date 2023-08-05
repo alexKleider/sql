@@ -244,8 +244,8 @@ terminated if dues are not paid by September 1st.
     # Send in early August:
     penultimate_warning="""
 As we enter the month of August it means you've already enjoyed
-two months of Club membership and its benefits for free but this
-could end soon if you don't take action!
+two months of Club membership and/or one of its benefits for free
+but this could end soon if you don't take action!
 
 Club records indicate that your dues (+/or other fees) have
 as yet not been paid.  Please be aware that according to
@@ -269,7 +269,7 @@ error, please let us know[1].)
 Please pay promptly; we'd hate to loose you as a member.
 
 Details follow.
-{extra}""",
+{statement}""",
 
     bad_email="""
 Emails sent to you at
@@ -394,10 +394,15 @@ announcements from the Club Secretary. Please come and attend
 meetings and other functions to enjoy the camaraderie!""",
 
     expired_application="""
-It's been more than six months since your membership application has
-been received which makes it now expired.  If you still wish to be a
-member of the Bolinas Rod and Boat Club the application process must
-begin again.""",
+With considerable regret it is my duty to inform you of the
+following:
+It's been more than six months since your membership application
+has been received and during that time you've failed to attend
+the required six Club meetings. This causes your application to
+expire.
+If you still wish to be a member of the Bolinas Rod and Boat Club
+the application process must begin again and I suggest you work
+closely with your sponsors.""",
 
     retirement_from_club="""
 Your wish to retire from Club membership has been noted.
@@ -423,6 +428,12 @@ to the Bolinas Rod & Boat Club, PO Box 248, Bolinas, CA 94924.""",
 
 ### !!!!!!!!!!!!!!!!!!!! POSTSCRIPTS !!!!!!!!!!!!!!!!! ##
 post_scripts = dict(
+
+    venmo="""
+An alternative to sending a check has been provided by our
+Treasurer, Angie Calpestry; details can be found here:
+    https://account.venmo.com/u/bolinasrodandboatclub
+""",
 
     angie_print="""
 Please respond by either replying to this email or by post:
@@ -547,6 +558,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
         "holder_funcs": (routines.assign_owing, ),
         "funcs": (members.send_statement, ),
@@ -560,6 +572,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
         "holder_funcs": (routines.assign_owing, ),
         "funcs": (members.send_statement, ),
@@ -573,6 +586,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
         "holder_funcs": (club.set_include0_false,
                          routines.assign_owing, ),
@@ -587,6 +601,7 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
         "holder_funcs": (club.set_include0_false,
                          routines.assign_owing, ),
@@ -600,11 +615,26 @@ content_types = dict(  # which_letter
         "post_scripts": (
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
         "holder_funcs": (club.set_include0_false,
                          routines.assign_owing, ),
         "funcs": (members.send_statement, ),
         "e_and_or_p": "usps",
+        },
+    final_warning={
+        "subject": "Membership soon to expire",
+        "from": authors["membership"],
+        "body": letter_bodies["final_warning"],
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
+            ),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "one_only",
         },
     new_applicant_welcome={
         "subject": "BR&BC Application",
@@ -617,6 +647,18 @@ content_types = dict(  # which_letter
         "funcs": (members.std_mailing_func, ),
         "e_and_or_p": "one_only",
         },
+
+    expired_application={
+        "subject": "Application Expired",
+        "from": authors["membership"],
+        "cc": "sponsors",
+        "body": letter_bodies["expired_application"],
+        "post_scripts": (),
+        "holder_funcs": (routines.assign_mannually, 
+                        routines.add_sponsors2holder_data,),
+        "funcs": (members.std_mailing_func,),
+        "e_and_or_p": "one_only",
+        },
     request_inductee_payment={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
@@ -625,6 +667,7 @@ content_types = dict(  # which_letter
         "body": letter_bodies["request_inductee_payment"],
         "post_scripts": (
             post_scripts["remittance"],
+            post_scripts['venmo'],
             ),
         "holder_funcs": (routines.assign_inductees4payment,),
         "funcs": (members.inductee_payment, ),
@@ -735,31 +778,14 @@ content_types = dict(  # which_letter
         "body": letter_bodies["interim_request"],
         "signature": '',
         "post_scripts": (
-            post_scripts["ref1_email_or_PO"],
-            ),
-        "funcs": (
-                  members.std_mailing_func),
-        "test": lambda record: True if (
-            members.is_dues_paying(record) and
-            members.not_paid_up(record)
-            ) else False,
-        "e_and_or_p": "one_only",
-        },
-    final_warning={
-        "subject": "Membership soon to expire",
-        "from": authors["membership"],
-        "body": letter_bodies["final_warning"],
-        "post_scripts": (
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
-        "funcs": (
-                  members.std_mailing_func),
-        "test": lambda record: True if (
-            members.is_dues_paying(record) and
-            members.not_paid_up(record)
-            ) else False,
-        "e_and_or_p": "both",
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "one_only",
         },
     bad_email={
         "subject": "non-working email",
@@ -777,13 +803,14 @@ content_types = dict(  # which_letter
         "from": authors["membership"],
         "cc": "sponsors",
         "body": letter_bodies["waiting4application_fee"],
-        "post_scripts": (post_scripts['remittance'],
-                        ),
-        "funcs": (members.std_mailing_func,),
-        "test": (lambda record: True if
-                 (record["status"]
-                  and 'a-' in record["status"].split("|"))
-                 else False),
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
+            ),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
         "e_and_or_p": "one_only",
         },
     awaiting_vacancy={
@@ -804,23 +831,28 @@ content_types = dict(  # which_letter
         "body": letter_bodies["vacancy_open"],
         "post_scripts": (
             post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
-        "funcs": (members.inductee_payment,),
-        "test": (lambda record: True if members.vacancy_open(record)
-                 else False),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
         "e_and_or_p": "one_only",
         },
     second_request_inductee_payment={
         "subject": "Still awaiting Club dues",
         "from": authors["membership"],
         "cc": "sponsors",
-        "body": letter_bodies["second_request_inductee_payment"],
+        "body": letter_bodies[
+            "second_request_inductee_payment"],
         "post_scripts": (
             post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
             ),
-        "funcs": (members.inductee_payment,),
-        "test": (lambda record: True if members.is_inductee(record)
-                 else False),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
         "e_and_or_p": "one_only",
         },
     welcome2full_membership={
@@ -834,17 +866,6 @@ content_types = dict(  # which_letter
         "funcs": (members.send_letter,),
         "test": (lambda record: True if members.is_new_member(record)
                  else False),        # status 'am'
-        "e_and_or_p": "one_only",
-        },
-
-    expired_application={
-        "subject": "Application Expired",
-        "from": authors["membership"],
-        "cc": "sponsors",
-        "body": letter_bodies["expired_application"],
-        "post_scripts": (),
-        "funcs": (members.std_mailing_func,),
-        "test": (lambda record: True),
         "e_and_or_p": "one_only",
         },
 
