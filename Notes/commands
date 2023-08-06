@@ -26,7 +26,10 @@
     sqlite3> .once FILENAME  % redirect to FILENAME only next cmd
     sqlite3> .read FILENAME  % reads and execute query in FILENAME
 
-
+COMMENTS
+========
+/* .... */
+or anything from "--" to end of line.
 
 
 ======================================================
@@ -103,6 +106,7 @@ ALTER TABLE table-name
 >RENAME TO new-table-name >*
 >RENAME COLUMN column-name TO new-column-name >*
 >ADD COLUMN column-def >*
+ALTER Receipts ADD COLUMN name INTEGER DEFAULT = 0;
 >DROP COLUMN column-name >*
 
 column-def:

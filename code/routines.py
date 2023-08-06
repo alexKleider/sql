@@ -40,8 +40,7 @@ def closeDB(database, cursor):
        raise
  
 
-def fetch(sql_source, db=db_file_name,
-                    params=None, data=None,
+def fetch(sql_source, db=db_file_name, params=None, data=None,
                     from_file=True, commit=False,
                     verbose=False):
     """
@@ -87,6 +86,7 @@ def import_query(sql_file_name):
     """
     Returns the content of <sql_file_name>
     (assumed to be a text file.)
+    Typically used for queries that require formatting.
     """
     with open(sql_file_name, 'r') as inf:
         return(inf.read())

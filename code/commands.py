@@ -97,15 +97,19 @@ def not_implemented():
 def under1yr_cmd():
     ret = [
         "Creating list of members who's tenure is < 1 year...", ]
-    with open("Sql/under1yr_f.sql", 'r') as stream:
-        query = stream.read().format(
-                        int(helpers.eightdigitdate)-10000)
+    query = routines.import_query("Sql/under1yr_ff.sql").format(
+            int(helpers.eightdigitdate)-10000,
+            helpers.eightdigitdate)
+    keys = (("personID, first, last, " +
+            "suffix, text, begin, end").split(', '))
     ret.append("Query is :")
     ret.extend(query.split("\n"))
-    ret.append("...as far as we've gotten.")
     res = routines.fetch(query, from_file=False)
+    data = [helpers.make_dict(keys, item) for item in res]
     for entry in res:
         ret.append(repr(entry))
+    for datum in data:
+        ret.append(repr(datum))
     return ret
 
 
@@ -1186,13 +1190,14 @@ def welcome_new_member_cmd():
 def receipts_cmd():
     list_of_dicts = []
     fields = ("personID date_received dues dock kayak "
-            + "mooring acknowledged")
+            + "mooring acknowledged ap_fee")
     keys = fields.split()
     fields = ', '.join(keys)
     query = (f"SELECT {fields}  FROM Receipts;")
 #   ret.append(query)
     report = [f"Receipts for {helpers.this_year} ...", 
-        "Name   payment date, fees, dock, kayak, mooring,  date acknowledged",
+        ("Name   payment date, fees, dock, kayak, " +
+        "mooring,  date acknowledged, ap_fee"),
             ]
     for res in routines.fetch(query, from_file=False):
         data = {}
@@ -1206,7 +1211,7 @@ def receipts_cmd():
         line = ''.join((
                 "{personID:<17} {date_received:>10} {dues:>5},",
                 "{dock:>5}, {kayak:>5}, {mooring:>5},",
-                "{acknowledged:>10}", ))
+                " {ap_fee}, {acknowledged:>10}", ))
         line = line.format(**data)
         report.append(line)
         list_of_dicts.append(data)
