@@ -1209,8 +1209,12 @@ proto_menu = {
         }
 
 def choose_and_run(proto_menu,
+            report=None,
             header=f"Choose 0..{len(proto_menu)}:",
             prompt="Choice: "):
+    if report:
+        report.append(
+            "Presenting (helpers.choose_and_run) a menu..")
     names = [name for name in proto_menu.keys()]
     menu = get_menu_dict(names)
     while True:
@@ -1226,7 +1230,7 @@ def choose_and_run(proto_menu,
         if choice in range(len(names)+1):
             return [
                 func for func in proto_menu.values()
-                ][choice-1]()
+                ][choice-1](report=report)
 
 
 
