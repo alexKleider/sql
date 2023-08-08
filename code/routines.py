@@ -408,6 +408,104 @@ def get_commands(sql_file):
                 command = []
 
 
+people_query = """/* Sql/get_by_ID_f.sql */
+        SELECT * FROM People WHERE personID = {};
+        """
+like_query = """
+        SELECT * FROM People WHERE {};
+        """
+
+def get_rec_by_ID(ID):
+    ret = helpers.make_dict(
+            get_keys_from_schema("People"),
+            fetch(people_query.format(ID),
+                                from_file=False)[0])
+#   keys = get_keys_from_schema("People")
+#   res = fetch(people_query.format(ID),
+#                               from_file=False)
+    if not ret:
+        return
+    else:
+        return ret
+
+
+
+def pick_People_record(header_prompt=None, report=None):
+    """
+    Returns either a dict representing a person in the People
+    table...  or None.
+    Prompts for name clues (which can be ignored)
+    """
+    if isinstance(report, list):
+        report.append(
+                "... entering routines.pick_People_record()")
+    keys = get_keys_from_schema("People")
+    if header_prompt: print(header_prompt)
+    while True:
+        print(
+          "Narrow the search (blanks if ID known)...")
+        first = input("First name (partial or blank): ")
+        last = input("Last name (partial or blank): ")
+        if first and last:
+            query2use = like_query.format(
+                f"first LIKE '{first}%' AND last LIKE '{last}%'")
+        elif first:
+            query2use = like_query.format(
+                    f"first LIKE '{first}%'")
+        elif last:
+            query2use = like_query.format(f"last LIKE '{last}%'") 
+        else:  # no entry provided
+            query2use = listing = None
+        if query2use:
+            res = fetch(
+                    query2use,
+    #               db=club.DB,
+                    from_file=False,
+                    )
+            listing = [helpers.make_dict(keys, entry)
+                                    for entry in res]
+        if listing:
+            choices = [d['personID'] for d in listing]
+            print("Choose an ID from one of the following:")
+            for d in listing:
+                print("{personID:3>} {first} {last} {suffix}"
+                                            .format(**d))
+        ID = input("Enter a personID (0 to exit):  ")
+        try:
+            ID = int(ID)
+        except ValueError:
+            print("Must be an integer!")
+            report.append(
+                f"..non integer '{ID}' entered; restarting..")
+            continue
+        else:
+            if ID == 0:
+                if isinstance(report, list):
+                    report.append(
+                    "... '0' entry ==> exit pick_People_record.")
+                return
+        if listing and ID in choices:
+            for d in listing:
+                if d['personID'] == ID:
+#                   print(f"returning: {d}")
+                    if isinstance(report, list):
+                        report.append(
+                            "... pick_People_record => a dict.")
+                    return d
+        else:
+            rec = get_rec_by_ID(ID)
+            if not rec:
+                if isinstance(report, list):
+                    report.append(
+                        "... no such ID: starting over ..")
+                continue
+            else:
+                if isinstance(report, list):
+                    report.append(
+                        "... pick_People_record => a dict.")
+                return rec
+
+
 def dict_from_list(listing, fields):
     """
     <listing> is an iterable as might be an element in what's

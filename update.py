@@ -4,6 +4,8 @@
 
 """
 Prototyping a status_change_cmd
+    update_status  {  the two choices
+    add_status     {  under development
 """
 
 from code import helpers
@@ -14,7 +16,9 @@ ps_keys = routines.get_keys_from_schema("Person_Status")
 
 def status_choices():
     """
-    Returns a list of strings.
+    Returns a list of strings:
+    a listing of header and all available stati with their
+    statusID, code and text (to serve as a reference.)
     """
     res = routines.fetch("SELECT * FROM Stati;",
             from_file=False)
@@ -26,28 +30,31 @@ def status_choices():
     return ret
 
 def entries_for_ID(personID):
+    """
+    Person_Status table entries pertenent to <personID>.
+    Returned is a list (which may be empty) of dicts.
+    """
     query = f"""
         SELECT * from Person_Status WHERE personID = {personID};
         """
     res = routines.fetch(query, from_file=False)
-#   print("entries_for_ID returns:")
-#   _ = input(res)
-   
     ret = []
     for entry in res:
         ret.append(dict(zip(ps_keys, entry)))
     return ret
 
+## Will probably redact in favour of
+## routines.pick_People_record(header_prompt=None,report=None)
 def set_up(prompt, report=None):
     """
-    Returns a "menu": a dict of dicts-
-    1 based integer keys, dict for each value.
-    If no previous entry found, then an integer is returned:
-    the personID chosen.
+    Prompts for and collects a personID.
+    Returns A: a dict: a dict of dicts- to serve as a 'menu':
+        1 based integer keys, dict for each value.
+    OR B: an integer: personID (if no previous entries found.)
     """
-    if report:
-        report.append(prompt)
-#   print(report[-1])
+    if isinstance(report, list):
+        report.append("Entering update.setup(prompt)")
+    print(prompt)
     rec = routines.pick_People_record()
     if not rec:
         _ = input("record not found")
@@ -57,14 +64,8 @@ def set_up(prompt, report=None):
         print("Stati from which to choose:")
         for line in status_choices():
             print(f"  {line}")
-#       print("Entries already there:")
-#       ret = []
         entries = entries_for_ID(rec["personID"])
-#       _ = input(f"{repr(entries)}")
         dicts = dict(zip(range(1, len(entries)+1), entries))
-#       _ = input(f"{repr(dicts)}")
-#       for key, value in dicts.items():
-#           print(f"{key:>3}: {repr(value)}")
         if not dicts:  # no previous entries
             return personID
         return dicts
@@ -84,7 +85,13 @@ def update_status(report=None):
     print("What we have to work with:")
     for key, val in dicts.items():
         print(f"{key:>3}: {repr(val)}")
-    index = int(input("Which entry needs changed? "))
+    while True:
+        try:
+            index = int(input("Which entry needs changed? "))
+        except ValueError:
+            print("Must enter an integer; try again!")
+        else:
+            break
     data = dicts[index]
     corrected = {}
     for key, value in data.items():
@@ -134,7 +141,17 @@ def status_change_cmd():
     helpers.choose_and_run(menu_d, report=ret)
     return ret
 
+def test4emptylisting():
+    entries = entries_for_ID(300)
+    dicts = dict(zip(range(1, len(entries)+1), entries))
+    if not dicts:
+        print("dicts is empty")
+    print(repr(dicts))
+    
+
+
 if __name__ == '__main__':
+#   test4emptylisting()
+
     for line in status_change_cmd():
-        pass
-#       print(line)
+        print(line)
