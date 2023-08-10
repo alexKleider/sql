@@ -474,9 +474,9 @@ def pick_People_record(header_prompt=None, report=None):
         try:
             ID = int(ID)
         except ValueError:
-            print("Must be an integer!")
             report.append(
-                f"..non integer '{ID}' entered; restarting..")
+                "..non integer entered; restarting..")
+            print(report[-1])
             continue
         else:
             if ID == 0:
@@ -645,6 +645,10 @@ def assign_mannually(holder):
 
 def add_sponsors2holder_data(holder):
     """
+    Adds sponsorIDs (if they exist) to all the records
+    in holder.working_data (which is People table data
+    keyed by personID.
+    Note: adds sponsorIDs, not names
     """
     query = "SELECT * from Applicants where personID = {};"
     ap_keys = get_keys_from_schema("Applicants")
@@ -730,11 +734,68 @@ def getIDs_by_status(statusID):
     res = fetch(query, from_file=False)
     return [entry[0] for entry in res]
 
+def add_sponsors2data(data):
+    """
+    <data> is a record/dict
+    If it has <sponsor[1,2]ID key then
+    We add <sponsor[1,2]> keys the value of each containing
+    a record of first, last, suffix, email of each sponsor.
+    Note: the sponsor may not have email.
+    """
+    applicantID = data["personID"]
+    sponsorIDs = fetch("""
+        SELECT sponsor1ID, sponsor2ID FROM Applicants
+        WHERE personID = ?; """,
+        params=(applicantID,), from_file=False)
+    sponsors = []
+    sponsor_keys = 'first, last, suffix, email'.split(', ')
+    for sponsorID in sponsorIDs[0]:
+#       _ = input(f"sponsorID: {sponsorID}")
+        sponsor = fetch("""
+        SELECT first, last, suffix, email FROM People
+        WHERE personID = ? AND notified = '';""",
+        params=(sponsorID,), from_file=False)
+        sponsors.append(dict_from_list(sponsor, sponsor_keys))
+    data['sponsor1ID'] = sponsorIDs[0][0]
+    data['sponsor2ID'] = sponsorIDs[0][1]
+    data['sponsor1'] = sponsors[0]
+    data['sponsor2'] = sponsors[1]
+    return data
+
+
+def add_sponsor_data(data):
+    """
+    <data> is a record, its first field is personID.
+    Added are the following fields:
+        sponsor1ID, sponsor2ID, sponsor1, sponsor2
+    sponsor[1/2] are records of first, last, suffix, email
+    the email field possibly being empty.
+    """
+    sponsorIDs = fetch("""
+        SELECT sponsor1ID, sponsor2ID FROM Applicants
+        WHERE personID = ?; """,
+        params=(data['personID'],), from_file=False)
+    sponsors = []
+    sponsor_keys = "first, last, suffix, email".split(', ')
+    data['sponsor1ID'] = sponsorIDs[0][0]
+    data['sponsor2ID'] = sponsorIDs[0][1]
+    res = fetch("""
+            SELECT first, last, suffix, email FROM People
+            WHERE personID = ?""",
+            params=(sponsorIDs[0][0],), from_file=False)
+#   print(f"{res}")
+#   _ = input(f"{sponsor_keys}")
+    data['sponsor1'] = helpers.make_dict(sponsor_keys, res[0])
+    res = fetch("""
+            SELECT first, last, suffix, email FROM People
+            WHERE personID = ?""",
+            params=(sponsorIDs[0][1],), from_file=False)
+    data['sponsor2'] = helpers.make_dict(sponsor_keys, res[0])
+
 
 def get_sponsors(applicantID):
-#   print(f" applicantID: {applicantID} {type(applicantID)}")
     sponsorIDs = fetch("""
-        SELECT sponsor1, sponsor2 FROM oldApplicants
+        SELECT sponsor1, sponsor2 FROM Applicants
         WHERE personID = ?; """,
         params=(applicantID,), from_file=False)
     sponsors = []
@@ -749,7 +810,7 @@ def get_sponsors(applicantID):
 
 def add_sponsor_cc2data(data):
     """
-    <data> must be a dict with sponsor1 and sponsor1 keys
+    <data> must be a dict with sponsor1ID and sponsor2ID keys
     who's values are personIDs. 
     A data['cc'] entry is created as a string with sponsor
     emails separated by commas. The string could be empty
@@ -759,11 +820,15 @@ def add_sponsor_cc2data(data):
             WHERE personID = {};"""  # returns a one entry list
     sponsor_keys = "last first suffix email"
     data['cc'] = []
-    for sponsor in ('sponsor1', 'sponsor2'):
-        sponsor_dict = make_dict(sponsor_keys.split(),
+    for sponsor in ('sponsor1ID', 'sponsor2ID'):
+        sponsor_dict = helpers.make_dict(sponsor_keys.split(),
             fetch(query.format(data[sponsor]),
                 from_file=False)[0])  # '[0]' is to get first
                                     # of a one entry list
+        if sponsor == 'sponsor1ID':
+            data['sponsor1'] = sponsor_dict
+        if sponsor == 'sponsor2ID':
+            data['sponsor2'] = sponsor_dict
         if sponsor_dict['email']:
             data['cc'].append(sponsor_dict['email'])
     data['cc'] = ','.join(data['cc'])
@@ -792,47 +857,20 @@ def assign_welcome2full_membership(holder):
     ret = ['<welcome to full_membership mailing>',
             ]
     print("Create list of people to welcome as new member(s):")
-    candidates = []
+    candidates_byID = {}
     while True:
-        ids = id_by_name()
-        if not ids:
-            break
-        print('\n'.join(ids))
-        print(f"Enter (coma separated if > 1) list of IDs:")
-        response = input("Listing of IDs or blank to quit: ")
-        if not response:
+        candidate = pick_People_record("Pick a person...")
+        if not candidate:
             break
         else:
-            _ = input(f"Your response: {response}")
-            candidates.extend([int(entry) for entry in
-                                response.split(",")])
-    if not candidates:  # nothing to do
+            candidates_byID[candidate['personID']] = candidate
+    if not candidates_byID:  # nothing to do
         ret.append("No candidate(s) specified. Nothing to do.")
         return ret
-    _ = input(f"Entries: {candidates}")
-    ret.append('You chose the following: ' + ', '.join(
-            [str(candidate) for candidate in candidates]))
-    # run a query to populate byID ==> holder.data2welcome
-    byID = dict()
-    for personID in candidates:
-        tup = fetch('Sql/find_by_ID.sql',
-                            params=(personID,))[0]
-        byID[tup[0]] = {'first': tup[1],
-                        'last': tup[2],
-                        'suffix': tup[3],
-                        'phone': tup[4],
-                        'address': tup[5],
-                        'town': tup[6],
-                        'state': tup[7],
-                        'postal_code': tup[8],
-                        'country': tup[9],
-                        'email': tup[10],
-                        }
-    if holder.cc_sponsors:
-        for key, dic in byID.items():
-            
-            pass
-    holder.working_data = byID
+    for ID in candidates_byID.keys():
+        add_sponsor_data(candidates_byID[ID])
+    holder.working_data = candidates_byID
+    add_sponsors2holder_data(holder)
     return ret
 
 

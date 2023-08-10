@@ -16,7 +16,7 @@ JOIN
 ON
     St.statusID = PS.statusID
 WHERE 
-    St.key = 'm'
+    St.statusID IN (11, 15)  -- New Member & Current Member
     AND (PS.end = '' OR PS.end > {})
 -- must format date membership ended or will end.
 -- use code.helpers.sixdigitdate

@@ -14,7 +14,7 @@ JOIN
     Stati as St
 ON
     St.statusID = PS.statusID
-WHERE St.statusID in (11, 15)
+WHERE St.statusID in (8, 11, 15)
 AND ((PS.end = '') or (PS.end > {}))
 -- must format: use code.helpers.sixdigitdate
 ORDER BY

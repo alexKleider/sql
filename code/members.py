@@ -154,8 +154,11 @@ def exercise_get_email():
 
 def sponsor2email(holder, data, email_dic):
     """
-    IF holder.which specifies emails: sorts out the sponsors prn
-    and populates email_dic accordingly.
+    Client is append email (where "email" is defined as a dict.
+    IF holder.which specifies copies to be sent (cc or bcc):
+    sorts out sponsors prn and assigns 'Cc' and 'Bcc' fields
+    accordingly.
+    Assumes <data> already has sponsor[1,2]ID fields.
     """
     d = {'cc': 'Cc', 'bcc': 'Bcc'}
     for copy in d.keys():
@@ -164,7 +167,7 @@ def sponsor2email(holder, data, email_dic):
         if copy in holder.which.keys():
             recipients = holder.which[copy].split(',')
             if "sponsors" in recipients:
-                _ = input(f"must [B]cc sponsors in {recipients}")
+#               _ = input(f"must [B]cc sponsors in {recipients}")
                 recipients = [item for item in recipients
                         if item != 'sponsors']
                 for sponsor in (data["sponsor1ID"], data["sponsor2ID"]):
@@ -207,7 +210,9 @@ def append_email(holder, data):
 
 def q_mailing(holder, data):
     """
-    Generates and dispaches email &/or letter.
+    Generates and dispaches email &/or letter to person
+    specified by <data>: is a single record based on People
+    table with additional fields as needed.
     """
     print([item for item in data.items()])
     data["subject"] = holder.which["subject"]
@@ -327,6 +332,7 @@ def inductee_payment(holder, data):
     q_mailing(holder, data)
     pass
 
+# REDACT ??
 def send_letter(holder, data):
     q_mailing(holder, data)
 

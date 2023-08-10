@@ -43,8 +43,19 @@ def entries_for_ID(personID):
         ret.append(dict(zip(ps_keys, entry)))
     return ret
 
-## Will probably redact in favour of
-## routines.pick_People_record(header_prompt=None,report=None)
+def quote_nonID_fields(data):
+    """
+    <data> is a dict/record
+    the value of any non ID key is quoted.
+    Works by side effect!
+    Also returns the new dict.
+    """
+    for key, value in data.items():
+        if not key.endswith("ID"):
+            data[key] = f"'{value}'"
+    return data
+
+
 def set_up(prompt, report=None):
     """
     Prompts for and collects a personID.
@@ -98,10 +109,23 @@ def update_status(report=None):
         if key == 'personID':
             corrected[key] = value
         else:
-            corrected[key] = input(f"  {key} was <{data[key]}> change to: ")
+            corrected[key] = input(
+                    f"  {key} was <{data[key]}> change to: ")
             if not key == 'statusID':
                 corrected[key] = f"'{corrected[key]}'"
-    print(f"corrected version: {repr(corrected)}")
+    _ = quote_nonID_fields(data)
+    print(f"original version: {repr(data)}")
+    _ = input(f"corrected version: {repr(corrected)}")
+    f_new = ', '.join([f"{key} = {value}" for
+                key, value in corrected.items()])
+    f_original = ' AND '.join([f"{key} = {value}" for
+                key, value in data.items()])
+    query = f""" UPDATE Person_Status
+            SET {f_new}
+            WHERE {f_original}
+            ; """
+    _ = input(query)
+
 
 def enter_status(report=None):
     """
@@ -110,7 +134,8 @@ def enter_status(report=None):
     prompt = "Running enter_status()..."
     dicts = set_up(prompt, report=report)
     if isinstance(dicts, int):
-        print("No prior enties founc")
+        report.append("No prior enties found.")
+        print(report[-1])
         d = {'personID': dicts, }
     else:
         d = {'personID': dicts[1]['personID'], }
@@ -118,17 +143,20 @@ def enter_status(report=None):
         response = input(f"{key}: ")
         if not response: continue
         d[key] = response
-        if not key == 'statusID':
+        if key == 'statusID':
+            d[key] = str(d[key])
+        else:
             d[key] = f"'{d[key]}'"
-    field_names = [key for key in d.keys()][1:]  # { no need for
-    values = [value for value in d.values()][1:] # {  personID
-#   _ = input(f"{repr(d)}")
+    d["personID"] = str(d["personID"])
+    field_names = [key for key in d.keys()]
+    values = [value for value in d.values()]
+    _ = input(f"{repr(d)}")
     query = f"""
-            INSERT INTO Table
+            INSERT INTO Person_Status
             ({', '.join(field_names)})
             VALUES
             ({', '.join(values)})
-            WHERE personID = {d['personID']};
+            ;
             """
     _ = input(query)
 

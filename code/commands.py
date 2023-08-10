@@ -950,19 +950,6 @@ def prepare_invoice(holder, personID):
     return invoice
 
 
-def global_copies(holder):
-#   if 'bcc' in list(data):
-#       pass
-#   if 'cc' in list(data):
-#       if "sponsors" in list(data):
-#           pass  # add sponsor emails
-    return(['Dealing with cc and bcc.', ])
-
-
-def sponsor_copies(holder, data):
-    pass
-
-
 def prepare_mailing_cmd():
     """
     ck for 'cc', especially in response to 'sponsors'
@@ -994,30 +981,25 @@ def prepare_mailing_cmd():
     holder.which = content.content_types[w_key]
     # which letter has been established & conveyed to the holder
     # now: establish printer to be used and assign templates
+#   _ = input(holder.which.keys())
+    if {"cc", "bcc"} and set([key for key in holder.which.keys()]):
+        holder.cc_sponsors = True
     ret.extend(assign_templates(holder))
-    # find out if we need to cc or bcc anyone: probably being done
-    # elsewhere!!!
-    which_keys = set(holder.which.keys())
-    if which_keys and {'cc', 'bcc'}:
-        ret.extend(global_copies(holder)) # NOTE: does nothing!!
+    # cc and bcc (incl sponsors) should be done in q_mailing
     # prepare holder for emails
     holder.emails = []
     # collect data..
     for func in holder.which['holder_funcs']:
-        # assigns holder.working_data
-        # "holder_funcs": (routines.assign_applicants2welcome,),
+#       _ = input(f"running holder func {repr(func)}.")
+        # assigns holder.working_data (found in routines:
+        #   (routines.assign_applicants2welcome,),
+        #   (routines.assign_welcome2full_membership,),
         func(holder)
-#       ret.extend(func(holder))
-#   print("holder.__dict__ (after func(holder) follows:")
-#   for key, value in holder.which.items():
-#       print(f"{key}: {value}")
-#   _ = input('any key to continue ')
-#   for item in holder.__dict__:
-#       print(item)
-#   _ = input("end of holder.__dict__")
     for dic in holder.working_data.values():
         for func in holder.which['funcs']:  #  vvvvv
+#           _ = input(f"Running func {repr(func)}")
             # for billing: members.send_statement(holder, dic)
+            # otherwise: members.q_mailing
 #           ret.extend(func(holder, dic))
             func(holder, dic)
     # send holder.emails to a json file
