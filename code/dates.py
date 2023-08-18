@@ -44,13 +44,16 @@ except ImportError: import multiple
 try: from code import commands
 except ImportError: import commands
 
+try: from code import applicants
+except ImportError: import applicants
+
 options = (  # menu below main menu item 12. Data Entry (Dates)
     "Applicants",    # app_rcvd, fee_rcvd, meeting1,2,3,
                      # approved, dues_paid, notified
     "Attrition",     # date  (also reason)
     "Person_status", # begin, end
     "Receipts",      # date_received, acknowledged
-    "Acknowledge",   # temporary to test letter preparation
+#   "Acknowledge",   # temporary to test letter preparation
     )
 
 
@@ -62,9 +65,13 @@ def add_applicant_date():
 
 
 def applicants_cmd():
-    ret = ["Applicant data entry still under development.", ]
-    print(ret[0])
-    return ret
+    """
+    Applicant related code is in code.applicants module
+    """
+    ret = ["Applicant data entry still under development",
+           "in code.applicants module..", ]
+    print('\n'.join(ret))
+#   return ret
     choice = input(
         "New applicant ('yY') or just another date ('')? ")
     if choice and choice[0] in yY:
@@ -91,10 +98,11 @@ def amt_paid(text):
         return 0
     return int(text)
 
-def confirm_receipts_query(data):
+def confirm_receipts_query(data, report=None):
     """
-    Creates a receipts entry _if_ confirmed.
-    Step #3# if confirmed
+    If confirmed: creates a receipts entry and returns True,
+    else returns None.
+    If report is a list, enteries are made.
     """
     expected_keys = ("personID", "date_received", "dues",
             "dock", "kayak", "mooring", "acknowledged", )
@@ -117,10 +125,15 @@ def confirm_receipts_query(data):
     if yn and yn[0] in 'yY':
         routines.fetch(query, from_file=False, commit=True)
         ret.extend(["Query:", query, "successfully executed.",])
+        ok = True
     else:
         ret.extend(["Query:", query, "aborted.",])
+        ok = False
     print(ret[-1])
-    return ret
+    if isinstance(report, list):
+        report.extend(ret)
+    if ok: return True
+
 
 
 def file_acknowledgement(holder, data):
@@ -179,7 +192,8 @@ def get_demographic_dict(personID):
 def add_receipt_entry(holder, ret):
     """
     Deal with a payment:
-    <ret> must be an existing array of strings for reporting.
+    <ret> is either an existing array of strings for reporting
+    (which isn't used!) or None to signal no entry to make.
 
     Each receipt is acknowledged by an email &/or letter.
     Letters go into holder.mail_dir and
@@ -189,119 +203,101 @@ def add_receipt_entry(holder, ret):
     -1 if unable to establish a personID; -2 abort current entry
     Returns data pertaining to entry made (which isn't used?)
     """
-    addendum = "(add a 'd' to change dates) "
-    if holder.entries:
-        response = input("Enter another receipt? (y/n) "
-                + addendum)
-    else:
-        response = input("Enter a receipt? (y/n) " 
-                + addendum)
-    response = set(response)
-    if set('dD').intersection(response):
-        set_default_dates(holder)
-    if not set('yY').intersection(response):
-        return -12  # signal you're done with receipt entry
-    #0# payor?
     while True:
-        print("Choose a payor...")
-        res = routines.id_by_name()
-        print(f"The ID choice(s) is/are {res}")
-        try:
-            payorID = int(input("Enter ID [0 to abort]: "))
-        except ValueError:
-            print("Must enter an integer, 0 to abort...")
-            continue
-        if payorID == 0:
-            return -12
-        data = get_demographic_dict(payorID)
-        if not data:
-            print(f"'{payorID}' is an invalid payorID")
+        # Continue until get it right or quit...
+        addendum = "(add a 'd' to change dates) "
+        if holder.entries:
+            response = input("Enter another receipt? (y/n) "
+                    + addendum)
         else:
-            break
-    if not payorID:
-        return -1  # unable to establish a payor
-    #1# details of the <data> to become an entry
-#   _ = input(f"""code/dates ln#201: data..
-#   {repr(data)}
-#   """)
-### ===  present current statement here as check yet to do !!!
-    #2# now look up all that is owed by this person
-    data['before_statement'] = routines.get_statement(
-            routines.get_data4statement(payorID), 
-            include_header=False)
-    print("What's owed:")
-    print(data['before_statement'])
-    print("...FYI...")
+            response = input("Enter a receipt? (y/n) " 
+                    + addendum)
+        response = set(response)
+        if set('dD').intersection(response):
+            set_default_dates(holder)
+        if not set('yY').intersection(response):
+            return
+        #0# payor?
+        while True:
+            print("Choose a payor...")
+            res = routines.id_by_name()
+            print(f"The ID choice(s) is/are {res}")
+            try:
+                payorID = int(input(
+                "Enter ID [0 to abort, " +
+                "non int to begin over]: "))
+            except ValueError:
+                print("Must enter an integer, 0 to abort...")
+                continue
+            if payorID == 0:
+                return
+            data = get_demographic_dict(payorID)
+            if not data:
+                print(f"'{payorID}' is an invalid payorID")
+                continue
+            else:
+                break
+    ### ===  present current statement here as check yet to do !!!
+        #2# now look up all that is owed by this person
+        data['before_statement'] = routines.get_statement(
+                routines.get_data4statement(payorID), 
+                include_header=False)
+        print("What's owed:")
+        print(data['before_statement'])
+        print("...FYI...")
 
-    if holder.receipt_date:
-        print(
-          f"Using default receipt date '{holder.receipt_date}'")
-        data['date_received'] = holder.receipt_date
-    else:
-        data['date_received'] = input(
-                "Enter date received (YYYYMMDD): ")
-    while True:
-        dues = amt_paid(input("Dues: "))
-        dock = amt_paid(input("Dock usage: "))
-        kayak = amt_paid(input("Kayak storage: "))
-        mooring = amt_paid(input("Mooring fee: "))
-        total = amt_paid(input("Total payment: "))
-        if dues + dock + kayak + mooring != total:
-            print("Totals don't match; try again!")
-            response = input("Abort this entry? (y/n) ")
-            if response and response[0] in 'yY':
-                return -2
-        else: break
-    data['total'] = total    #{ eventually to }
-    data['payment'] = total  #{   be merged   }
-    ## Note: only add fields if payments pertain to them:
-    if dues:
-        data['dues'] = dues
-    if dock:
-        data['dock'] = dock
-    if kayak:
-        data['kayak'] = kayak
-    if mooring:
-        data['mooring'] = mooring
-    if holder.acknowledge_date:
-        data["acknowledged"] = holder.acknowledge_date
-        print("Using default acknowledged date " +
-          f"'{holder.acknowledge_date}'")
-    else:
-        data["acknowledged"] = input(
-                "Enter date acknowledged (YYYYMMDD): ")
-    #3# receipt recorded (if confirmed)
-    ret.extend(confirm_receipts_query(data))
-    #4# now decide if to credit accounts...
-    ## Initially steps 2 and 3 were done even if receipts
-    ## entry wasn't approved; so they were broght into
-    ## this function. Don't want an entry into receipts
-    ## without a corresponding debit/credit to a member's
-    ## account(s) _and_ a letter (or email) of
-    ## acknowledgement.
-    automate_vs_confirm_each_step = """
-    yn = input("Credit accounts?(y/n: ")
-    if not (yn and yn[0] in 'yY'):
-        ret.append(
-            "Receipt entry created but account not credited!")
-        print(ret[-1])
-        return -2
-    #4a# Crediting the accounts...
-    # Still assuming no one pays a fee for something for which
-    # they are not registered- use <owing> dict to check
-    ret.extend(multiple.credit_accounts(data))
-    #5# Send letter of acknowledgement...
-    yn = input("Send acknowledgement?(y/n): ")
-    if not (yn and yn[0] in 'yY'):
-        ret.append("Letter of acknowledgement NOT being sent.")
-        return -2
-    ret.extend(file_acknowledgement(holder, data))
-    holder.entries += 1
-    return data
-    """
-    ret.extend(multiple.credit_accounts(data))
-    ret.extend(file_acknowledgement(holder, data))
-    holder.entries += 1
+        if holder.receipt_date:
+            print(
+              f"Using default receipt date '{holder.receipt_date}'")
+            data['date_received'] = holder.receipt_date
+        else:
+            data['date_received'] = input(
+                    "Enter date received (YYYYMMDD): ")
+        while True:
+            abort = False
+            dues = amt_paid(input("Dues: "))
+            dock = amt_paid(input("Dock usage: "))
+            kayak = amt_paid(input("Kayak storage: "))
+            mooring = amt_paid(input("Mooring fee: "))
+            total = amt_paid(input("Total payment: "))
+            if dues + dock + kayak + mooring != total:
+                print("Totals don't match; try again!")
+                continue
+            if total == 0:
+                response = input(
+                    "Nothing to enter! Abort this entry? (y/n) ")
+                if response and response[0] in 'yY':
+                    abort = True
+                    break
+            break
+        if abort:
+            continue
+        data['total'] = total    #{ eventually to }
+        data['payment'] = total  #{   be merged   }
+        ## Note: only add fields if payments pertain to them:
+        if dues:
+            data['dues'] = dues
+        if dock:
+            data['dock'] = dock
+        if kayak:
+            data['kayak'] = kayak
+        if mooring:
+            data['mooring'] = mooring
+        if holder.acknowledge_date:
+            data["acknowledged"] = holder.acknowledge_date
+            print("Using default acknowledged date " +
+              f"'{holder.acknowledge_date}'")
+        else:
+            data["acknowledged"] = input(
+                    "Enter date acknowledged (YYYYMMDD): ")
+        #3# receipt recorded (if confirmed)
+        if confirm_receipts_query(data, ret):
+            ret.extend(multiple.credit_accounts(data))
+            ret.extend(file_acknowledgement(holder, data))
+            holder.entries += 1
+        else:
+            ret.extend("Receipt entry aborted.")
+            print(ret[-1])
     return data
 
 
@@ -350,14 +346,9 @@ def receipts_cmd():
     set_default_dates(holder)
     while True:
         res = add_receipt_entry(holder, ret)
-        # res should be the data pertaining to entry (not used.)
-        if isinstance(res, int):
-            if res == -1:  # unable to establish a payor
-                continue
-            if res == -2:  # abort this entry only
-                continue
-            if res == -12:
-                break
+        if res == None:
+            ret.append("End of receipt entry.")
+            print(ret[-1])
             break
         else:
             ret.append("receipt entered")

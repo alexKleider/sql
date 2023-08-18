@@ -374,20 +374,21 @@ There is a wealth of history on our website: recordings of past
 'marine moments' along with photos of events, and forms for renting
 the club ~ lots to explore there.
 
-Members can (upon payment of a $50 deposit) get a key to the Club.
-If you would like one please put in your request by email or
-letter[1] and Ralph Cammicia, our "keeper of the keys," will take
-care of it.  Many take advantage of having this access to spend
-time on the balcony enjoying views of the lagoon and Bolinas Ridge.
-Please be sure to lock up upon leaving.
+Members can (upon payment of a $25 deposit) get a key to the Club
+from "keeper of the keys" Ralph Cammicia.  This provides fishermen
+and boaters access to the docks (the use of which is a privilege
+for which there is an extra fee- see Docks and Yards Chair Don
+Murch about that) and also many take advantage of having this
+access to spend time on the balcony enjoying views of the lagoon
+and Bolinas Ridge.  Please be sure to lock up upon leaving.
 
 The Club is available for members to rent for private functions (if
 certain conditions are met.)  More information can be found on the
 web site: "Rules and Forms" and under that "Club Rentals".
 
-Please feel free to contact me if you have any questions about
-anything related to the Club. If I can't answer, I'll try to find
-someone who can.
+Please contact your sponsors or reach out to me if you have any
+questions about anything related to the Club. If I can't answer,
+I'll try to find someone who can.
 
 As you already know, general membership meetings are held on the
 first Friday of each month @ 7:30. The February Annual General

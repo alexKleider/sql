@@ -1190,6 +1190,18 @@ def make_dict(keys, values):
         ret[key] = value
     return ret
 
+def get_int(prompt='Enter an integer: '):
+    """
+    Plagerized from "Python Projects" (2015)
+    by Laura Cassell and Alan Gauld (p22-23)
+    """
+    while True:
+        try:
+            n = int(input(prompt))
+            break
+        except ValueError:
+            print("Must enter an integer! Try again...")
+    return n
 
 
 """
@@ -1210,11 +1222,18 @@ proto_menu = {
 
 def choose_and_run(proto_menu,
             report=None,
-            header=f"Choose 0..{len(proto_menu)}:",
+           header=f"Choose 0..{len(proto_menu)}:",
             prompt="Choice: "):
-    if report:
+    """
+    <proto_menu> must be a dict:
+        keys==choices
+        values==functions
+    <report> if provided must be a list (of strings)
+    <header> & <prompt>: self explanatory
+    """
+    if isinstance(report, list):
         report.append(
-            "Presenting (helpers.choose_and_run) a menu..")
+            "Using helpers.choose_and_run to present a menu..")
     names = [name for name in proto_menu.keys()]
     menu = get_menu_dict(names)
     while True:

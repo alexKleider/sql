@@ -120,6 +120,10 @@ INSERT INTO Table
 VALUES
 (<values>);
 
+/* if no search condition, deletes all rows in the table!!
+DELETE FROM table
+WHERE search_condition;
+
 https://www.sqlitetutorial.net/sqlite-update/
 UPDATE table
 SET column_1 = new_value_1,

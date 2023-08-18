@@ -6,6 +6,15 @@
 Prototyping a status_change_cmd
     update_status  {  the two choices
     add_status     {  under development
+Notes:
+    application comes in
+        +/- application fee
+    1st meeting
+    2nd meeting
+    3rd meeting
+    approval 
+    dues
+    am => m (one year later)
 """
 
 from code import helpers
