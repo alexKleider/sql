@@ -223,8 +223,9 @@ def get_person_fields_by_ID(personID, fields=None):
     """
     Select values of the <fields> columns from the People table
     for the personID specified.
-    Returns a dict keyed by names of fields _if_ <fields> is
-    provided, _otherwise_ returns a tuple of all fields.
+    Returns a dict keyed by names of fields
+    `_if_ <fields> is provided (as an iterable,)
+     _otherwise_ returns a tuple of all fields.
     """
 #   _ = input("Entering code/routines.get_person_fields_by_ID")
     query = """SELECT {{}} FROM People

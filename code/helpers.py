@@ -441,7 +441,8 @@ def save_db(new_db, outfile, key_list, report=None):
     """
     Saves data in <new_db> (a list of dicts) onto a csv file
     <outfile> with the keys specified by <key_list>.
-    Report of data being sent to a file can be augmented by <report>.
+    If <report> is specified, it must be a list of strings to 
+    which progress report is appended.
     """
     with open(outfile, 'w', newline='') as file_obj:
         writer = csv.DictWriter(file_obj,
@@ -455,12 +456,10 @@ def save_db(new_db, outfile, key_list, report=None):
 #                   in record.items()]:
 #               print(line)
             writer.writerow(record)
-        if not report:
-            report = ''
-        else:
-            report = ' ({})'.format(report)
-        print("Data{} sent to file '{}'."
-              .format(report, file_obj.name))
+        alert = f"Data being sent to {file_obj.name}."
+        if isinstance(report, list):
+            report.append(alert)
+        print(alert)
 
 
 def check_sets(s1, s2,

@@ -116,6 +116,7 @@ def under1yr_cmd():
 def still_owing_cmd():
     """
     """
+    output_file_name = "Secret/owing.csv"
     collector = []
     ret = ["Still owing csv being generated...", ]
     with open("Sql/memberIDs_f.sql", 'r') as stream:
@@ -135,8 +136,10 @@ def still_owing_cmd():
     fieldnames = (
         "ID, first, last, total, dues, dock, kayak, mooring"
                                                 .split(', '))
-    csv_name = input("Name of csv file (owing.csv is default): ")
-    if not csv_name: csv_name = "owing.csv"
+    print(f"Default output file is {output_file_name}")
+    csv_name = input(
+        "Enter a different name or leave blank for defauld: ")
+    if not csv_name: csv_name = output_file_name
     with open(csv_name, 'w', newline='') as stream:
         writer = csv.DictWriter(stream, fieldnames=fieldnames)
         writer.writeheader()
@@ -1170,39 +1173,51 @@ def welcome_new_member_cmd():
     return ret
 
 def receipts_cmd():
+    """
+    Create a csv file showing all receipts.
+    Default file name is "Secret/receipts.csv"
+    Presentation is in chronologic order
+    unless user chooses presentation by name.
+    """
+    def s(d):
+        names = d['personID'].split()
+        name = names[1:]
+        name.append(names[0])
+        return ''.join(name)
+
+    ret = ['Running receipts_cmd...', ]
+    print(ret[0])
+    file_name = "Secret/receipts.csv"
     list_of_dicts = []
     fields = ("personID date_received dues dock kayak "
             + "mooring acknowledged ap_fee")
     keys = fields.split()
     fields = ', '.join(keys)
     query = (f"SELECT {fields}  FROM Receipts;")
-#   ret.append(query)
-    report = [f"Receipts for {helpers.this_year} ...", 
-        ("Name   payment date, fees, dock, kayak, " +
-        "mooring,  date acknowledged, ap_fee"),
-            ]
+    ret.append("query is ...")
+    ret.append(query)
     for res in routines.fetch(query, from_file=False):
         data = {}
         for n in range(len(keys)):
             data[keys[n]] = res[n]
         names = routines.get_person_fields_by_ID(
                     data['personID'],
-                    fields = ("first last suffix".split())  )
+                    ('first', 'last', 'suffix', ))
 #       _ = input(repr(names))
         data['personID'] = "{first} {last}{suffix}".format(**names)
-        line = ''.join((
-                "{personID:<17} {date_received:>10} {dues:>5},",
-                "{dock:>5}, {kayak:>5}, {mooring:>5},",
-                " {ap_fee}, {acknowledged:>10}", ))
-        line = line.format(**data)
-        report.append(line)
         list_of_dicts.append(data)
+    print(f"Default file name is {file_name}")
     response = input(
-        "Create csv file? (enter a name or leave blank)... ")
+        "Enter a different name or leave blank for default... ")
     if response:
-        helpers.save_db(list_of_dicts, response, data.keys(),
-                report="receipts")
-    return report
+        file_name = response
+    print("Default is chronologic order.")
+    response = input(
+            "Would you prefer ordering by name? (y/n) ")
+    if response and response[0] in 'yY':
+        list_of_dicts.sort(key=s)
+    helpers.save_db(list_of_dicts, file_name, data.keys(),
+                report=res)
 
 
 def payment_entry_cmd():
