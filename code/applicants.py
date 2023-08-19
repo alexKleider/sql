@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # File: applicants.py
-#      initially called add.py
 
 import sys
 import json

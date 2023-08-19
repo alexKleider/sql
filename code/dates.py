@@ -16,9 +16,6 @@ Applicants: app_rcvd, fee_rcvd, meeting1,2,3,
 It presents a menu reflected in the <options> listing.
 Option 4: the <receipts_cmd> is currently the only one
 implemented.
-
-Temporarily allow use of send_acknowledgement as a command
-so it can be tested separately....
 """
 
 import os
@@ -67,6 +64,7 @@ def add_applicant_date():
 def applicants_cmd():
     """
     Applicant related code is in code.applicants module
+    Specifically: code/applicants.applicant_data_entry
     """
     ret = ["Applicant data entry still under development",
            "in code.applicants module..", ]
@@ -92,17 +90,12 @@ def person_status_cmd():
     return ret
 
 
-def amt_paid(text):
-    """Always returns an int: zero if text is blank."""
-    if not text:
-        return 0
-    return int(text)
-
 def confirm_receipts_query(data, report=None):
     """
     If confirmed: creates a receipts entry and returns True,
     else returns None.
     If report is a list, enteries are made.
+    Used by add_receipt_entry
     """
     expected_keys = ("personID", "date_received", "dues",
             "dock", "kayak", "mooring", "acknowledged", )
@@ -202,6 +195,8 @@ def add_receipt_entry(holder, ret):
     Returns a negative integer: -12 if no more receipts to enter;
     -1 if unable to establish a personID; -2 abort current entry
     Returns data pertaining to entry made (which isn't used?)
+    Client of confirm_receipts_query
+    Used by receipts_cmd
     """
     while True:
         # Continue until get it right or quit...
@@ -255,11 +250,11 @@ def add_receipt_entry(holder, ret):
                     "Enter date received (YYYYMMDD): ")
         while True:
             abort = False
-            dues = amt_paid(input("Dues: "))
-            dock = amt_paid(input("Dock usage: "))
-            kayak = amt_paid(input("Kayak storage: "))
-            mooring = amt_paid(input("Mooring fee: "))
-            total = amt_paid(input("Total payment: "))
+            dues = helpers.get_int(prompt="Dues: ")
+            dock = helpers.get_int(prompt="Dock usage: ")
+            kayak = helpers.get_int(prompt="Kayak storage: ")
+            mooring = helpers.get_int(prompt="Mooring fee: ")
+            total = helpers.get_int(prompt="Total payment: ")
             if dues + dock + kayak + mooring != total:
                 print("Totals don't match; try again!")
                 continue
@@ -331,6 +326,7 @@ def receipts_cmd():
     <add_receipt_entry> needs holder as a param and also
     takes an optional param which, if provided,
     must be a list to which progress notes are added.
+    Uses add_receipt_entry
     """
     ret = ["Entering receipts_cmd()", ]
     holder = club.Holder()
@@ -380,8 +376,6 @@ def date_entry_cmd():
     elif choice == 2: ret.extend(attrition_cmd())
     elif choice == 3: ret.extend(person_status_cmd())
     elif choice == 4: ret.extend(receipts_cmd())
-    elif choice == 5: ret.extend(file_acknowledgement())
-    # send_acknowledgement is temporary- 2b deleted eventually
 
     return ret
 

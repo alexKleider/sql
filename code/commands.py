@@ -428,6 +428,9 @@ def create_member_csv_cmd():
 
 
 def show_members():
+    """
+    Returns a list of strings.
+    """
     res = member_listing()
     n = len(res)
 #   _ = input(f"Number of members: {n}\n")
@@ -624,11 +627,21 @@ ORDER BY P.last, P.first, P.suffix
 
 
 def show_cmd():
+    """
+    Returns a list of strings.
+    by default ==> '4web.txt'
+    """
+    outfile = "4web.txt"
     applicant_header = 'Applicants'
     ret = show_members()
     ret.extend(('', '', applicant_header,
         '='*len(applicant_header), ))
     ret.extend(show_applicants())
+    yn = input("Send to file? (y/n): ")
+    if yn and yn[0] in 'yY':
+        outfile = helpers.choose_file_name(default="4web.txt")
+        with open(outfile, 'w') as stream:
+            stream.write("\n".join(ret))
     return ret
 
 

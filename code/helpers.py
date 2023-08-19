@@ -1189,18 +1189,36 @@ def make_dict(keys, values):
         ret[key] = value
     return ret
 
-def get_int(prompt='Enter an integer: '):
+def get_int(prompt='Enter an integer: ',
+        blank=True):
     """
     Plagerized from "Python Projects" (2015)
     by Laura Cassell and Alan Gauld (p22-23)
+    with modification (to accept empty string => 0)
+    If <blank> empty string entry returns zero.
     """
     while True:
+        n = input(prompt)
+        if blank and not n:
+            return 0
         try:
-            n = int(input(prompt))
+            n = int(n)
             break
         except ValueError:
             print("Must enter an integer! Try again...")
     return n
+
+def choose_file_name(default=None):
+    """
+    """
+    if default:
+        print(f"Default file name is {default})")
+        outfile = input("Enter file name (or blank for default): ")
+        if not outfile:
+            outfile = default
+    else:
+        outfile = input("Enter file name: ")
+    return outfile
 
 
 """
