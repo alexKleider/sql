@@ -16,3 +16,8 @@ DELETE FROM Dock_Privileges WHERE personID in ({resuls of above});
 
 Mechanism to enter application fee into receipts
 
+applicant updates involve the following tables:
+    Applicants
+    Person_Status
+
+Check Applicants:fee_rcvd field in owing cmd

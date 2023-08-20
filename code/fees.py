@@ -33,11 +33,11 @@ def get_dues(owing_only=True, report=None):
         ON P.personID = PS.personID
         JOIN Stati as St
         ON St.statusID = PS.statusID
-        WHERE St.statusID in (11, 15)
-        AND PS.end < {}
-        -- must format: use code.helpers.sixdigitdate
+        WHERE St.statusID in (8, 11, 15)
+        AND (PS.end = '' OR PS.end > {})
+        -- must format: use code.helpers.eightdigitdate
         ORDER BY P.last, P.first, P.suffix ; """
-    query = query.format(helpers.sixdigitdate)
+    query = query.format(helpers.eightdigitdate)
     if not report==None:
         if owing_only:
             report.append("getting dues still owing")
@@ -47,7 +47,7 @@ def get_dues(owing_only=True, report=None):
     res = routines.fetch(query, from_file=False)
     dict_listing = []
     for item in res: 
-        record = routines.make_dict(
+        record = helpers.make_dict(
                 selection.split(', '), item)
         if not owing_only or record["dues_owed"] != 0:
             dict_listing.append(record)
@@ -70,7 +70,7 @@ def get_dock(owing_only=True, report=None):
     res = routines.fetch(query, from_file=False)
     dict_listing = []
     for item in res:
-        record = routines.make_dict(
+        record = helpers.make_dict(
                 selection.split(', '), item)
         if not owing_only or record["cost"] != 0:
             dict_listing.append(record)
@@ -94,7 +94,7 @@ def get_kayak(owing_only=True, report=None):
     res = routines.fetch(query, from_file=False)
     dict_listing = []
     for item in res:
-        record = routines.make_dict(
+        record = helpers.make_dict(
                 selection.split(', '), item)
         if not owing_only or record['slot_cost'] != 0:
             dict_listing.append(record)
@@ -113,7 +113,7 @@ def get_mooring(owing_only=True, report=None):
     res = routines.fetch("Sql/mooring2.sql")
     dict_listing = []
     for item in res: 
-        record = routines.make_dict(
+        record = helpers.make_dict(
                 selection.split(', '), item)
         if not owing_only or record["owing"] != 0:
             dict_listing.append(record)
@@ -121,6 +121,9 @@ def get_mooring(owing_only=True, report=None):
 
 
 def owing_csv_cmd():
+    """
+    overlap with code.commands.still_owing_cmd
+    """
     report = ["Creating csv file(s); owing_csv_cmd", ]
     yn = input("Owing only (the default)? (y/n) ")
     if ((not yn) or (yn[0] in 'yY')): owing_only = True
@@ -131,7 +134,7 @@ def owing_csv_cmd():
     while True:
         print("=====================")
         message = ''
-        choice = routines.get_menu_response(tables,
+        choice = helpers.get_menu_response(tables,
                 header="Choose one of the following",
                 incl0Q=True)
         if choice == 0: break
