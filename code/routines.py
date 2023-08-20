@@ -552,10 +552,11 @@ def ret_statement(personID, incl0=True):
     total = 0
     entry = False
     for key in source_files.keys():
-        query = import_query(source_files[key]
-                            ).format(helpers.eightdigitdate)
-        res = fetch(query.format(personID), from_file=False)
-#       if personID == 179:
+        query = import_query(source_files[key])
+        query = query.format(helpers.eightdigitdate)
+        query = query.format(personID)
+        res = fetch(query, from_file=False)
+#       if personID == 171:   # 2Delete 2lines
 #           _ = input(res)
         if res:
             amnt = res[0][0]
@@ -606,6 +607,9 @@ def get_statement(data, include_header=True):
     if include_header: owing = ["Currently owing:", ]
     else: owing = []
     keys = set(data.keys())
+#   for key, value in data.items():   # 2delete 3lines
+#       print(f"{key}: {value}")
+#   _ = input('Check the above for a "dues" key')
     owing.append(    f"  Dues owing..... {data['dues']:>3}")
     if "dock" in keys:
         owing.append(f"  Dock usage..... {data['dock']:>3}")

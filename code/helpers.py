@@ -120,7 +120,7 @@ def check_dir_exists(directory, create=True):
     if os.path.exists(directory):
         # check that it is a directory
         if os.path.isdir(directory):
-            print(f"Directory {directory} esists.")
+            print(f"Directory {directory} exists.")
             # report if it's empty or contains file(s)
     else:  # no such file:
         yn = input(

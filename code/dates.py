@@ -182,11 +182,10 @@ def get_demographic_dict(personID):
     return helpers.make_dict(key_listing, res[0])
 
     
-def add_receipt_entry(holder, ret):
+def add_receipt_entry(holder, report=None):
     """
     Deal with a payment:
-    <ret> is either an existing array of strings for reporting
-    (which isn't used!) or None to signal no entry to make.
+    <report> can be an existing array of strings for reporting.
 
     Each receipt is acknowledged by an email &/or letter.
     Letters go into holder.mail_dir and
@@ -286,13 +285,16 @@ def add_receipt_entry(holder, ret):
             data["acknowledged"] = input(
                     "Enter date acknowledged (YYYYMMDD): ")
         #3# receipt recorded (if confirmed)
-        if confirm_receipts_query(data, ret):
-            ret.extend(multiple.credit_accounts(data))
-            ret.extend(file_acknowledgement(holder, data))
+        rep = []
+        if confirm_receipts_query(data, report):
+            rep.extend(multiple.credit_accounts(data))
+            rep.extend(file_acknowledgement(holder, data))
             holder.entries += 1
         else:
-            ret.extend("Receipt entry aborted.")
+            rep.extend("Receipt entry aborted.")
             print(ret[-1])
+        if isinstance(report, list):
+            report.extend(rep)
     return data
 
 
