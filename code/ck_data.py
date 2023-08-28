@@ -118,6 +118,18 @@ queries['Outer Basin_Moorers -2023'] = """
             """
 '''
 
+dock_query = """SELECT P.first, P.last, P.suffix
+            FROM people as P
+            JOIN Dock_Privileges as DP
+            WHERE P.personID = DP.personID
+            ;"""
+mooring_query = """SELECT P.first, P.last, P.suffix
+            FROM people as P
+            JOIN Moorings as M
+            WHERE P.personID = M.personID
+                AND NOT P.email = ''
+            ;"""
+
 
 
 def get_gmail_record(g_rec):
@@ -378,6 +390,7 @@ def display_google_contact_data():
 def ck_labels():
     """
     """
+    report = []
     keys = "first, last, suffix".split(', ')
     report = []
     holder = club.Holder()
@@ -387,7 +400,7 @@ def ck_labels():
 #   print(holder.g_by_group['applicant'])
 #   print(holder.g_by_group['inactive'])
     for label in labels:
-        print(f"Dealing with: {label}")
+#       print(f"Dealing with: {label}")
         category_lst = []
         res = routines.fetch(queries[label],from_file=False)
         for item in res:
@@ -398,7 +411,7 @@ def ck_labels():
             category_lst.append(f"{d['last']},{d['first']}")
         category_set = set(category_lst)
         if len(category_set) != len(category_lst):
-            print(f"""
+            report.append(f"""
 Error condition regarding {label}:
     set:  {category_set}
     should be the same length as
@@ -417,16 +430,48 @@ Error condition regarding {label}:
                     category_set)
             _ = input(f"{dif}")
         else:
-            print(f"Labels match stati for {label}")
+            report.append(f"Labels match stati for {label}")
+    return report
 
-    pass
+def mooring_dock():
+    """
+    Ensure that no one is charged for both mooring & dock usage.
+    """
+    report = []
+    keys = "first, last, suffix".split(', ')
+    mooring = routines.fetch(mooring_query,from_file=False)
+    dock = routines.fetch(dock_query,from_file=False)
+    for res in [mooring, dock]:
+        listing = []
+        for item in res:
+            d = helpers.make_dict(keys, item)
+            if d['suffix']:
+                d['last'] = (d['last'] + '_' +
+                        d['suffix'].strip())
+            listing.append(f"{d['last']},{d['first']}")
+#       res = set(listing)
+#   print(f"{mooring}")
+#   print(f"{dock}")
+    empty = set(mooring) & set(dock)
+    if empty:
+        report.append(
+          "The following are common to both mooring and dock:")
+        report.append(empty)
+    else:
+        report.append("No mooring & dock overlap.")
+    return report
 
-
+def consistency_report():
+    report = []
+    report.extend(ck_labels())
+    report.extend(mooring_dock())
+    return report
 
 
 if __name__ == '__main__':
 #   display_google_contact_data()
-    ck_labels()
+    for line in consistency_report(): 
+        print(line)
     pass
 
 
