@@ -12,18 +12,23 @@ It provides the <Holder> class which serves largely to keep
 track of global values.  Only one instance at a time.
 """
 
+import os.path as ospath
+
 ROOT = "/home/alex/Git/Sql/"
-DB = ROOT + "Secret/club.db"
-db_file_name = ROOT + "Secret/club.db"
-temp_db = ROOT + "Secret/temp.db"   # "/home/alex/Git/Sql/Secret/club.db"
+DB = ospath.join(ROOT, "Secret/club.db")
+db_file_name = ospath.join(ROOT, "Secret/club.db")
+temp_db = ospath.join(ROOT, "Secret/temp.db")   # "/home/alex/Git/Sql/Secret/club.db"
 ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
-MAIL_DIR = ROOT + 'Secret/MailDir'
-EMAIL_JSON = ROOT + 'Secret/emails.json'
+MAIL_DIR = ospath.join(ROOT, 'Secret/MailDir')
+EMAIL_JSON = ospath.join(ROOT, 'Secret/emails.json')
+CONTACTS_FILE = ospath.join(ROOT, "Secret/contacts.csv")
+# The above assumes one has 'exported' gmail contacts and moved
+# them to the 'Secret' directory.
 
 # the following were only for creation of DB
-dock_file = ROOT + "Secret/dock_list.txt"
-kayak_file = ROOT + "Secret/kayak_list.txt"
-mooring_file = ROOT + "Secret/mooring_list.txt"
+dock_file = ospath.join(ROOT, "Secret/dock_list.txt")
+kayak_file = ospath.join(ROOT, "Secret/kayak_list.txt")
+mooring_file = ospath.join(ROOT, "Secret/mooring_list.txt")
 
 
 class Holder(object):
@@ -33,6 +38,7 @@ class Holder(object):
     db_file_name = db_file_name
     mail_dir = MAIL_DIR
     email_json = EMAIL_JSON
+    contacts_spot = CONTACTS_FILE
     direct2json_file = False  # receipts_cmd sets it to True
     include0 = True  # include 0 balances
             # set to False if want only still owed amounts

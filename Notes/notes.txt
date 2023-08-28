@@ -1,3 +1,4 @@
+# File: ~/Git/Sql/Notes/notes.txt
 
 Natural-SQL Language Bridge:
 1. what data base?

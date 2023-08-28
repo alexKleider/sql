@@ -1,0 +1,26 @@
+
+
+
+
+
+        # File: ~/Sql/Notes/goto
+
+        SELECT FROM Table
+            GROUP BY
+            ORDER BY
+        INSERT INTO Table (...) VALUES (...);
+        UPDATE Table SET ..=.., .... WHERE ....
+        DELETE FROM Table WHERE ..=..  --use SELECT first to be sure!
+
+        Clauses
+        =======
+        WHERE (always after FROM but before ORDER BY)
+        ORDER BY fieldName ASC/DESC
+        LIMIT xx
+
+        Operators    ('BETWEEN' operator is inclusive)
+        =========    ('LIKE': use % wild card)
+        Comparison  Logical     Arithmetic
+        ----------  -------     ----------
+        =, >, <,    BETWEEN    +, -, /, *, %
+        >=, <=, <>  IN, LIKE    

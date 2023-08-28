@@ -1,3 +1,4 @@
+# File: ~/Git/Sql/Notes/commands
 
     https://www.sqlitetutorial.net/sqlite-commands/
 
@@ -70,7 +71,7 @@ head columns of the index are not specified in the search.
 SELECT FROM Table
     GROUP BY
     ORDER BY
-INSERT INTO Table ... VALUES ...
+INSERT INTO Table (...) VALUES (...);
 UPDATE Table SET ..=.., .... WHERE ....
 DELETE FROM Table WHERE ..=..  --use SELECT first to be sure!
 

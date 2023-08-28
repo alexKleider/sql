@@ -383,6 +383,8 @@ def join_email_listings(*args):
     Returned is a single string of "," separated emails
     with no duplicates suitable for placement into a 'cc'
     (or 'bcc') listing.
+    NOTE: this is specific and should probably be moved
+    to routines.py rather than be kept here.
     """
     res = []
     for arg in args:
@@ -631,6 +633,43 @@ def show_dict(d, extra_line=True, ordered=True, debug=False):
             lines.append("{}: {}".format(key, value))
     return lines
 
+def get_fieldnames(csv_file: "name of csv file", report=True
+        ) -> "list of the csv file's field names":
+    """
+    Returns the field names of the csv file named.
+    """
+    with open(csv_file, 'r', newline='') as file_object:
+        if report:
+            print('DictReading file "{}"...'
+                    .format(file_object.name))
+        dict_reader = csv.DictReader(file_object, restkey='extra')
+        return dict_reader.fieldnames
+
+
+def dump2csv_file(list_of_dicts, file_name="new_csv.csv"):
+    """
+
+    """
+    if not len(list_of_dicts) > 0:
+        print("Nothing to store (code/helpers.dump2csv_file).")
+        return
+    else:
+        keys = [key for key in list_of_dicts[0].keys()]
+    with open(file_name, 'w', newline='') as outf:
+        writer = csv.DictWriter(outf, fieldnames=keys)
+        writer.writeheader()
+        for d in list_of_dicts:
+            writer.writerow(d)
+
+
+def store(collector, filename):
+    """
+    Sends contents of <collector> (json format) to <filename>.
+    """
+    with open(filename, 'w') as stream:
+        stream.write('\n'.join(show_json_data(collector)))
+        print(f'Data written to {filename}')
+
 
 def show_json_data(json_data, underlinechar=''):
     """
@@ -661,30 +700,6 @@ def show_json_data(json_data, underlinechar=''):
 
     collect(json_data, indent=indent, collector=collector)
     return collector
-
-def dump2csv_file(list_of_dicts, file_name="new_csv.csv"):
-    """
-
-    """
-    if not len(list_of_dicts) > 0:
-        print("Nothing to store (code/helpers.dump2csv_file).")
-        return
-    else:
-        keys = [key for key in list_of_dicts[0].keys()]
-    with open(file_name, 'w', newline='') as outf:
-        writer = csv.DictWriter(outf, fieldnames=keys)
-        writer.writeheader()
-        for d in list_of_dicts:
-            writer.writerow(d)
-
-
-def store(collector, filename):
-    """
-    Sends contents of <collector> (json format) to <filename>.
-    """
-    with open(filename, 'w') as stream:
-        stream.write('\n'.join(show_json_data(collector)))
-        print(f'Data written to {filename}')
 
 
 def dump2json_file(data, json_file, verbose=True):

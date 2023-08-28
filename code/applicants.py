@@ -14,11 +14,25 @@ except ImportError: import helpers
 """
 File for development of code to deal with applicants:
 - register new applicant(s)
+    - insert into People table
+    - insert into Applicant table
+    - if fee received:
+        - enter into receipts table
+        - email acknowledgement of application and fee
+    -else:
+        - email acknowledgement of application and fee required
+        - enter application fee into receipts table
+- enter receipt of application fee if not at time of application
 - enter each meeting when it occurs.
+    -
 - deal with "expired" application when appropriate.
-- possibly deal with making applicant into a member.
+    -
+- deal with making applicant into a member.
+    -acknowledge dues payment
+    -change status from 
 - possibly move member from 1st year member to member in good
 standing.
+    -
 """
 
 

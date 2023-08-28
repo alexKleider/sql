@@ -115,6 +115,7 @@ def under1yr_cmd():
 
 def still_owing_cmd():
     """
+    Note: suffix is appended to last if it exists.
     """
     output_file_name = "Secret/owing.csv"
     collector = []
@@ -127,7 +128,7 @@ def still_owing_cmd():
     res = routines.fetch(query, from_file=False)
     for entry in res:
         data = routines.ret_statement(entry[0])
-        if data['total'] == 0:
+        if data['total'] <= 0:
             continue
         data['ID'] = entry[0]
         data['first'] = entry[1]
@@ -439,6 +440,7 @@ def show_members():
 THE TELEPHONE NUMBERS, ADDRESSES AND EMAIL ADDRESSES OF THE BOLINAS ROD &
 BOAT CLUB MEMBERSHIP CONTAINED HEREIN ARE NOT TO BE REPRODUCED OR DISTRIBUTED
 FOR ANY PURPOSE WITHOUT THE EXPRESS PERMISSION OF THE BOARD OF THE BRBC.
+(Last update: {helpers.date})
 
 There are currently {n} members in good standing:
 """, ]

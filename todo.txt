@@ -21,3 +21,11 @@ applicant updates involve the following tables:
     Person_Status
 
 Check Applicants:fee_rcvd field in owing cmd
+
+
+When a member dies:
+    remove them from Google contacts
+    change their phone, address, and email fields to ''.
+    edit Person_Status Table:
+        add end field to statusID 15 entry
+        add entry with statusID 27
