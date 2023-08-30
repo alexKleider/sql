@@ -561,7 +561,7 @@ def ret_statement(personID, incl0=True):
         if res:
             amnt = res[0][0]
             if len(res)>1:
-                assert(False)
+                assert(False), 'Error in routines.ret_statement.'
             ret[key] = amnt
             total += amnt
             entry = True

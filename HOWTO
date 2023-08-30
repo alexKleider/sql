@@ -1,0 +1,8 @@
+# File: HOWTO
+
+The ERD.txt file outlines the sql data base schema
+(which has changed from time to time and may continue
+to do so. For this reason the file can be updated 
+using the erd.py code.)
+
+

@@ -10,7 +10,11 @@ JOIN Person_Status as PS
 ON P.personID = PS.personID
 JOIN Stati as S
 ON PS.statusID = S.statusID
-WHERE PS.statusID = 15  
-AND NOT PS.begin < '{}'
-AND (PS.end = '' OR PS.end > '{}')
+WHERE 
+    (PS.statusID = 15
+    AND NOT PS.begin < '{}'
+    AND (PS.end = '' OR PS.end > '{}'))
+OR
+    (PS.statusID = 11
+        AND NOT PS.begin < '{}' )
 ;

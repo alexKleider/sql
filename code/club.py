@@ -22,6 +22,7 @@ ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 MAIL_DIR = ospath.join(ROOT, 'Secret/MailDir')
 EMAIL_JSON = ospath.join(ROOT, 'Secret/emails.json')
 CONTACTS_FILE = ospath.join(ROOT, "Secret/contacts.csv")
+LAST_REVIEW_DATE = ospath.join(ROOT, "Secret/last_review.date")
 # The above assumes one has 'exported' gmail contacts and moved
 # them to the 'Secret' directory.
 

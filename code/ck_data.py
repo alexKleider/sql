@@ -217,7 +217,8 @@ def get_dict(source_file, sep=":", maxsplit=1):
             line = line.strip()
             if not line or line[0] == '#': continue
             parts = line.split(sep=sep, maxsplit=maxsplit)
-            if len(parts) != 2: assert False
+            if len(parts) != 2:
+                assert False, "Error in code/ck_data."
             names = parts[0].split()
             try:
                 name_key = '{},{}'.format(names[1], names[0])
@@ -364,7 +365,7 @@ def applicant_set():
             d['last'] = d['last'] + '_' + d['suffix'].strip()
         applicants.append(f"{d['last']},{d['first']}")
     app_set = set(applicants)
-    assert(len(app_set) == len(applicants))
+    assert(len(app_set) == len(applicants)), 'Error in ck_data.applicant_set'
     return app_set
     for entry in applicants:
         print(entry)

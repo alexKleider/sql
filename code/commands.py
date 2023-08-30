@@ -56,6 +56,7 @@ Choose one of the following:
  22. Occupied moorings csv     23. All moorings csv
  24. Still owing csv           25. Membership < 1 year
  26. Fees (owing or not) csv   27. Enter applicant data
+ 28. Show stati
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show_cmd
@@ -86,6 +87,7 @@ Choose one of the following:
         elif choice == '26': return fees.owing_csv_cmd
         elif choice == '27':
             return applicants.applicant_data_entry_cmd
+        elif choice == '28': return show_stati_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -95,11 +97,16 @@ def not_implemented():
     return ["Not implemented", ]
 
 def under1yr_cmd():
+    under1yr_file_name = "Secret/under1yr.csv"
+    text = ["Members of <1 Year",
+                ]
+    text.append("=" * len(text[0]))
     ret = [
         "Creating list of members who's tenure is < 1 year...", ]
     query = routines.import_query("Sql/under1yr_ff.sql").format(
             int(helpers.eightdigitdate)-10000,
-            helpers.eightdigitdate)
+            helpers.eightdigitdate,
+            int(helpers.eightdigitdate)-10000)
     keys = (("personID, first, last, " +
             "suffix, text, begin, end").split(', '))
     ret.append("Query is :")
@@ -110,6 +117,15 @@ def under1yr_cmd():
         ret.append(repr(entry))
     for datum in data:
         ret.append(repr(datum))
+        text.append(repr(datum))
+    ret.append("Listing of members <1yr being sent to " +
+           f"{under1yr_file_name}")
+    print(ret[-1])
+    with open(under1yr_file_name, 'w', newline='') as outf:
+        writer = csv.DictWriter(outf, fieldnames=keys)
+        writer.writeheader()
+        for entry in data:
+            writer.writerow(entry)
     return ret
 
 
@@ -719,6 +735,12 @@ ORDER BY
         ['',
          'PS Zoom ID: 527 109 8273; Password: 999620',
         ])
+    print("Do you wish to create a file?...")
+    filename = input(
+        "Enter a file name (or blank for no file:) ")
+    if filename:
+        with open(filename, 'w') as outf:
+            outf.write('\n'.join(report))
     return report
 
 
@@ -1243,6 +1265,23 @@ def payment_entry_cmd():
     ret.append('For payment entry use 12. Data Entry (Dates)')
     print(ret[0])
     return(ret)
+
+def show_stati_cmd():
+    """
+    Creates a csv file showing the possible stati.
+    """
+    outfile = "stati_listed.csv"
+    ret = ["Entering show_stati_cmd...", ]
+    keys = routines.get_keys_from_schema("Stati")
+    query = "SELECT * FROM Stati;"
+    res = routines.fetch(query, from_file=False)
+    with open(outfile, 'w', newline='') as outf:
+        writer = csv.DictWriter(outf, fieldnames=keys)
+        writer.writeheader()
+        for entry in res:
+            writer.writerow(helpers.make_dict(keys, entry))
+    ret.append(f"... data written to {outfile}.")
+    return ret
 
 
 if __name__ == "__main__":

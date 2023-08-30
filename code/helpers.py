@@ -495,7 +495,7 @@ def format_dollar_value(value):
     elif value < 0:
         return "-${:,.2f}".format(abs(value))
     else:
-        assert False
+        assert False, "Error in code.helpers.format_dollar_value."
 
 
 def indent(text, n_spaces):
@@ -505,7 +505,7 @@ def indent(text, n_spaces):
     or one string ('lines' terminated by linefeeds.)
     In either case, returns a string.
     """
-    assert type(n_spaces) == int
+    assert type(n_spaces) == int, "Error in code.helpers.indent."
     indentation = ' ' * n_spaces
     if isinstance(text, str):
 #       print("String found")
@@ -518,7 +518,7 @@ def indent(text, n_spaces):
         return '\n'.join([indentation + line for line in text])
     else:
         print("helpers.indent(): Should NOT get here!")
-        assert(False)
+        assert(False), "Error in code.helpers.indent."
 
 
 def expand_array(content, n):
@@ -530,7 +530,7 @@ def expand_array(content, n):
     if len(content) > n:
         print("ERROR: too many lines in <content>")
         print("    parameter of helpers.expand_array()!")
-        assert False
+        assert False, "Error in code.helpers.expand_array."
     a = [item for item in content]
     while n > len(a):
         if n - len(a) >= 2:
@@ -1134,8 +1134,8 @@ Bolinas, CA 94924""",
             print(repr(indented[n+1]))
             print("----")
     """
-    assert(indented[0] == indented[1])
-    assert(indented[1] == indented[2])
+    assert(indented[0] == indented[1]), "Error in code.helpers.main."
+    assert(indented[1] == indented[2]), "Error in code.helpers.main."
 
 
 def test_show_json_data():
@@ -1198,19 +1198,22 @@ def make_dict(keys, values):
     A dict is returned.
     Fails if lengths are not equal!
     """
-    assert len(keys) == len(values)
+    assert len(keys) == len(values), 'Error in helpers.make_dict.'
     ret = {}
     for key, value in zip(keys, values):
         ret[key] = value
     return ret
 
 def get_int(prompt='Enter an integer: ',
-        blank=True):
+        blank=True,
+        maxn=0):
     """
     Plagerized from "Python Projects" (2015)
     by Laura Cassell and Alan Gauld (p22-23)
-    with modification (to accept empty string => 0)
-    If <blank> empty string entry returns zero.
+    with modifications:
+        i. if <blank>, will accept empty string returning 0)
+       ii. if maxn is provided, it is the highest number accepted.
+      iii. will not accept a negative number
     """
     while True:
         n = input(prompt)
@@ -1218,9 +1221,16 @@ def get_int(prompt='Enter an integer: ',
             return 0
         try:
             n = int(n)
-            break
         except ValueError:
             print("Must enter an integer! Try again...")
+            continue
+        if n < 0:
+            print("Must enter an integer >= 0! Try again...")
+            continue
+        if maxn and n > maxn:
+            print(f"Integer must be <= {maxn}! Try again...")
+            continue
+        break
     return n
 
 def choose_file_name(default=None):

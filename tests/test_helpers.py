@@ -4,9 +4,16 @@
 
 import sys
 import os
+import unittest
 sys.path.insert(0, os.path.split(sys.path[0])[0])
 # print(sys.path)
 from code import helpers
+
+"""
+Only a tiny fraction of the code is tested.
+Suggested priority for writing test code:
+    helpers.get_int
+"""
 
 def main():
     data = {}

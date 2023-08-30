@@ -139,3 +139,21 @@ LIMIT row_count OFFSET offset;  --#
 # SQLITE_ENABLE_UPDATE_DELETE_LIMIT option in
 # order to perform UPDATE statement with optional
 # ORDER BY and LIMIT clauses.
+
+
+Walter Shields  SQL Quikck Start Guide
+
+Synonyms
+========
+Records,  Row,  Tuple
+Field,  Column,  Attribute
+Table,  Relation,  Base Relvar
+
+The following are both statements and queries:
+SELECT fields FROM table ORDER BY field;
+SELECT fields FROM table LIMIT n;
+
+Queries can contain >1 clauses
+each beginning with a key word:
+
+
