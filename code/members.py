@@ -170,8 +170,15 @@ def sponsor2email(holder, data, email_dic):
 #               _ = input(f"must [B]cc sponsors in {recipients}")
                 recipients = [item for item in recipients
                         if item != 'sponsors']
-                for sponsor in (data["sponsor1ID"], data["sponsor2ID"]):
+
+                for sponsor in (data["sponsor1ID"],
+                        data["sponsor2ID"]):
                     email_address = get_email(sponsor)
+
+#               for sponsor in [data["sponsor1"],
+#                       data["sponsor2"]]:
+#                   email_address = data[sponsor]['email']
+
                     if email_address:
                         recipients.append(email_address)
             email_dic[d[copy]] = ','.join(recipients)

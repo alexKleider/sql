@@ -548,7 +548,7 @@ def ret_statement(personID, incl0=True):
             'kayak': "Sql/kayak0_f_byID.sql",
             'mooring': "Sql/mooring0_f_byID.sql",
             }
-    ret = {}
+    ret = {"total": 0, }
     total = 0
     entry = False
     for key in source_files.keys():
@@ -566,7 +566,7 @@ def ret_statement(personID, incl0=True):
             total += amnt
             entry = True
     if entry: ret['total'] = total
-    return ret  # a possibly empty dict
+    return ret  # a dict possibly with only one (total) entry.
 
 def get_data4statement(personID):
     """
@@ -708,23 +708,26 @@ def assign_inductees4payment(holder):
     byID = dict()
     res = fetch('Sql/inducted.sql')
     keys = ("personID last first suffix phone address town state"
-    + " postal_code email sponsor1 sponsor2 begin end")
+    + " postal_code email sponsor1ID sponsor2ID begin end")
+    ## sponsor1 and sponsor2 are IDs!!
     keys = keys.split()
+    # Now get the sponsors...
     query = """SELECT last, first, suffix, email FROM People
             WHERE personID = {};"""  # returns a one entry list
     sponsor_keys = "last first suffix email"
-    for line in res:
-        data = make_dict(keys[1:],
-                line[1:])
+    for line in res:  # what's collected by Sql/inducted.sql
+        data = helpers.make_dict(keys[:],
+                line[:])
         data['cc'] = []
-        data['sponsor1'] = make_dict(sponsor_keys.split(),
-                fetch(query.format(data['sponsor1']),
+        data['sponsor1'] = helpers.make_dict(
+                sponsor_keys.split(),
+                fetch(query.format(data['sponsor1ID']),
                 from_file=False)[0])  # '[0]' is to get first
                                     # of a one entry list
         if data['sponsor1']['email']:
             data['cc'].append(data['sponsor1']['email'])
-        data['sponsor2'] = make_dict(sponsor_keys.split(),
-                fetch(query.format(data['sponsor2']),
+        data['sponsor2'] = helpers.make_dict(sponsor_keys.split(),
+                fetch(query.format(data['sponsor2ID']),
                 from_file=False)[0])
         if data['sponsor2']['email']:
             data['cc'].append(data['sponsor2']['email'])

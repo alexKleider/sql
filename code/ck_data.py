@@ -73,7 +73,7 @@ queries = dict(
             FROM people as P
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
-              AND PS.statusID IN (20, 21, 22, 23, 24, 25, 28)
+              AND PS.statusID IN (20, 21, 22, 23, 24, 25, 29)
               AND (PS.end = '' OR PS.end > {})
             ;""".format(helpers.eightdigitdate),
     secretary="""SELECT P.first, P.last, P.suffix

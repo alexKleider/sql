@@ -16,17 +16,20 @@ import sys
 import shutil
 import csv
 import json
+import time
 import datetime
 import functools
 import collections
 from pathlib import Path
 
+nowasint = int(time.time())
 date_template = "%b %d, %Y"
 date_w_wk_day_template = "%a, %b %d, %Y"
 date_year_template = "%y"
 today = datetime.datetime.today()
 # sixdigitdate = today.strftime("%y%m%d")
 eightdigitdate = today.strftime("%Y%m%d")
+timestamp = today.strftime("%Y-%m-%d_%H:%M")
 month = today.month
 this_year = today.year
 date = datetime.datetime.strptime(
@@ -1296,7 +1299,8 @@ def choose_and_run(proto_menu,
 
 
 if __name__ == "__main__":
-    choose_and_run(proto_menu)
+    print(timestamp)
+#   choose_and_run(proto_menu)
 #   test_present_listing4approval()
     print(get_os_release())
 #   print(f"sixdigitdate: {sixdigitdate}")
