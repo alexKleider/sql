@@ -40,6 +40,20 @@ def closeDB(database, cursor):
        raise
  
 
+def assure_only1response(listing):
+    """
+    <listing> is a query response
+    Stops execution if it contains more than one row.
+    Use when exactly one response is expected.
+    """
+    if len(listing) != 1:
+        print("listing contains 0 or > 1 item(s):")
+        for item in listing:
+            print(item)
+        print("Time to quit!")
+        sys.exit()
+
+
 def fetch(sql_source, db=db_file_name, params=None, data=None,
                     from_file=True, commit=False,
                     verbose=False):

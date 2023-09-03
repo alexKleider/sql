@@ -19,6 +19,7 @@ implemented.
 """
 
 import os
+import sys
  
 try: from code import club
 except ImportError: import club
@@ -53,12 +54,172 @@ options = (  # menu below main menu item 12. Data Entry (Dates)
 #   "Acknowledge",   # temporary to test letter preparation
     )
 
+    
+def add_date(data):
+    """
+    <data> a dict represention of an Applicants table row.
+    Provides user with oportunity to add a date to that row &
+    to update one entry and create another entry in the 
+    Person_Status table.
+    """
+    ret = ["'add_date' being called.", ]
+    keys = routines.get_keys_from_schema("Applicants")
+    statusIDbyApp_key = dict(zip(keys[3:10],
+                    [1, 3, 4, 5, 6, 8, 11]))
+#   _ = input(f"statusIDbyApp_key: {statusIDbyApp_key}")
+    query = """SELECT * from Applicants
+            WHERE personID = {}
+                AND notified = ''
+            ; """.format(data["personID"])
+    listing = routines.query2dict_listing(query, keys)
+    routines.assure_only1response(listing)
+    ap_data = listing[0]
+    # Find first empty date field and date in field before
+    # at the same time keeping track of both field names ...
+    lastkey = keys[3]
+    lastvalue = ap_data[keys[3]]
+    for key in keys[3:10]:
+        value = ap_data[key]
+        if not value:
+            begin = lastvalue
+            newkey = key
+            break
+        else:
+            lastkey = key
+            lastvalue = value
+    while True:
+        print("Enter an eight digit date to serve as")
+        print(f"an 'end' date for {lastkey} and")
+        date2enter = input(f"a 'begin' date for {key}: ")
+        if (len(date2enter) == 8) and date2enter.isdigit():
+            break
+    ret.append(f"added a 'date2enter' as follows: {date2enter}")
+    query2check = f"""SELECT * FROM Applicants 
+                WHERE personID = {data['personID']}
+                    AND notified = ''
+                ;"""
+    res = routines.fetch(query2check, from_file=False)
+    print(res[0])
+    response =  input("OK to update the above record? (y/n)...")
+    if not (response and response[0] in 'yY'):
+        ret.append("Terminating because of failure to confirm")
+        ret.append("desire to update the follwoing record:")
+        ret.append(f"{response}")
+        for line in ret[-3:]: print(line)
+        return ret
+    else:
+        ret.append("Updating the record...")
+#   print("variables currently in effect:")
+#   print(f"keys: {keys}")
+#   print(f"lastkey: {lastkey}")
+#   print(f"newkey: {newkey}")
+#   print(f"lastvalue: {lastvalue}")
+#   print(f"date2enter: {date2enter}")
+#   _ = input("Check out the above key/value pairs.")
+    query0 = f"""UPDATE Applicants
+                SET {newkey} = "{date2enter}"
+                WHERE personID = {data['personID']}
+                    AND {newkey} = ''
+                    AND notified = ''
+                ;"""
+    query1 = f"""UPDATE PersonStatus
+                SET end = "{date2enter}"
+                WHERE personID = {data['personID']}
+                    AND statusID = {statusIDbyApp_key[lastkey]}
+                    AND begin = "{lastvalue}"
+                    AND end = ''
+                ;"""
+    if newkey == 'dues_paid':
+        pass  # need to add an end date to query2
+              # and arrange query3
+        yr_later = (date2enter[:3] +
+                    str(int(date2enter[3]) + 1) +
+                    date2enter[4:])
+        print(f"yr_later calculated to be {yr_later}")
+        query2 = f"""INSERT INTO Person_Status
+                    (personID, statusID, begin, end)
+                    VALUES (
+                    {data["personID"]},
+                    {statusIDbyApp_key[newkey]},
+                    {date2enter},
+                    {yr_later}
+                    )
+                    ;"""
+        query3 = f"""INSERT INTO Person_Status
+                    (personID, statusID, begin)
+                    VALUES (
+                    {data["personID"]},
+                    15,
+                    {yr_later}
+                    )
+                    ;"""
+        n = 4
+    else:
+        query2 = f"""INSERT INTO Person_Status
+                    (personID, statusID, begin)
+                    VALUES (
+                    {data["personID"]},
+                    {statusIDbyApp_key[newkey]},
+                    {date2enter}
+                    )
+                    ;"""
+        query3 = ''
+        n = 3
+    print(f"Query 0: {query0}")
+    print(f"Query 1: {query1}")
+    print(f"Query 2: {query2}")
+    if query3:
+        print(f"Query 3: {query3}")
+    response = input(
+        f"Ok to go ahead with above {n} queries? ")
+    if response and response[0] in 'yY':
+        ret.append("Authorized to run commit queries!")
+        print(ret[-1])
+        print(f"Here's where we'd execute the {n} queries...")
+        for query in (query0, query1, query2, query3):
+            if query:
+#               routines.fetch(query,
+#                       from_file=False, commit=True)
+                ret.append("Executed a commit query!")
+        return ret
+    else:
+        ret.append("No action being taken...")
+        print(ret[-1])
+        return ret
+
 
 def add_applicant_date():
     ret = ["Applicant date entry still under development.", ]
     print(ret[0])
+    while True:
+        data = routines.pick_People_record(
+                header_prompt="Find an applicant...")
+        if data:
+            items = [(key, value, ) for key,value in data.items()]
+            for key, value in items[:4]:
+                line = f"{key}: {value}"
+                print(line)
+                ret.append(line)
+            response = input("Use the above record? (yn) ")
+            if response and response[0] in 'yY':
+                line = "Using the above data."
+                print(line)
+                ret.append(line)
+                break
+        else:
+            line = "No record found"
+            print(line)
+            ret.append(line)
+            response = input("Abort? (y/n) ")
+            if response and response[0] in 'yY':
+                data = None
+                break
+    if data:
+        ret.extend(add_date(data))
+    else:
+        ret.append("No suitable record found.")
+    print(ret[-1])
     return ret
-    pass
 
 
 def applicants_cmd():
@@ -75,7 +236,7 @@ def applicants_cmd():
     if choice and choice[0] in yY:
         return applicants.add_new_applicant_cmd()
     else:
-        add_applicant_date()
+        return(add_applicant_date())
 
 
 def attrition_cmd():
