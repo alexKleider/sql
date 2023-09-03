@@ -133,7 +133,7 @@ SET column_1 = new_value_1,
 WHERE
     search_condition;
 
-ORDER column_or_expression  --#
+ORDER BY column_or_expression  --#
 LIMIT row_count OFFSET offset;  --#
 # Notice that you need to build SQLite with
 # SQLITE_ENABLE_UPDATE_DELETE_LIMIT option in

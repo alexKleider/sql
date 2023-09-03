@@ -46,7 +46,7 @@ queries = dict(
             FROM people as P
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
-                AND PS.statusID in (18, 27)
+                AND PS.statusID in (18, 27, 28)
                 AND (PS.end = '' OR PS.end > {})
                 AND NOT P.email = ''
             -- Terminated, No longer a member
@@ -414,9 +414,9 @@ def ck_labels():
         if len(category_set) != len(category_lst):
             report.append(f"""
 Error condition regarding {label}:
-    set:  {category_set}
+    set:  {sorted(category_set)}
     should be the same length as
-    list: {category_lst}
+    list: {sorted(category_lst)}
                 """)
         if category_set != holder.g_by_group[label]:
             _ = input(f"""The following do _not_ match:
@@ -426,10 +426,10 @@ Error condition regarding {label}:
             """)
             dif = (category_set -
                     holder.g_by_group[label])
-            _ = input(f"{dif}")
+            _ = input(f"{sorted(dif)}")
             dif = (holder.g_by_group[label] -
                     category_set)
-            _ = input(f"{dif}")
+            _ = input(f"{sorted(dif)}")
         else:
             report.append(f"Labels match stati for {label}")
     return report

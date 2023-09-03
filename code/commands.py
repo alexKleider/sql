@@ -458,7 +458,7 @@ BOAT CLUB MEMBERSHIP CONTAINED HEREIN ARE NOT TO BE REPRODUCED OR DISTRIBUTED
 FOR ANY PURPOSE WITHOUT THE EXPRESS PERMISSION OF THE BOARD OF THE BRBC.
 (Last update: {helpers.date})
 
-There are currently {n} members in good standing:
+There are currently {n} members:
 """, ]
     first_letter = 'A'
     for item in res:
@@ -689,7 +689,7 @@ JOIN
 ON
     St.statusID = PS.statusID
 WHERE 
-    St.key = 'm'
+    St.key in ('am', 'm')
     AND (PS.end = '' OR PS.end > {})
 -- must format date membership ended or will end.
 -- use code.helpers.eightdigitdate
