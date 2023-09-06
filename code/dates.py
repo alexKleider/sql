@@ -181,6 +181,8 @@ def add_date(data):
 #               routines.fetch(query,
 #                       from_file=False, commit=True)
                 ret.append("Executed a commit query!")
+        ret.append("Still need to run receiopt entry routine!")
+        print(ret[-1])
         return ret
     else:
         ret.append("No action being taken...")

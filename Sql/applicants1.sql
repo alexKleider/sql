@@ -1,4 +1,7 @@
 /* Sql/applicants1.sql */
+/* Should be redacted: has an entry for each status
+   passed through by the applicant!  i.e. diplicates!!
+*/
 SELECT
     St.key, P.personID, P.first, P.last, 
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,

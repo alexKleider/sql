@@ -418,10 +418,22 @@ def member_listing():
     first, last, suffix, phone, address,
     town, state, postal_code, email
     """
+    first = True
+    ret = []
     with open("Sql/show_f.sql", 'r') as infile:
-        return routines.fetch(infile.read().format(
-                                    helpers.eightdigitdate),
-                        from_file=False)
+        for item in routines.fetch(
+                infile.read().format(
+                        helpers.eightdigitdate),
+                from_file=False):
+            if first:
+                ret.append(item)
+                first = False
+            else:
+                if lastitem != item:
+                    ret.append(item)
+            lastitem = item
+
+    return ret
 
 
 def member_demo_dict(listing):
@@ -670,36 +682,7 @@ def show_names():
 
 
 def report_cmd():
-    query = """
-/* Sql/show_f.sql */
--- !! Requires formatting !!
--- retrieves member demographics
-SELECT
-    first, last, suffix, phone, address,
-    town, state, postal_code, email
---    St.key, P.first, P.last
-FROM
-    People AS P
-JOIN
-    Person_Status AS PS
-ON
-    P.personID = PS.personID
-JOIN
-    Stati as St
-ON
-    St.statusID = PS.statusID
-WHERE 
-    St.key in ('am', 'm')
-    AND (PS.end = '' OR PS.end > {})
--- must format date membership ended or will end.
--- use code.helpers.eightdigitdate
-ORDER BY
-    P.last, P.first
-;
-    """
-    res = routines.fetch(
-            query.format(helpers.eightdigitdate),
-            from_file=False)
+    res = member_listing()
     n = len(res)
     report = []
     helpers.add_header2list("Membership Report (prepared {})"
@@ -747,9 +730,10 @@ ORDER BY
 def get_non_member_stati():
     """
     """
-    keys = "ID, first, last, status_key".split(', ')
+    keys = ("ID, first, last, suffix, begin, status, end"
+            ).split(', ')
     query = routines.import_query(
-            "Sql/get_non_member_stati.sql").format(
+            "Sql/nonmember_stati_f.sql").format(
                     helpers.eightdigitdate)
     ret = routines.query2dict_listing(query, keys)
 #   for key, value in ret:
@@ -768,29 +752,26 @@ def get_non_member_stati_cmd(tocsv=True):  # get_non_member_stati.sql
     ret = [
 #    13:  34     Angie Calpestri       z4_treasurer
      "People with non member stati",
-     "ID     First Last            Status",
-     "===================================",
+     "ID     First Last                begin Status end",
+     "=================================================",
      ]
     for item in res:
         # each item: ID, first, last, status_key
-        ret.append(
-                '{ID:>3}{first:>10} {last:<15} {status_key}'
+        ret.append(('{ID:>3}{first:>10} {last:<15}{suffix:<3} '
+                    + '{begin} {status} {end}')
                                 .format(**item))
     if tocsv:
         csv_file = input(
             "Name of csv file (return if not needed): ")
         if csv_file:
+            keys = (
+                "ID, first, last, suffix, begin, status, end"
+                    ).split(', ')
             with open(csv_file, 'w', newline='') as outf:
-                writer = csv.DictWriter(outf, fieldnames=(
-                    'ID', 'first', 'last', 'status_key' ))
+                writer = csv.DictWriter(outf, fieldnames=keys)
                 writer.writeheader()
                 for item in res:
                     writer.writerow(item)
-#                           {'ID': res[key][0],
-#                            'first': res[key][1],
-#                            'last': res[key][2],
-#                            'status': res[key][3],
-#                            })
             print(f"Data written to '{csv_file}'.")
     return ret
 
@@ -827,36 +808,32 @@ def no_email_cmd():
     """
     Provides a listing of _members_ without email.
     """
-    con = sqlite3.connect(club.DB)
-    cur = con.cursor()
-    for command in routines.get_commands("Sql/no_email.sql"):
-        # only expect one command from this query
-        cur.execute(command)
-        res = cur.fetchall()
-        n = len(res)
-#       _ = input(res)
-        ret = [
-         "Member ID, Names and Demographics of {} without email"
-         .format(n),
-         "=====================================================",
-         ]
-        csv_file = input(
-            "Name of csv file (return if not needed): ")
-        if csv_file:
-            fieldnames = ["personID", "first", "last",
-                "address", "town", "state", "postal_code"]
-            with open(csv_file, 'w', newline='') as outstream:
-                writer = csv.DictWriter(outstream,
-                        fieldnames=fieldnames)
-                writer.writeheader()
-                for line in res:
-                    pairs = zip(fieldnames, line)
-                    row = {}
-                    for key, value in pairs:
-                        row[key] = value
-                    writer.writerow(row)
-        for line in res:
-            ret.append("{:>3}: {} {}: {}, {}, {} {}".format(*line))
+    query = routines.import_query("Sql/no_email_f.sql")
+    query = query.format(helpers.eightdigitdate)
+    res = routines.fetch(query, from_file=False)
+    n = len(res)
+#   _ = input(res)
+    ret = [
+     "Member ID, Names and Demographics of {} without email"
+     .format(n),]
+    ret.append("=" * len(ret[0]))
+    csv_file = input(
+        "Name of csv file (return if not needed): ")
+    if csv_file:
+        fieldnames = ["personID", "first", "last",
+            "address", "town", "state", "postal_code"]
+        with open(csv_file, 'w', newline='') as outstream:
+            writer = csv.DictWriter(outstream,
+                    fieldnames=fieldnames)
+            writer.writeheader()
+            for line in res:
+                pairs = zip(fieldnames, line)
+                row = {}
+                for key, value in pairs:
+                    row[key] = value
+                writer.writerow(row)
+    for line in res:
+        ret.append("{:>3}: {} {}: {}, {}, {} {}".format(*line))
     return ret
 
 

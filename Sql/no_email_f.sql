@@ -1,4 +1,4 @@
-/* no_email.sql */
+/* no_email_f.sql */
 SELECT P.personID, P.first, P.last, P.address, P.town, P.state,
                     P.postal_code
 FROM People AS P
@@ -8,6 +8,8 @@ ON P.personID = PS.personID
 JOIN
     Stati as St
 ON St.statusID = PS.statusID
-WHERE St.key = 'm' AND P.email = ''
+WHERE P.email = ''
+    AND St.key IN ('m', 'am')
+    AND ((PS.end = "") OR (PS.end > {})) 
 ORDER BY P.last, P.first
 ;

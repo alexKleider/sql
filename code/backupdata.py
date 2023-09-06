@@ -23,7 +23,7 @@ def copy4backup(src, dst):
     while True:
         print("Options are Q)uit, C)opy, M)ove...")
         response = input(
-                f"Copy or move {src} to {dst}? (c/m): ")
+                f"Q(uit or C(opy or M(ove  {src} to {dst}? (c/m/q): ")
         if response:
             if response[0] in 'cC':
                 shutil.copyfile(src, dst)

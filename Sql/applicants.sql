@@ -1,4 +1,5 @@
 /* Sql/applicants.sql */
+/* based on status key */
 SELECT
     St.key, P.first, P.last, 
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,
