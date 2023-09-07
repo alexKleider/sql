@@ -3,6 +3,8 @@
 --    ..but only once!
 -- retrieves personID for each member 
 -- AND inductees who haven't yet paid their dues.
+-- RESULTS IN DUPLICATES!!!!
+
 SELECT
     P.personID, P.first, P.last, P.suffix
 FROM

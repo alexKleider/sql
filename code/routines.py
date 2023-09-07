@@ -896,7 +896,6 @@ def assign_welcome2full_membership(holder):
     return ret
 
 
-
 def exercise_get_person_fields_by_ID(id_n):
     print(get_person_fields_by_ID(id_n,
             fields = ('first', 'last', 'suffix')))

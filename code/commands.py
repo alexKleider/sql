@@ -423,6 +423,7 @@ def member_listing():
     with open("Sql/show_f.sql", 'r') as infile:
         for item in routines.fetch(
                 infile.read().format(
+                        helpers.eightdigitdate,
                         helpers.eightdigitdate),
                 from_file=False):
             if first:

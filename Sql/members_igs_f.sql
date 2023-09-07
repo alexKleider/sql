@@ -1,8 +1,5 @@
-/* Sql/members_f.sql */
--- !! Requires formatting !!
---    ..but only once!
--- retrieves member demographics
--- RESULTS IN DUPLICATES!!!
+/* Sql/members_igs_f.sql */
+/* "members in good standing"  */
 
 SELECT
     P.personID, P.first, P.last, P.suffix, P.email, P.address,
@@ -13,14 +10,12 @@ JOIN
     Person_Status AS PS
 ON
     P.personID = PS.personID
-JOIN
-    Stati as St
-ON
-    St.statusID = PS.statusID
-WHERE St.statusID in (11, 15)
-AND (PS.end = '') OR PS.end > {}
+WHERE (
+    PS.statusID = 15
+    AND (PS.begin <= {})  -- today
+    AND((PS.end = '') OR (PS.end > {}))  -- today
+    )
 -- must format: use code.helpers.eightdigitdate
 ORDER BY
     P.last, P.first, P.suffix
 ;
-

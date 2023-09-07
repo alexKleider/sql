@@ -11,15 +11,13 @@ JOIN
     Person_Status AS PS
 ON
     P.personID = PS.personID
-JOIN
-    Stati as St
-ON
-    St.statusID = PS.statusID
-WHERE 
-    St.statusID IN (11, 15)  -- New Member & Current Member
-    AND (PS.end = '' OR PS.end > {})
+WHERE( 
+    PS.statusID IN (11, 15)  -- New & Current Member
+    AND (PS.begin <= {})   -- today
+    AND((PS.end = '') OR (PS.end > {}))   -- today
+    )
 -- must format date membership ended or will end.
--- use code.helpers.sixdigitdate
+-- use code.helpers.eightdigitdate x 2
 ORDER BY
-    P.last, P.first
+    P.last, P.first, p.suffix
 ;

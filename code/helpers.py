@@ -56,6 +56,9 @@ def eightdigitentry(prompt):
             print("Must be an eight digit entry!")
 
 
+def adjustyrby(yr, n):
+    return str(int(yr[:4])+n) + yr[4:]
+
 def get_os_release():
     with open('/etc/os-release', 'r') as info:
         assignments = info.read()
