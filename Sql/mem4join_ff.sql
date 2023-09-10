@@ -1,9 +1,12 @@
-/* Sql/show_f.sql */
--- !! Requires formatting !!
--- retrieves member demographics
+/* Sql/mem4join_ff.sql */
+-- !! Requires formatting !!  (eightdigitdate x2)
+-- retrieves member demographics _with_ trailing statusID
+-- to distinguish 'member in good standing' vs 1st year.
+
 SELECT
     first, last, suffix, phone, address,
-    town, state, postal_code, email
+    town, state, postal_code, email,
+    PS.statusID
 --    St.key, P.first, P.last
 FROM
     People AS P
@@ -13,7 +16,7 @@ ON
     P.personID = PS.personID
 WHERE( 
     PS.statusID IN (11, 15)  -- New & Current Member
-    AND (PS.begin <= {})   -- today
+    AND ((PS.begin <= {}) OR (PS.begin = ''))   -- today
     AND((PS.end = '') OR (PS.end > {}))   -- today
     )
 -- must format comparison date membership ended or will end.
@@ -21,3 +24,4 @@ WHERE(
 ORDER BY
     P.last, P.first, p.suffix
 ;
+

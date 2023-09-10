@@ -566,7 +566,8 @@ def show_applicants():
     # Divide our sequence of dicts into a mapping
     # where keys are the headers and values are
     # lists of dicts to go under that header.
-    header_mapping = {}
+    header_mapping = {}  # a dict keyed by headers
+            # and values are a list of (applicant) dicts
     for entry in dics:
         if entry['approved']:
             header_mapping.setdefault(headers[4], [])
@@ -584,8 +585,7 @@ def show_applicants():
             header_mapping.setdefault(headers[0], [])
             header_mapping[headers[0]].append(entry)
 #   _ = input(header_mapping)
-    report = []  # header_mapping is a dict keyed by headers
-            # and values are a list of (applicant) dicts
+    report = []
     for header in [header for header in headers
             if header in header_mapping.keys()]:
         report.append('\n'+header)
