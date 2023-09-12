@@ -139,8 +139,9 @@ def report_applicants(listing):
 \t{4}, {5}, {6} {7}""".format(*item), ]
 #       print(entry)
         query = f"""SELECT
-                sponsor1ID, sponsor2ID,
-                meeting1, meeting2, meeting3
+                sponsor1ID, sponsor2ID,       -- 0, 1,
+                meeting1, meeting2, meeting3, -- 2,3,4
+                fee_rcvd                      -- 5
                 FROM Applicants
                 WHERE personID = {item[-3]};"""
 #       _ = input(query)
@@ -159,6 +160,7 @@ def report_applicants(listing):
             if meeting: meetings.append(meeting)
         meeting_line += ', '.join(meetings)
         entry.append(sponsor_line)
+        entry.append(f"    Applied: {app_data[5]}")
         if meetings: entry.append(meeting_line)
         report.extend(entry)
     return report
@@ -223,4 +225,5 @@ def former_members():
 
 if __name__ == "__main__":
     for line in show_cmd(): pass #print(line)
-    for line in show_applicants_cmd(): pass # print(line)
+#   for line in show_applicants_cmd(): pass # print(line)
+#   for line in former_members(): print(line)

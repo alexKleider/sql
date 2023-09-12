@@ -8,7 +8,7 @@ SELECT
     first, last, suffix, phone, address,  -- 0..4
     town, state, postal_code, email,      -- 5..8
     A.sponsor1ID, A.sponsor2ID,           -- 9, 10
-    meeting1, meeting2, meeting3,         -- 11..13
+    meeting1, meeting2, meeting3,         -- -6, -5, -4
     P.personID, S.statusID, S.text       -- -3, -2, -1
 FROM
     People AS P

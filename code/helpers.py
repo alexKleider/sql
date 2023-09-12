@@ -1218,7 +1218,7 @@ def get_int(prompt='Enter an integer: ',
     by Laura Cassell and Alan Gauld (p22-23)
     with modifications:
         i. if <blank>, will accept empty string returning 0)
-       ii. if maxn is provided, it is the highest number accepted.
+       ii. <maxn> (if >0) is the highest number accepted.
       iii. will not accept a negative number
     """
     while True:

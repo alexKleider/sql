@@ -37,6 +37,9 @@ except ImportError: import fees
 try: from code import applicants
 except ImportError: import applicants
 
+try: from code import show
+except ImportError: import show
+
 
 def get_command():
     while True:
@@ -59,7 +62,7 @@ Choose one of the following:
  28. Show stati
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
-        elif choice ==  '1': return show_cmd
+        elif choice ==  '1': return show.show_cmd
         elif choice ==  '2': return show_applicants
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
