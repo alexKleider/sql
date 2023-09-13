@@ -2,6 +2,8 @@
 
 # File code/send_emails.py
 
+from Pymail import send
+
 try: from code import club
 except ImportError: import club
 
@@ -10,7 +12,6 @@ except ImportError: import helpers
 
 try: from code import Pymail
 except ImportError: import Pymail
-from Pymail import send
 
 def display_emails_cmd(holder):
     records = helpers.get_json(holder.email_json, report=True)

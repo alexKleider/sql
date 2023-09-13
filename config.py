@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
-# File: config.py  (provides infrastructure for send.py)
-
-## Three hard links:
-# this file is used by
-# 1. the ~/Git/Club/Utils code base where it is found as
-#    Pymail/config.py
-# 2. the ~/Git/Lib code base where it is found as code/config.py
-# 2. the ~/Git/Sql code base where it is found as
-#    code/Pymail/config.py
+# File: config.py
 
 """
-This file provides infrastructure for the accompanying file send.py
+Provides infrastructure for send_emails.py in
+the SQL code base and for send.py elsewhere.
+
+Three hard links:
+this file is used by the following code bases:
+    1. the ~/Git/Club/Utils: Pymail/config.py
+    2. the ~/Git/Lib: code/config.py
+    2. the ~/Git/Sql: code/Pymail/config.py
+
 SSL (Secure Sockets Layer) is a deprecated successor to 
 TLS (Transport Layer Security)
 """

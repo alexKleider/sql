@@ -588,7 +588,8 @@ def show_applicants():
             header_mapping.setdefault(headers[0], [])
             header_mapping[headers[0]].append(entry)
 #   _ = input(header_mapping)
-    report = []
+    report = ["", "Current Applicants", ]
+    report.append("=" * len(report[-1]))
     for header in [header for header in headers
             if header in header_mapping.keys()]:
         report.append('\n'+header)
@@ -686,6 +687,7 @@ def show_names():
 
 
 def report_cmd():
+    outfile = f"report{helpers.eightdigitdate}.txt"
     res = member_listing()
     n = len(res)
     report = []
@@ -693,7 +695,7 @@ def report_cmd():
                             .format(helpers.date),
                             report, underline_char='=')
     report.append('')
-    report.append('Club membership currently stands at {}.'
+    report.append('Club membership currently stands at {}.\n'
                   .format(n))
     report.extend(show_applicants())
     try:
@@ -722,12 +724,12 @@ def report_cmd():
         ['',
          'PS Zoom ID: 527 109 8273; Password: 999620',
         ])
-    print("Do you wish to create a file?...")
-    filename = input(
-        "Enter a file name (or blank for no file:) ")
-    if filename:
-        with open(filename, 'w') as outf:
-            outf.write('\n'.join(report))
+    print(f"Default file name is '{outfile}'...")
+    response = input("Blank to accept or enter new name: ")
+    if response:
+        outfile = response
+    with open(outfile, 'w') as outf:
+        outf.write('\n'.join(report))
     return report
 
 
