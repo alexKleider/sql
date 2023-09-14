@@ -66,7 +66,7 @@ Choose one of the following:
         elif choice ==  '2': return show_applicants
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
-#       elif choice ==  '5': return send_cmd
+        elif choice ==  '5': return send_cmd
         elif choice ==  '6': return no_email_cmd
         elif choice ==  '7': return get_non_member_stati_cmd
         elif choice ==  '8': return update_status_cmd
@@ -80,7 +80,7 @@ Choose one of the following:
         elif choice == '16': return display_fees_by_category_cmd
         elif choice == '17': return welcome_new_member_cmd
         elif choice == '18': return receipts_cmd
-#       elif choice == '19': return payment_entry_cmd
+        elif choice == '19': return payment_entry_cmd
         elif choice == '20': return create_member_csv_cmd
         elif choice == '21': return create_applicant_csv_cmd
         elif choice == '22': return occupied_moorings_cmd
@@ -95,6 +95,29 @@ Choose one of the following:
 
 # for add_dues:
 # UPDATE table SET value = value + 5 WHERE id = 1;
+
+def send_cmd():
+    """
+    Should be redacted!
+    Use ./send_emails.py
+    """
+    ret = [
+      "Send email functionality is not available from this menu.",
+      "Use './send_emails.py' instead.",
+      ]
+    for line in ret:
+        print(line)
+    return ret
+
+def payment_entry_cmd():
+    """
+    Redact- not used.
+    """
+    ret = ['"payment_entry_cmd" has been redacted.',
+            'For payment entry use 12. Data Entry (Dates)',
+            ]
+    for line in ret: print(line)
+    return(ret)
 
 def not_implemented():
     return ["Not implemented", ]
@@ -415,30 +438,6 @@ def display_fees_by_person_cmd():
     return ret
 
 
-def member_listing():
-    """ 
-    Returns a listing of the following values for each member:
-    first, last, suffix, phone, address,
-    town, state, postal_code, email
-    """
-    first = True
-    ret = []
-    with open("Sql/show_f.sql", 'r') as infile:
-        for item in routines.fetch(
-                infile.read().format(
-                        helpers.eightdigitdate,
-                        helpers.eightdigitdate),
-                from_file=False):
-            if first:
-                ret.append(item)
-                first = False
-            else:
-                if lastitem != item:
-                    ret.append(item)
-            lastitem = item
-
-    return ret
-
 
 def member_demo_dict(listing):
     """
@@ -459,33 +458,6 @@ def create_member_csv_cmd():
     ret.append(f"Data sent to {csv_file_name}.")
     return ret
 
-
-def show_members():
-    """
-    Returns a list of strings.
-    """
-    res = member_listing()
-    n = len(res)
-#   _ = input(f"Number of members: {n}\n")
-    report = [f"""FOR MEMBER USE ONLY
-
-THE TELEPHONE NUMBERS, ADDRESSES AND EMAIL ADDRESSES OF THE BOLINAS ROD &
-BOAT CLUB MEMBERSHIP CONTAINED HEREIN ARE NOT TO BE REPRODUCED OR DISTRIBUTED
-FOR ANY PURPOSE WITHOUT THE EXPRESS PERMISSION OF THE BOARD OF THE BRBC.
-(Last update: {helpers.date})
-
-There are currently {n} members:
-""", ]
-    first_letter = 'A'
-    for item in res:
-        last_initial = item[1][:1]
-        if last_initial != first_letter:
-            first_letter = last_initial
-            report.append("")
-        report.append(
-"""{0} {1} {2} [{3}] [{8}]
-\t{4}, {5}, {6} {7}""".format(*item))
-    return report
 
 def get_sponsor_name(sponsorID):
     query = f"""SELECT first, last, suffix
@@ -529,6 +501,99 @@ def create_applicant_csv_cmd():
             writer.writerow(d)
     ret.append(f"Sending applicant CSV file to {csv_file_name}.")
     return ret
+
+
+def for_angie(include_blanks=True):
+    """
+    Returns a table of member and applicant names.
+    """
+    query = """
+/* Sql/names_f.sql */
+SELECT first, last, suffix
+FROM People AS P
+JOIN Person_Status AS PS
+ON P.personID = PS.personID
+JOIN Stati as St
+ON St.statusID = PS.statusID
+WHERE 
+St.key IN ("m", "a-", "a" , "a0", "a1", "a2",
+        "a3", "ai", "ad", "av", "aw", "am")
+AND (PS.end = '' OR PS.end > {})
+-- must insert today's date ^^ (helpers.todaysdate)
+ORDER BY P.last, P.first, P.suffix
+;
+    """
+    keys = "first, last, suffix".split(', ')
+    report = ['', ]
+    first_letter = 'A'
+    for d in routines.query2dict_listing(
+            query.format(helpers.eightdigitdate),
+            keys, from_file=False):
+        if ((d['last'][:1] != first_letter)
+        and (include_blanks)):
+            first_letter = d['last'][:1]
+            report.append("")
+        if d['suffix']:
+            fstring = "{last}, {first} ({suffix})"
+        else: fstring = "{last}, {first}"
+        submission = fstring.format(**d)
+        if submission != report[-1]:
+            report.append(submission)
+    return report[1:]
+
+redacted = '''
+
+
+def member_listing():
+    """ 
+    Returns a listing of the following values for each member:
+    first, last, suffix, phone, address,
+    town, state, postal_code, email
+    """
+    first = True
+    ret = []
+    with open("Sql/show_f.sql", 'r') as infile:
+        for item in routines.fetch(
+                infile.read().format(
+                        helpers.eightdigitdate,
+                        helpers.eightdigitdate),
+                from_file=False):
+            if first:
+                ret.append(item)
+                first = False
+            else:
+                if lastitem != item:
+                    ret.append(item)
+            lastitem = item
+
+    return ret
+
+def show_members():
+    """
+    Returns a list of strings.
+    """
+    res = member_listing()
+    n = len(res)
+#   _ = input(f"Number of members: {n}\n")
+    report = [f"""FOR MEMBER USE ONLY
+
+THE TELEPHONE NUMBERS, ADDRESSES AND EMAIL ADDRESSES OF THE BOLINAS ROD &
+BOAT CLUB MEMBERSHIP CONTAINED HEREIN ARE NOT TO BE REPRODUCED OR DISTRIBUTED
+FOR ANY PURPOSE WITHOUT THE EXPRESS PERMISSION OF THE BOARD OF THE BRBC.
+(Last update: {helpers.date})
+
+There are currently {n} members:
+""", ]
+    first_letter = 'A'
+    for item in res:
+        last_initial = item[1][:1]
+        if last_initial != first_letter:
+            first_letter = last_initial
+            report.append("")
+        report.append(
+"""{0} {1} {2} [{3}] [{8}]
+\t{4}, {5}, {6} {7}""".format(*item))
+    return report
 
 def show_applicants():
     """
@@ -621,46 +686,6 @@ def show_applicants():
         report.extend(entry)
     return report
 
-
-def for_angie(include_blanks=True):
-    """
-    Returns a table of member and applicant names.
-    """
-    query = """
-/* Sql/names_f.sql */
-SELECT first, last, suffix
-FROM People AS P
-JOIN Person_Status AS PS
-ON P.personID = PS.personID
-JOIN Stati as St
-ON St.statusID = PS.statusID
-WHERE 
-St.key IN ("m", "a-", "a" , "a0", "a1", "a2",
-        "a3", "ai", "ad", "av", "aw", "am")
-AND (PS.end = '' OR PS.end > {})
--- must insert today's date ^^ (helpers.todaysdate)
-ORDER BY P.last, P.first, P.suffix
-;
-    """
-    keys = "first, last, suffix".split(', ')
-    report = ['', ]
-    first_letter = 'A'
-    for d in routines.query2dict_listing(
-            query.format(helpers.eightdigitdate),
-            keys, from_file=False):
-        if ((d['last'][:1] != first_letter)
-        and (include_blanks)):
-            first_letter = d['last'][:1]
-            report.append("")
-        if d['suffix']:
-            fstring = "{last}, {first} ({suffix})"
-        else: fstring = "{last}, {first}"
-        submission = fstring.format(**d)
-        if submission != report[-1]:
-            report.append(submission)
-    return report[1:]
-
-
 def show_cmd():
     """
     Returns a list of strings.
@@ -679,6 +704,7 @@ def show_cmd():
             stream.write("\n".join(ret))
     return ret
 
+'''
 
 def show_names():
     return helpers.tabulate(
@@ -1066,22 +1092,6 @@ def get_applicant_data_cmd():
     return show_applicant_data(appID)
 
 
-def send_cmd():
-    """
-    Should be redacted!
-    pre-empted by prepare mailing command
-    """
-    ret = ['mailing command is under development', ]
-    okrange = range(1,len(content.ctypes)+1)
-    choices = zip(okrange, content.ctypes)
-    print("""   MAILING MENU
-Choose a mailing type from one of the following:""")
-    for choice in choices:  # prints the menu..
-        print(f'{choice[0]:<3}: {choice[1]}')
-    response = int(input("Choice ('0' to quit): "))
-    _ = input(f"You chose '{content.ctypes[response-1]}'")
-    return ret
-
 
 def add_date_cmd():
     ret = ['Adding to applicant dates...']
@@ -1239,15 +1249,6 @@ def receipts_cmd():
     helpers.save_db(list_of_dicts, file_name, data.keys(),
                 report=res)
 
-
-def payment_entry_cmd():
-    """
-    Redact- not used.
-    """
-    ret = ['Entering payment_entry_cmd...', ]
-    ret.append('For payment entry use 12. Data Entry (Dates)')
-    print(ret[0])
-    return(ret)
 
 def show_stati_cmd():
     """

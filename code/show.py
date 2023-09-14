@@ -38,6 +38,12 @@ def get_listing_2f(query_file):
 
 
 def get_numbers(listing, verbose=False):
+    """
+    Returns a 3 tuple:
+        number of first year members
+        number of members in good standing
+        a tuple of strings constituting a report
+    """
     m0 = m1 = 0
     for item in listing:
         status = item[-1]
@@ -46,18 +52,23 @@ def get_numbers(listing, verbose=False):
         elif status == 15:
             m1 += 1
         else:
-            assert False, "member status must be 11 or 15!"
-    if verbose:
-        for line in (
+            assert False, (
+                "In show.py get_numbers: " +
+                " member status must be 11 or 15!")
+
+    report = (
             f"Total membership stands at {len(listing)}",
             f"of whom {m1} are 'members in good standing' while",
             f"{m0} are still within their first year of membership.",
-            ):
+            )
+    if verbose:
+        for line in report:
             print(line)
-    return (m0, m1, )
+    return (m0, m1, report)
 
 def create_membership_csv(listing):
     """
+    creates memberlisting.csv
     """
     fieldnames = ( "first, last, suffix, phone, address, " +
             "town, state, postal_code, email, " +
@@ -72,10 +83,9 @@ def create_membership_csv(listing):
 
 def show4web(listing):
     """
-    Returns a list of strings describing current membership.
-    (Does NOT include applicants.)
+    Deals with members only (not applicants!)
     """
-    m0, m1 = get_numbers(listing)
+    m0, m1, member_report  = get_numbers(listing)
     report = [f"""
 FOR MEMBER USE ONLY
 
@@ -83,14 +93,9 @@ THE DEMOGRAPHIC DATA OF THE BOLINAS ROD & BOAT CLUB MEMBERSHIP
 CONTAINED HEREIN ARE NOT TO BE REPRODUCED OR DISTRIBUTED FOR
 ANY PURPOSE WITHOUT THE EXPRESS PERMISSION OF THE BR&BC EXECUTIVE
 COMMITTEE.
-
-    Total membership stands at {len(listing)}
-    of whom {m1} are 'members in good standing' while
-    {m0} (indicated by an asterix (*)) are still within
-    their first year of membership.
-
-    (Last update: {helpers.date})
- \n""", ]
+""",
+    '\n'.join(member_report),
+    f"(Last update: {helpers.date})\n", ]
     first_letter = 'A'
     for item in listing:
         last_initial = item[1][:1]
@@ -224,6 +229,17 @@ def former_members():
 
 
 if __name__ == "__main__":
-    for line in show_cmd(): pass #print(line)
-#   for line in show_applicants_cmd(): pass # print(line)
+    funcs = (
+        get_numbers,  # => 3 tuple: m0, m1, report
+        create_membership_csv, # => memberlisting.csv
+        show4web, # => list of strings: members only
+        report_applicants, # => list of strings
+        show_applicants_cmd, # => file.txt
+        show_cmd, # => file.txt
+        former_members, # => listing of strings
+        )
+    funcs[5]()
+
+#   for line in show_cmd(): pass #print(line)
+#   show_applicants_cmd()
 #   for line in former_members(): print(line)
