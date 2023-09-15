@@ -541,170 +541,7 @@ ORDER BY P.last, P.first, P.suffix
             report.append(submission)
     return report[1:]
 
-redacted = '''
-
-
-def member_listing():
-    """ 
-    Returns a listing of the following values for each member:
-    first, last, suffix, phone, address,
-    town, state, postal_code, email
-    """
-    first = True
-    ret = []
-    with open("Sql/show_f.sql", 'r') as infile:
-        for item in routines.fetch(
-                infile.read().format(
-                        helpers.eightdigitdate,
-                        helpers.eightdigitdate),
-                from_file=False):
-            if first:
-                ret.append(item)
-                first = False
-            else:
-                if lastitem != item:
-                    ret.append(item)
-            lastitem = item
-
-    return ret
-
-def show_members():
-    """
-    Returns a list of strings.
-    """
-    res = member_listing()
-    n = len(res)
-#   _ = input(f"Number of members: {n}\n")
-    report = [f"""FOR MEMBER USE ONLY
-
-THE TELEPHONE NUMBERS, ADDRESSES AND EMAIL ADDRESSES OF THE BOLINAS ROD &
-BOAT CLUB MEMBERSHIP CONTAINED HEREIN ARE NOT TO BE REPRODUCED OR DISTRIBUTED
-FOR ANY PURPOSE WITHOUT THE EXPRESS PERMISSION OF THE BOARD OF THE BRBC.
-(Last update: {helpers.date})
-
-There are currently {n} members:
-""", ]
-    first_letter = 'A'
-    for item in res:
-        last_initial = item[1][:1]
-        if last_initial != first_letter:
-            first_letter = last_initial
-            report.append("")
-        report.append(
-"""{0} {1} {2} [{3}] [{8}]
-\t{4}, {5}, {6} {7}""".format(*item))
-    return report
-
-def show_applicants():
-    """
-    """
-    headers = ('No meetings', 'Attended one meeting',    # 0, 1
-        'Attended two meetings',                         # 2
-        'Attended three (or more) meetings',             # 3
-        'Approved (membership pending payment of dues)', # 4
-        )
-    # not sure the next two are being used!!
-    date_keys = club.date_keys
-    sponsor_keys = club.sponsor_keys
-    keys = ("ID, first, last, suffix, phone, address, town, " +
-            "state, postal_code, email, " +
-            "sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd, " +
-            "meeting1, meeting2, meeting3, " +
-            "approved, dues_paid, notified").split(', ')
-    res = routines.fetch('Sql/applicants2.sql')
-    # convert our returned sequences into...
-    dics = []        #  a sequence of dicts:
-    for sequence in res:
-        mapping = dict(zip(keys, sequence))
-        # Confirm still an applicant!! if not: "continue"
-        query = """ SELECT personID, statusID, begin, end
-            FROM Person_Status
-            WHERE personID = {}
-            AND statusID = 26
-            AND end = '';
-            """.format(mapping['ID'])
-        res = routines.fetch(query, from_file=False)
-        if res: continue  # no longer an applicant so "continue"
-        for sponsor in ('sponsor1ID', 'sponsor2ID'):
-            names = routines.fetch('Sql/find_1st_last_by_ID.sql',
-                    params = (mapping[sponsor], ))[0]
-            mapping[sponsor] = ' '.join(names).strip()
-        dics.append(mapping)
-    if not dics: print("No applicants found!")
-    # Divide our sequence of dicts into a mapping
-    # where keys are the headers and values are
-    # lists of dicts to go under that header.
-    header_mapping = {}  # a dict keyed by headers
-            # and values are a list of (applicant) dicts
-    for entry in dics:
-        if entry['approved']:
-            header_mapping.setdefault(headers[4], [])
-            header_mapping[headers[4]].append(entry)
-        elif entry['meeting3']:
-            header_mapping.setdefault(headers[3], [])
-            header_mapping[headers[3]].append(entry)
-        elif entry['meeting2']:
-            header_mapping.setdefault(headers[2], [])
-            header_mapping[headers[2]].append(entry)
-        elif entry['meeting1']:
-            header_mapping.setdefault(headers[1], [])
-            header_mapping[headers[1]].append(entry)
-        elif entry['fee_rcvd']:
-            header_mapping.setdefault(headers[0], [])
-            header_mapping[headers[0]].append(entry)
-#   _ = input(header_mapping)
-    report = ["", "Current Applicants", ]
-    report.append("=" * len(report[-1]))
-    for header in [header for header in headers
-            if header in header_mapping.keys()]:
-        report.append('\n'+header)
-        report.append('-'*len(header))
-        entry = []
-        for mapping in header_mapping[header]:
-            if mapping['approved']:
-                entry.append(
-                """{first} {last} {suffix} [{phone}] {email}
-    {address}, {town}, {state} {postal_code}
-    Sponsors: {sponsor1ID}, {sponsor2ID},
-    Applied: {fee_rcvd}
-    Meetings: {meeting1} {meeting2} {meeting3}
-    Date approved by Executive Committee: {approved}"""
-                .format(**mapping))
-            elif mapping['meeting1']:
-                entry.append("""{first} {last} [{phone}] {email}
-    {address}, {town}, {state} {postal_code}
-    Sponsors: {sponsor1ID}, {sponsor2ID},
-    Applied: {fee_rcvd}
-    Meetings: {meeting1} {meeting2} {meeting3} {approved}"""
-                .format(**mapping))
-            else:
-                entry.append("""{first} {last} [{phone}] {email}
-    {address}, {town}, {state} {postal_code}
-    Sponsors: {sponsor1ID}, {sponsor2ID}
-    Applied: {fee_rcvd}"""
-                .format(**mapping))
-        report.extend(entry)
-    return report
-
-def show_cmd():
-    """
-    Returns a list of strings.
-    by default ==> '4web.txt'
-    """
-    outfile = "4web.txt"
-    applicant_header = 'Applicants'
-    ret = show_members()
-    ret.extend(('', '', applicant_header,
-        '='*len(applicant_header), ))
-    ret.extend(show_applicants())
-    yn = input("Send to file? (y/n): ")
-    if yn and yn[0] in 'yY':
-        outfile = helpers.choose_file_name(default="4web.txt")
-        with open(outfile, 'w') as stream:
-            stream.write("\n".join(ret))
-    return ret
-
-'''
+# see "redacted" file
 
 def show_names():
     return helpers.tabulate(
@@ -714,8 +551,7 @@ def show_names():
 
 def report_cmd():
     outfile = f"report{helpers.eightdigitdate}.txt"
-    res = member_listing()
-    n = len(res)
+    n = len(show.member_listing())
     report = []
     helpers.add_header2list("Membership Report (prepared {})"
                             .format(helpers.date),
@@ -723,7 +559,7 @@ def report_cmd():
     report.append('')
     report.append('Club membership currently stands at {}.\n'
                   .format(n))
-    report.extend(show_applicants())
+    report.extend(show.show_applicants_cmd())
     try:
         with open(club.ADDENDUM2REPORT_FILE, 'r') as fobj:
             addendum = fobj.read()

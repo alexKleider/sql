@@ -36,6 +36,8 @@ def get_listing_2f(query_file):
     listing = routines.fetch(query, from_file=False)
     return listing
 
+def member_listing():
+    return get_listing_2f(query_files["member"])
 
 def get_numbers(listing, verbose=False):
     """
