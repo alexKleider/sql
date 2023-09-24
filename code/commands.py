@@ -63,7 +63,7 @@ Choose one of the following:
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show.show_cmd
-        elif choice ==  '2': return show_applicants
+        elif choice ==  '2': return show.show_applicants_cmd
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
         elif choice ==  '5': return send_cmd

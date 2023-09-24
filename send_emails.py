@@ -24,11 +24,12 @@ from email.mime.application import MIMEApplication
 # from email import encoders
 import mimetypes
 import hashlib
-import json
+#import json
 import time
 import random
 
-import config
+import config  # my accompanying "config.py" file;
+               # NOT config module from PyPy
 try:
     from code import club
 except ImportError:

@@ -58,7 +58,7 @@ config = dict(
         "tls": "on",
     },
 # google no longer provides smtp services so 
-# the following won't work!!
+# the following two won't work!!
     akg= {
         "host": "smtp.gmail.com",
         "port": "587",
@@ -84,8 +84,8 @@ config = dict(
 
 if __name__ == '__main__':
 
-    print("Redacted for security reasons!!")
-    sys.exit()
+#   print("Redacted for security reasons!!")
+#   sys.exit()
 
     ### For testing only: comment out above two lines.
     pws = set()
