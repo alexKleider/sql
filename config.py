@@ -12,7 +12,7 @@ this file is used by the following code bases:
     2. the ~/Git/Lib: code/config.py
     2. the ~/Git/Sql: code/Pymail/config.py
 
-SSL (Secure Sockets Layer) is a deprecated successor to 
+SSL (Secure Sockets Layer) is deprecated in favour of
 TLS (Transport Layer Security)
 """
 

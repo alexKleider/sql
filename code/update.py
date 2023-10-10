@@ -4,8 +4,14 @@
 
 """
 Prototyping a status_change_cmd
-    update_status  {  the two choices
-    add_status     {  under development
+  new_person
+    New applicant
+    & add status
+  add_status
+    Add a status entry
+  update_status
+    Insert an "end" date (prn)
+    & Add a status entry
 Notes:
     application comes in
         +/- application fee
@@ -65,25 +71,33 @@ def quote_nonID_fields(data):
     return data
 
 
-def set_up(prompt, report=None):
+def get_stati(prompt=None, report=None):
     """
-    Prompts for and collects a personID.
-    Returns A: a dict: a dict of dicts- to serve as a 'menu':
+    If <prompt>: prints prompt.
+    Returns a dict of dicts based on entries in the
+            Person_Status table for that personID.
+    Returns None if no personID found.
+    Returns the personID if no status entries found.
+    The dict of dicts is to serve as a 'menu':
         1 based integer keys, dict for each value.
-    OR B: an integer: personID (if no previous entries found.)
     """
     if isinstance(report, list):
         report.append("Entering update.setup(prompt)")
-    print(prompt)
-    rec = routines.pick_People_record()
+    if prompt:
+        print(prompt)
+    rec = routines.pick_People_record(header_prompt=(
+        "Returning attempt at finding a person record"))
     if not rec:
-        _ = input("record not found")
+        s = "record not found"
+        if isinstance(report, list):
+            report.append(s)
+        _ = input(s)
         return
     else:
         personID = rec['personID']
-        print("Stati from which to choose:")
-        for line in status_choices():
-            print(f"  {line}")
+#       print("Stati from which to choose:")
+#       for line in status_choices():
+#           print(f"  {line}")
         entries = entries_for_ID(rec["personID"])
         dicts = dict(zip(range(1, len(entries)+1), entries))
         if not dicts:  # no previous entries
@@ -95,7 +109,7 @@ def update_status(report=None):
     Update an existing entry.
     """
     prompt = "Running update_status()..."
-    dicts = set_up(prompt, report=report)
+    dicts = get_stati(prompt, report=report)
     if isinstance(dicts, int):
         report.append("No prior entries exist.")
         print(report[-1])
@@ -136,14 +150,14 @@ def update_status(report=None):
     _ = input(query)
 
 
-def enter_status(report=None):
+def new_status(report=None):
     """
     Make a brand new entry.
     """
-    prompt = "Running enter_status()..."
-    dicts = set_up(prompt, report=report)
+    prompt = "Running new_status()..."
+    dicts = get_stati(prompt, report=report)
     if isinstance(dicts, int):
-        report.append("No prior enties found.")
+        report.append("No prior entries found.")
         print(report[-1])
         d = {'personID': dicts, }
     else:
@@ -172,8 +186,9 @@ def enter_status(report=None):
 def status_change_cmd():
     ret = ["Beginning status_change_cmd...", ]
     menu_d = {
-            "Update": update_status,
-            "New entry": enter_status,
+            "New person": new_person,
+            "New status": new_status,
+            "Update status": update_status,
             }
     helpers.choose_and_run(menu_d, report=ret)
     return ret
@@ -186,9 +201,27 @@ def test4emptylisting():
     print(repr(dicts))
     
 
+def test_get_stati():
+    while True:
+        yn = input("\nProceed with test_get_stati? (y/n): ")
+        if yn and yn[0] in "yY":
+            res = get_stati("make a choice")
+            if isinstance(res, dict):
+                print("Got results as follows...")
+                for k, v in res.items():
+                    print(f"{k}: {v}")
+            elif res == None:
+                print("No personID found.")
+            elif isinstance(res, int):
+                print(f"'{res}' is an invalid personID")
+            else:
+                assert(False)
+        else:
+            break
 
 if __name__ == '__main__':
 #   test4emptylisting()
 
-    for line in status_change_cmd():
-        print(line)
+    test_get_stati()
+#   for line in status_change_cmd():
+#       print(line)

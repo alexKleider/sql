@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-# File: parse_applicant_data.py
+# File: Oneof/parse_applicant_data.py
 
 """
-Still a work in progress to move info in old DB (applicants.txt)
-into the Applicants table of the new SQL data base.
-Should be moved into the OnceOnly directory.
+Unfinished code to move info in old DB (applicants.txt)
+Probably should be redacted. Unlikely to ever be useful.
 """
 
 from code import helpers

@@ -431,10 +431,16 @@ like_query = """
         """
 
 def get_rec_by_ID(ID):
+    """
+    Returns a record corresponding to personID if record
+    exists, otherwise returns None
+    """
+    res = fetch(people_query.format(ID), from_file=False)
+#   _ = input(res)
+    if not res:
+        return
     ret = helpers.make_dict(
-            get_keys_from_schema("People"),
-            fetch(people_query.format(ID),
-                                from_file=False)[0])
+            get_keys_from_schema("People"), res[0])
 #   keys = get_keys_from_schema("People")
 #   res = fetch(people_query.format(ID),
 #                               from_file=False)
@@ -648,19 +654,20 @@ def get_owing(holder):
 
 def assign_mannually(holder):
     """
-    User gets to select recipients from the command line.
+    Assigns holder.working_data to an empty dict
+    and then prompts user to add entries.
+    Used to assign recipients of mailing.
     """
-    candidates = {}
+    holder.working_data = {}
     while True:
         rec = pick_People_record(
-                header_prompt="Selecting records...")
+                header_prompt="Selecting a record...")
         if rec:
-            candidates[rec['personID']] = rec
+            holder.working_data[rec['personID']] = rec
         else:
             response = input("Done with entries? (y/n) ")
             if response and response[0] in 'yY':
                 break
-    holder.working_data = candidates
 
 def add_sponsors2holder_data(holder):
     """

@@ -13,7 +13,7 @@ import shutil
 import club
 import helpers
 
-now = helpers.timestamp
+now = helpers.timestamp4filename
 
 
 src = club.db_file_name
@@ -34,13 +34,13 @@ def copy4backup(src, dst):
                 print(f"{src} moved to {dst}.")
                 return
             elif response[0] in 'qQ':
-                print("No actioin taken!")
+                print("No action taken!")
                 return
 
 
 if __name__ == '__main__':
     for src, dst in (
             (club.db_file_name, f"Secret/{now}.db", ),
-            (club.EMAIL_JSON, f"secret/{now}.json", )
+            (club.EMAIL_JSON, f"Secret/{now}.json", )
             ):
         copy4backup(src, dst)

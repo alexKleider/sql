@@ -30,6 +30,7 @@ today = datetime.datetime.today()
 # sixdigitdate = today.strftime("%y%m%d")
 eightdigitdate = today.strftime("%Y%m%d")
 timestamp = today.strftime("%Y-%m-%d_%H:%M")
+timestamp4filename = today.strftime("%Y-%m-%d_%H-%M")
 month = today.month
 this_year = today.year
 date = datetime.datetime.strptime(
@@ -1204,7 +1205,9 @@ def make_dict(keys, values):
     A dict is returned.
     Fails if lengths are not equal!
     """
-    assert len(keys) == len(values), 'Error in helpers.make_dict.'
+    assert len(keys) == len(values), '\n'.join((
+        'len(keys) != len(values) in helpers.make_dict.',
+        f'keys: {keys}', f' values: {values}'))
     ret = {}
     for key, value in zip(keys, values):
         ret[key] = value
