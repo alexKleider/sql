@@ -34,8 +34,8 @@ except ImportError: import dates
 try: from code import fees
 except ImportError: import fees
 
-try: from code import applicants
-except ImportError: import applicants
+try: from code import data_entry
+except ImportError: import data_entry
 
 try: from code import show
 except ImportError: import show
@@ -89,7 +89,7 @@ Choose one of the following:
         elif choice == '25': return under1yr_cmd
         elif choice == '26': return fees.owing_csv_cmd
         elif choice == '27':
-            return applicants.applicant_data_entry_cmd
+            return data_entry.add_new_applicant_cmd
         elif choice == '28': return show_stati_cmd
         else: print("Not implemented")
 

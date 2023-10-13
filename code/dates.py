@@ -42,8 +42,6 @@ except ImportError: import multiple
 try: from code import commands
 except ImportError: import commands
 
-try: from code import applicants
-except ImportError: import applicants
 
 options = (  # menu below main menu item 12. Data Entry (Dates)
     "Applicants",    # app_rcvd, fee_rcvd, meeting1,2,3,
@@ -224,22 +222,21 @@ def add_applicant_date():
     return ret
 
 
+redact = '''
 def applicants_cmd():
     """
-    Applicant related code is in code.applicants module
-    Specifically: code/applicants.applicant_data_entry
     """
     ret = ["Applicant data entry still under development",
-           "in code.applicants module..", ]
+           "in code.data_entry module..", ]
     print('\n'.join(ret))
 #   return ret
     choice = input(
         "New applicant ('yY') or just another date ('')? ")
     if choice and choice[0] in yY:
-        return applicants.add_new_applicant_cmd()
+        return data_entry.add_new_applicant_cmd()
     else:
         return(add_applicant_date())
-
+'''
 
 def attrition_cmd():
     ret = ["Attrition entry still under development.", ]

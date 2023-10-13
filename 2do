@@ -1,3 +1,13 @@
+
+Currently working on code/data_entry.py which
+handles adding data to the db.
+An ammalgamation of what used to be applicants.py
+and update.py
+
+also working on code/routines.keys_from_schema2
+to be tested in 
+
+
 code/routines.py:
     get_data4statement use query to dict routine(s)
 

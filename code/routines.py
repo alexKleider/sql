@@ -117,15 +117,19 @@ def fetch_d_query(sql_file_name, data, commit=False):
     return fetch(query, from_file=False, commit=commit)
 
 
-def get_keys_from_schema(table, nkeys2ignore=0):
+def keys_from_schema(table, brackets=(0,0)):
     """
     query comes from: https://stackoverflow.com/questions/11996394/is-there-a-way-to-get-a-schema-of-a-database-from-within-python
-    <nkeys2ignore> provides ability to ignore any primary keys
-    such as 'personID' (in which case it can be set to 1.
+    <brackets> provides ability to ignore first brackets[0]
+    and last brackets[1] primary keys such as 'personID' (in
+    which case it can be set to (1,0).
+    Tested in tests/test_routines.py
     """
     query =  f"pragma table_info({table})"
     res = fetch(query, from_file=False)
-    return  [item[1] for item in res[nkeys2ignore:]]
+    begin = brackets[0]
+    end = len(res) - brackets[1]
+    return  [item[1] for item in res[begin:end]]
     # item[1] is the column/key.
 
 def query2dict_listing(query, keys,
@@ -441,8 +445,6 @@ def get_rec_by_ID(ID):
         return
     ret = helpers.make_dict(
             get_keys_from_schema("People"), res[0])
-#   keys = get_keys_from_schema("People")
-#   res = fetch(people_query.format(ID),
 #                               from_file=False)
     if not ret:
         return
@@ -930,6 +932,14 @@ def exercise_pick_People_record():
         print(f"{res}")
 
 
+def exercise_keys_from_schema():
+    for schema in ("People", "Person_Status", "Stati",
+            "Attrition", "Applicants", "Receipts", "Dues",
+            "Moorings", "Dock_Privileges", "Kayak_Slots" ):
+        print(f"{schema}: " +
+            f"{repr(keys_from_schema(schema))}")
+
+
 if __name__ == '__main__':
 #   print(get_sponsors(110))
 #   exercise_get_person_fields_by_ID(146)
@@ -940,4 +950,5 @@ if __name__ == '__main__':
 #   exercise_getIDs_by_status(200)
 #   exercise_assign_applicants2welcome()
 #   exercise_add_sponsor_cc2data()
-    exercise_pick_People_record()
+#   exercise_pick_People_record()
+    exercise_keys_from_schema()
