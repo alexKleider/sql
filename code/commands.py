@@ -985,6 +985,22 @@ def name_from_tup(tup):
 
 
 def display_fees_by_category_cmd():
+    """
+    All fees being charged, wether already paid or not.
+    """
+    dock_query = """
+SELECT P.personID, P.first, P.last, P.suffix, DP.cost
+FROM People as P
+JOIN Dock_Privileges as DP
+ON P.personID = DP.personID
+        """
+    kayak_query = """
+SELECT P.personID, P.first, P.last, P.suffix,
+        K.slot_code, K.slot_cost
+FROM People as P
+JOIN Kayak_Slots as K
+ON P.personID = K.personID
+        """
     ret = ['Special Fees Being Charged',
            '==========================',
            ]
@@ -998,9 +1014,9 @@ def display_fees_by_category_cmd():
                '( U)pper, M)iddle and S)tring )',
                '  ---------------------------',
                ]
-    for tup in routines.fetch("Sql/dock1.sql"):
+    for tup in routines.fetch(dock_query, from_file=False):
         dock.append(f"  {name_from_tup(tup)}")
-    for tup in routines.fetch("Sql/kayak1.sql"):
+    for tup in routines.fetch(kayak_query, from_file=False):
         kayak.append(f"  {tup[4]} {name_from_tup(tup)}")
     for tup in routines.fetch("Sql/mooring1.sql"):
         mooring.append(
