@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# File code/send_emails.py
+# File code/send_emails_in_code.py
 
 from Pymail import send
 
@@ -53,16 +53,37 @@ def send_emails(holder):
     send_func(data, mta, include_wait=wait)
 
 
+def main(report):
+    while True:
+        report = [
+            "Choose to I)nspect or S)send emails: ", ]
+        choice = input(report[0])
+        if choice:
+            holder = club.Holder()
+            if choice[0] in 'iI':
+                outfile = input(
+                        "Send emails to which text file: ")
+                report.append(
+                        f"...sending emails to {outfile}...")
+                with open(outfile, 'w') as stream:
+                    stream.write(display_emails_cmd(holder))
+                break
+            elif choice[0] in 'sS':
+                report.append("Sending emails...")
+                print(report[-1])
+                send_emails(holder)
+                report.append("...emails send.")
+                print(report[-1])
+                break
+            else:
+                report.append("Invalid choice!")
+                print(report[-1])
+        else:
+            report.append("Empty response ==> termination.")
+            print(report[-1])
+            break
+
 
 if __name__ == "__main__":
-    choice = input("Choose to I)nspect or S)send emails ('i' or 's'):")
-    if choice:
-        holder = club.Holder()
-        if choice[0] in 'iI':
-            outfile = input("Send emails to which text file: ")
-            with open(outfile, 'w') as stream:
-                stream.write(display_emails_cmd(holder))
-        elif choice[0] in 'sS':
-            send_emails(holder)
-        else:
-            print("Invalid choice.")
+    main()
+

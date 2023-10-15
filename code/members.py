@@ -346,7 +346,22 @@ def vacancy_open():
     pass
 
 
-def is_new_member():
+def new_members_2b_notified():
+    """
+    Returns a list of dicts; each dict representing a
+    People table entry for those either having status 7
+    OR where the corresponding entry in the Applicant table
+    has an entry for dues_paid but no entry for notified.
+    """
+    query = """ SELECT *
+        FROM People as P
+        JOIN Applicant as Ap
+        ON P.personID = Ap.personID
+        JOIN Person_Status as PS
+        ON P.personID = PS.personID
+        WHERE (Ap.notified = '' and NOT Ap.dues_paid = "")
+           OR (PS.status = 7)
+        ; """
     pass
 
 

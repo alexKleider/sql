@@ -40,6 +40,9 @@ except ImportError: import data_entry
 try: from code import show
 except ImportError: import show
 
+try: from code import send_emails
+except ImportError: import send_emails
+
 
 def get_command():
     while True:
@@ -47,7 +50,7 @@ def get_command():
 Choose one of the following:
   0. Quit (or just return)      1. Show for web site
   2. Show applicants            3. Show names as table
-  4. Report                     5. Send letter/email
+  4. Report                     5. Send/review (json) emails
   6. No email                   7. Get (non member) stati
   8. Update Status              9. Find ID by name
  10. Display Fees by person    11. Update demographics
@@ -58,7 +61,7 @@ Choose one of the following:
  20. Create member csv file    21. Create applicant csv file
  22. Occupied moorings csv     23. All moorings csv
  24. Still owing csv           25. Membership < 1 year
- 26. Fees (owing or not) csv   27. Enter applicant data
+ 26. Fees (owing or not) csv   27. Enter new applicant data
  28. Show stati
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
@@ -66,7 +69,7 @@ Choose one of the following:
         elif choice ==  '2': return show.show_applicants_cmd
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
-        elif choice ==  '5': return send_cmd
+        elif choice ==  '5': return send_emails.main
         elif choice ==  '6': return no_email_cmd
         elif choice ==  '7': return get_non_member_stati_cmd
         elif choice ==  '8': return update_status_cmd
@@ -1029,9 +1032,15 @@ ON P.personID = K.personID
     return ret
 
 def welcome_new_member_cmd():
+    """
+    In development; currently does nothing except collect a list
+    of <personID>s.
+    """
     ret = ['<welcome_new_member_cmd>',
+            "Create list of People table entries" +
+            " to welcome as new member(s):",
             ]
-    print("Create list of people to welcome as new member(s):")
+    print(ret[-1])
     candidates = []
     while True:
         ids = routines.id_by_name()
