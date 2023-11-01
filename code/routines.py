@@ -54,6 +54,15 @@ def assure_only1response(listing):
         sys.exit()
 
 
+def add2report(report, line):
+    """
+    This should be incorporated into code.helpers
+    Supports many routines which have a named 'report' param.
+    """
+    if report and isinstance(report, list):
+        report.append(line)
+
+
 def fetch(sql_source, db=db_file_name, params=None, data=None,
                     from_file=True, commit=False,
                     verbose=False):

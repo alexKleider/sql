@@ -351,7 +351,7 @@ def my_print(s, outf):
 
 class Rec(dict):
     """
-    Each instance is a (deep!) copy of the dict type parameter
+    Each instance is a (deep!) copy of rec (a dict)
     and is callable (with a formatting string as a parameter)
     returning the populated formatting string. Suitable for
     displaying the record &/or when one wants to have the record

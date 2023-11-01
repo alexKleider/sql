@@ -125,13 +125,14 @@ def get_new_applicant_data(file_content, report=None):
 
 def add_new_applicant_cmd():
     """
-    Provides ability to enter a new applicant into the db:
+    Provides ability to enter one new applicant into the db:
     Creats appropriage entries in "People", "Person_Status"
     and "Applicant" tables. 
     Returns a report (in the form of a list of lines.)
-    Two input methods (Only from file implemented so far):
+    Two input methods:
     1. from a specially formatted file    or
     2. item by item entry as prompted from the command line.
+        - the latter is under development: code/textual.py
     """
     ret = ["Entering add_new_applicant_cmd...",]
     print(ret[0])
@@ -139,10 +140,11 @@ def add_new_applicant_cmd():
         "  == so far data entry from file implemented  ==")
     # 1st choose method of input- only by file implemented 4 now
     # and collect the data...
-    while True:
+    while True:  # get data (/w option to file ==> db) OR abort
         answer = input(
                 "CLInput or from file? (c,C,f,F,q)uit): ")
         if answer and answer[0] in "qQ":
+            # option to abort without adding data
             ret.append("Aborting addition of new applicant(s)!")
             return ret
         if answer[0] in "fF":
@@ -162,6 +164,10 @@ def add_new_applicant_cmd():
             data = get_new_applicant_data(stream, report=ret)
             break
         elif answer[0] in "cC":
+            # use code/textual.get_demographics()
+            data = code.textual.get_demographics(report=ret)
+            if data:
+                break
             print(
               "Command line prompted input not yet implemented.")
             _ = input("   CR to continue... ")
