@@ -62,7 +62,7 @@ Choose one of the following:
  22. Occupied moorings csv     23. All moorings csv
  24. Still owing csv           25. Membership < 1 year
  26. Fees (owing or not) csv   27. Enter new applicant data
- 28. Show stati
+ 28. Show stati                29. Create leadership csv file
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show.show_cmd
@@ -94,6 +94,7 @@ Choose one of the following:
         elif choice == '27':
             return data_entry.add_new_applicant_cmd
         elif choice == '28': return show_stati_cmd
+        elif choice == '29': return show_officers_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -1126,6 +1127,42 @@ def show_stati_cmd():
         for entry in res:
             writer.writerow(helpers.make_dict(keys, entry))
     ret.append(f"... data written to {outfile}.")
+    return ret
+
+
+def show_officers_cmd():
+    """
+    Creates a csv file:
+    a listing of current officers and directors.
+    """
+    ret = ["Running show_officers_cmd", ]
+    outfile = "Secret/leadership.csv"
+    today = helpers.eightdigitdate
+
+    keystr = ("ID, first, last, suffix, statusID, position, start, end")
+    keys = keystr.split(', ')
+    query = f"""SELECT P.personID, P.first, P.last, P.suffix,
+            PS.statusID, S.text, PS.begin, PS.end
+            FROM People AS P
+            JOIN Person_Status AS PS
+            ON P.personID = PS.personID
+            JOIN Stati AS S
+            ON S.statusID = PS.statusID
+            WHERE (
+                PS.statusID in (20, 21, 22, 23, 24, 25)
+                AND 
+                PS.begin < {today}
+                AND
+                (PS.end > {today} OR PS.end = '')
+                )
+            ORDER by S.statusID, P.last, P.first
+            ;"""
+
+    with open(outfile, 'w') as stream:
+        stream.write(keystr + '\n')
+        for line in routines.fetch(query, from_file=False):
+            stream.write(','.join([str(item) for item in line]) + '\n')
+        ret.append(f"...results sent to {stream.name}")
     return ret
 
 

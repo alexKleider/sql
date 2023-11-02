@@ -20,6 +20,7 @@ def get_demographics(report=None):
     """
     Uses a GUI to collect an entry for the People table.
     Returns a dict or None if no entry.
+    Client is code/data_entry.py
     """
     routines.add2report(report,
             "Entering gui/get_demographics...")

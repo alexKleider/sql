@@ -164,13 +164,9 @@ def add_new_applicant_cmd():
             data = get_new_applicant_data(stream, report=ret)
             break
         elif answer[0] in "cC":
-            # use code/textual.get_demographics()
             data = code.textual.get_demographics(report=ret)
             if data:
                 break
-            print(
-              "Command line prompted input not yet implemented.")
-            _ = input("   CR to continue... ")
     print(f"\nSo far following has been collected:\n{data}")
     yn = input("OK to made data base entries? (y/n) ")
     if yn and yn[0] in "yY":
