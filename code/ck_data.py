@@ -134,9 +134,9 @@ mooring_query = """SELECT P.first, P.last, P.suffix
 
 def get_gmail_record(g_rec):
     """
-    # used by gather_contacts_data #
+    Client is gather_contacts_data.
     <g_rec> is a record from the gmail contacts file.
-    Returns a dict with only the info we need.
+    Returns a "g_dict" (only the info we need.)
     """
     g_email = g_rec["E-mail 1 - Value"]
     group_membership = (
@@ -144,7 +144,6 @@ def get_gmail_record(g_rec):
     if (group_membership and
             group_membership[-1] == '* myContacts'):
         group_membership = group_membership[:-1]
-    group_membership = set(group_membership)
     first_name = " ".join((
         g_rec["Given Name"],
         g_rec["Additional Name"],
@@ -153,31 +152,22 @@ def get_gmail_record(g_rec):
         g_rec["Family Name"],
         g_rec["Name Suffix"],
         )).strip()
-#   gname = "{}, {}".format(last_name, first_name)
-    gname = "{},{}".format(last_name, first_name)
-    alias = "{}{}".format(first_name, last_name)
-    muttname = '{} {}'.format(first_name, last_name)
     return dict(
-        gname=gname,
-        alias=alias,
-        muttname=muttname,
+        gname="{},{}".format(last_name, first_name),
+        alias="{}{}".format(first_name, last_name),
+        muttname='{} {}'.format(first_name, last_name),
         g_email=g_email,
-        groups=group_membership,
+        groups=set(group_membership),
         )
 
 
 def gather_contacts_data(club):    # used by ck_data #
     """
-    The club attributes populated:
-        gmail_by_name,
-        groups_by_name,
-        g_by_group.
-    All values are sets.
-    Names are all 'last,first_suffix'
+    Gets data from gmail contacts...
+    The club attributes populated <== first 3 lines of code.
     """
-    club.gmail_by_name = dict()  # => string
-    club.groups_by_name = dict()  # => set
-
+    club.gmail_by_name = dict()  # => string (email)
+    club.groups_by_name = dict()  # => set of groups
     club.g_by_group = dict()  # >set of names
 
     # Traverse contacts.csv => g_by_name
@@ -188,10 +178,10 @@ def gather_contacts_data(club):    # used by ck_data #
             .format(file_obj.name))
         for g_rec in google_reader:
             g_dict = get_gmail_record(g_rec)
-
-            club.gmail_by_name[g_dict['gname']] = g_dict['g_email']
-            club.groups_by_name[g_dict['gname']] = g_dict['groups']
-
+            club.gmail_by_name[g_dict['gname']] = g_dict[
+                                                    'g_email']
+            club.groups_by_name[g_dict['gname']] = g_dict[
+                                                    'groups']
             for key in g_dict["groups"]:
                 _ = club.g_by_group.setdefault(key, set())
                 club.g_by_group[key].add(g_dict["gname"])
@@ -393,7 +383,6 @@ def ck_labels():
     """
     report = []
     keys = "first, last, suffix".split(', ')
-    report = []
     holder = club.Holder()
     gather_contacts_data(holder)
     labels = [key for key in queries.keys()]
@@ -401,7 +390,7 @@ def ck_labels():
 #   print(holder.g_by_group['applicant'])
 #   print(holder.g_by_group['inactive'])
     for label in labels:
-#       print(f"Dealing with: {label}")
+        print(f"Dealing with: {label}")
         category_lst = []
         res = routines.fetch(queries[label],from_file=False)
         for item in res:
@@ -412,12 +401,24 @@ def ck_labels():
             category_lst.append(f"{d['last']},{d['first']}")
         category_set = set(category_lst)
         if len(category_set) != len(category_lst):
+            category_lst.sort()
+            duplicates = []
+            for i in range(1, len(category_lst)):
+                if category_lst[i] == category_lst[i-1]:
+                    duplicates.append(category_lst[i])
+            if duplicates:
+                _ = input(f"Duplicates in {label}: {duplicates}")
+            redact = '''
             report.append(f"""
 Error condition regarding {label}:
     set:  {sorted(category_set)}
     should be the same length as
     list: {sorted(category_lst)}
                 """)
+            '''
+            print(f"len(category_set): {len(category_set)}")
+            _ = input(f"len(category_lst): {len(category_lst)}")
+
         if category_set != holder.g_by_group[label]:
             _ = input(f"""The following do _not_ match:
                 db {label}: {sorted(category_set)}

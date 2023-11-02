@@ -323,7 +323,7 @@ def pick_People_record(header_prompt=None):
     or returns None
     """
     query = " SELECT * FROM People WHERE {};"
-    keys = get_keys_from_schema("People")
+    keys = keys_from_schema("People")
     if header_prompt: print(header_prompt)
     print("Narrow the search...")
     first = input("First name (partial or blank): ")
@@ -453,7 +453,7 @@ def get_rec_by_ID(ID):
     if not res:
         return
     ret = helpers.make_dict(
-            get_keys_from_schema("People"), res[0])
+            keys_from_schema("People"), res[0])
 #                               from_file=False)
     if not ret:
         return
@@ -471,7 +471,7 @@ def pick_People_record(header_prompt=None, report=None):
     if isinstance(report, list):
         report.append(
                 "... entering routines.pick_People_record()")
-    keys = get_keys_from_schema("People")
+    keys = keys_from_schema("People")
     if header_prompt: print(header_prompt)
     while True:
         print(
@@ -688,7 +688,7 @@ def add_sponsors2holder_data(holder):
     Note: adds sponsorIDs, not names
     """
     query = "SELECT * from Applicants where personID = {};"
-    ap_keys = get_keys_from_schema("Applicants")
+    ap_keys = keys_from_schema("Applicants")
     for key in holder.working_data.keys():
         res = fetch(query.format(key), from_file=False)
         if res:
