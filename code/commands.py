@@ -993,17 +993,32 @@ def display_fees_by_category_cmd():
     All fees being charged, wether already paid or not.
     """
     dock_query = """
-SELECT P.personID, P.first, P.last, P.suffix, DP.cost
+SELECT P.personID, P.first, P.last, P.suffix, DP.cost,
+--         0           1       2        3        4
+        P.email, P.phone
+--         5        6
 FROM People as P
 JOIN Dock_Privileges as DP
 ON P.personID = DP.personID
         """
     kayak_query = """
 SELECT P.personID, P.first, P.last, P.suffix,
-        K.slot_code, K.slot_cost
+        K.slot_code, K.slot_cost, P.email, P.phone
+--          4             5           6      7
 FROM People as P
 JOIN Kayak_Slots as K
 ON P.personID = K.personID
+        """
+    mooring_query = """
+/* modified version of Sql/mooring1.sql */
+SELECT P.personID, P.first, P.last, P.suffix,
+--         0          1        2       3
+        M.mooring_code, M.mooring_cost, P.email, P.phone
+--         4                  5            6        7
+FROM People as P
+JOIN Moorings as M
+ON P.personID = M.personID
+WHERE NOT M.mooring_cost = 0;
         """
     ret = ['Special Fees Being Charged',
            '==========================',
@@ -1019,17 +1034,30 @@ ON P.personID = K.personID
                '  ---------------------------',
                ]
     for tup in routines.fetch(dock_query, from_file=False):
-        dock.append(f"  {name_from_tup(tup)}")
+        if tup[5]:
+            dock.append(f"  {name_from_tup(tup)} ({tup[5]})")
+        else:
+            dock.append(f"  {name_from_tup(tup)} ({tup[6]})")
+
     for tup in routines.fetch(kayak_query, from_file=False):
-        kayak.append(f"  {tup[4]} {name_from_tup(tup)}")
-    for tup in routines.fetch("Sql/mooring1.sql"):
-        mooring.append(
-                f"  {tup[4]} @ ${tup[5]} {name_from_tup(tup)}")
+        if tup[6]:
+            kayak.append(f"  {tup[4]} {name_from_tup(tup)} ({tup[6]})")
+        else:
+            kayak.append(f"  {tup[4]} {name_from_tup(tup)} ({tup[7]})")
+    for tup in routines.fetch(mooring_query, from_file=False):
+        if tup[6]:
+            mooring.append(
+        f"  {tup[4]} @ ${tup[5]} {name_from_tup(tup)} ({tup[6]})")
+        else:
+            mooring.append(
+        f"  {tup[4]} @ ${tup[5]} {name_from_tup(tup)} ({tup[7]})")
+
     ret.extend(dock)
     ret.append('')
     ret.extend(kayak)
     ret.append('')
     ret.extend(mooring)
+    f = input()
     return ret
 
 def welcome_new_member_cmd():
