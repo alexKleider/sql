@@ -4,5 +4,5 @@ INSERT INTO Applicants (personID,
         app_rcvd, fee_rcvd)
 VALUES ({personID}, 
         {sponsor1ID},{sponsor2ID},
-        {app_rcvd}, {fee_rcvd})
+        "{app_rcvd}", "{fee_rcvd}")
 ;

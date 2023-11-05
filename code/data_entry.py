@@ -8,6 +8,9 @@ except ImportError: import routines
 try: from code import helpers
 except ImportError: import helpers
 
+try: from code import textual
+except ImportError: import textual
+
 """
 Handle adding data to the db.
 An ammalgamation of what used to be applicants.py
@@ -16,7 +19,6 @@ and update.py
 Provides
     data_entry.add_new_applicant_cmd()
 """
-
 
 def add2tables(data, report=None):
     """
@@ -32,27 +34,28 @@ def add2tables(data, report=None):
     all_keys = [key for key in data.keys()]
     key_params = ', '.join(all_keys[:10])
     all_values =  [value for value in data.values()]
+    # all values to be entered into People table are text:
     val_params = '"' + '", "'.join(all_values[:10]) + '"'
     people_insert_query = f"""
     INSERT INTO People ({key_params})
     VALUES ({val_params})
     ;"""
-#   print(people_insert_query)
+    print('\n' + people_insert_query)
     yn = input(
-        f"OK to commit query:\n{people_insert_query}? (y/n): ")
+        f"OK to commit the query shown above?: (y/n): ")
     if yn and yn[0] in 'Yy':
         res = routines.fetch(people_insert_query,
                 from_file=False,
                 commit=True)
+        print("...successfull addition to People table.")
+        # Need to retrieve newly assigned personID...
+        res = routines.fetch_d_query("Sql/id_from_names_fd.sql",
+                data)
+        data['personID'] = res[0][0]
+        print(f"New personID is {data['personID']}")
     else: 
         _ = input("Aborting data entry! rtn to continue: ")
         return
-
-    # Need to retrieve newly assigned personID...
-    res = routines.fetch_d_query("Sql/id_from_names_fd.sql",
-            data)
-    data['personID'] = res[0][0]
-#   _ = input(f"personID is {data['personID']}")
 
     # Set data needed and then make the Person_Status entry...
     if data["fee_rcvd"]:
@@ -164,11 +167,12 @@ def add_new_applicant_cmd():
             data = get_new_applicant_data(stream, report=ret)
             break
         elif answer[0] in "cC":
-            data = code.textual.get_demographics(report=ret)
+            data = textual.get_demographics(report=ret)
             if data:
                 break
+    routines.add_sponsorIDs(data)
     print(f"\nSo far following has been collected:\n{data}")
-    yn = input("OK to made data base entries? (y/n) ")
+    yn = input("OK to make data base entries? (y/n) ")
     if yn and yn[0] in "yY":
         add2tables(data, report=ret)  # adds to three tables:
             #1. People

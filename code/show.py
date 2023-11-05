@@ -148,7 +148,8 @@ def report_applicants(listing):
         query = f"""SELECT
                 sponsor1ID, sponsor2ID,       -- 0, 1,
                 meeting1, meeting2, meeting3, -- 2,3,4
-                fee_rcvd                      -- 5
+--              fee_rcvd                      -- 5
+                app_rcvd                      -- 5
                 FROM Applicants
                 WHERE personID = {item[-3]};"""
 #       _ = input(query)

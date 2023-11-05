@@ -117,7 +117,7 @@ def import_query(sql_file_name):
 def fetch_d_query(sql_file_name, data, commit=False):
     """
     Assumes <sql_file_name> is a file containting an SQL query
-    with place holders keyed by key/value pairs s available
+    with place holders keyed by key/value pairs available
     in <data>, a dict.
     """
     query = import_query(sql_file_name)
@@ -774,6 +774,23 @@ def getIDs_by_status(statusID):
     res = fetch(query, from_file=False)
     return [entry[0] for entry in res]
 
+
+def add_sponsorIDs(data):
+    """
+    <data> is a dict assumed to have fields sponsor1 & sponsor2.
+    Returns data with fields sponsor1ID and sponsor2ID.
+    Modifies data (passed by reference since it's mutable.
+    """
+    for spName, spID in (('sponsor1', 'sponsor1ID'),
+                        ('sponsor2', 'sponsor2ID'),):
+        while True:
+            res = pick_People_record(header_prompt=
+                            f'Listed sponsor is: {data[spName]}')
+            yn = input(f"Accept {repr(res)}? y/n: ")
+            if yn and yn[0] in yn:
+                data[spID] = res['personID']
+                break
+
 def add_sponsors2data(data):
     """
     <data> is a record/dict
@@ -948,6 +965,12 @@ def exercise_keys_from_schema():
         print(f"{schema}: " +
             f"{repr(keys_from_schema(schema))}")
 
+def exercise_add_sponsorIDs():
+    data = dict(sponsor1= "Alex Kleider some date",
+                sponsor2= "June Kleider some other date",
+                )
+    add_sponsorIDs(data)
+    print(f"new data: {repr(data)}")
 
 if __name__ == '__main__':
 #   print(get_sponsors(110))
@@ -960,4 +983,5 @@ if __name__ == '__main__':
 #   exercise_assign_applicants2welcome()
 #   exercise_add_sponsor_cc2data()
 #   exercise_pick_People_record()
-    exercise_keys_from_schema()
+#   exercise_keys_from_schema()
+    exercise_add_sponsorIDs()

@@ -25,6 +25,7 @@ def get_demographics(report=None):
     routines.add2report(report,
             "Entering gui/get_demographics...")
     fields = routines.keys_from_schema("People", brackets=(1,0))
+    fields.extend(["sponsor1", "sponsor2", "app_rcvd", "fee_rcvd"])
     layout = [  # the entry fields...
             [sg.Text(f_name), sg.InputText()]
             for f_name in fields
@@ -125,5 +126,6 @@ def main1():
         create_dem_file(data, report=report)
 
 if __name__ == "__main__":
-    test_create_dem_file()
+#   test_create_dem_file()
+    main1()
 
