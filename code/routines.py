@@ -42,12 +42,14 @@ def closeDB(database, cursor):
 
 def assure_only1response(listing):
     """
+    Does nothing if len(listing)==1!
+    Otherwise...
     <listing> is a query response
     Stops execution if it contains more than one row.
     Use when exactly one response is expected.
     """
     if len(listing) != 1:
-        print("listing contains 0 or > 1 item(s):")
+        print(f"listing contains {len(listing)} item(s)...")
         for item in listing:
             print(item)
         print("Time to quit!")
@@ -59,7 +61,7 @@ def add2report(report, line):
     This should be incorporated into code.helpers
     Supports many routines which have a named 'report' param.
     """
-    if report and isinstance(report, list):
+    if isinstance(report, list):
         report.append(line)
 
 
@@ -156,6 +158,11 @@ def query2dict_listing(query, keys,
 
 
 def display(instance, exclude=None):
+    """
+    A utility best put into helpers.
+    Used to discover attributes of an instance.
+    They are returned as a list (exclusive of dunder values.)
+    """
     ret = ["Displaying..", ]
     for item in instance.__dir__():
         if item.startswith('__'):
@@ -225,6 +232,7 @@ def get_ids_by_name(first, last, db=db_file_name):
 def get_people_fields_by_ID(db_file_name=db_file_name,
                                     fields=None):
     """
+    ## What is this for???
     Select values of the <fields> columns from the People table.
     Default (<fields> not specified) is to select all fields.
     """
@@ -316,59 +324,6 @@ def get_name(personID):
     return "{0:} {1:}".format(*res) + suffix
 
 
-def pick_People_record(header_prompt=None):
-    """
-    Prompts for name clues and either:
-    Returns a record from the People table
-    or returns None
-    """
-    query = " SELECT * FROM People WHERE {};"
-    keys = keys_from_schema("People")
-    if header_prompt: print(header_prompt)
-    print("Narrow the search...")
-    first = input("First name (partial or blank): ")
-    last = input("Last name (partial or blank): ")
-    if first and last:
-        query = query.format(
-                f"first LIKE '{first}%' AND last LIKE '{last}%'")
-    elif first:
-        query = query.format(f"first LIKE '{first}%'")
-    elif last:
-        query = query.format(f"last LIKE '{last}%'") 
-    else:  # no entry provided
-        return
-    res = fetch(
-                query,
-#               db=club.DB,
-                from_file=False,
-                )
-    listing = [helpers.make_dict(keys, entry) for entry in res]
-    if not listing: return
-    while True:
-        choices = [d['personID'] for d in listing]
-        print("Choose an ID from one of the following:")
-        for d in listing:
-            print("{personID:3>} {first} {last} {suffix}"
-                                        .format(**d))
-        ID = input("Your choice? (blank to exit)  ")
-        try:
-            ID = int(ID)
-        except ValueError:
-            print("Must be an integer!")
-            continue
-        print(f"You chose {ID}")
-        if not ID:
-            print("No ID entered, returning")
-            return
-        if ID in choices:
-            for d in listing:
-                if d['personID'] == ID:
-                    print(f"returning: {d}")
-                    return d
-        else:
-            print(f"{ID} not one of the choices")
-
-
 def id_by_name():
     """
     Returns a listing of strings: '{Id} {first} {last} {suffix}'
@@ -447,6 +402,7 @@ def get_rec_by_ID(ID):
     """
     Returns a record corresponding to personID if record
     exists, otherwise returns None
+    (Client is pick_People_record)
     """
     res = fetch(people_query.format(ID), from_file=False)
 #   _ = input(res)
@@ -461,12 +417,12 @@ def get_rec_by_ID(ID):
         return ret
 
 
-
 def pick_People_record(header_prompt=None, report=None):
     """
     Returns either a dict representing a person in the People
     table...  or None.
     Prompts for name clues (which can be ignored)
+    #?Makes id_by_name() redundant??
     """
     if isinstance(report, list):
         report.append(
@@ -522,7 +478,7 @@ def pick_People_record(header_prompt=None, report=None):
 #                   print(f"returning: {d}")
                     if isinstance(report, list):
                         report.append(
-                            "... pick_People_record => a dict.")
+                            f"pick_People_record => \n{repr(d)}")
                     return d
         else:
             rec = get_rec_by_ID(ID)
