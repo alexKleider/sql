@@ -61,7 +61,8 @@ def get_numbers(listing, verbose=False):
     report = (
             f"Total membership stands at {len(listing)}",
             f"of whom {m1} are 'members in good standing' while",
-            f"{m0} are still within their first year of membership.",
+            f"{m0} (indicated by an (*) asterix) are still",
+             "within their first year of membership.",
             )
     if verbose:
         for line in report:
@@ -176,6 +177,8 @@ def report_applicants(listing):
 def show_applicants_cmd():
     listing = get_listing_2f(query_files["applicant"])
     report = report_applicants(listing)
+    report.append(
+            f"\nReport generated {helpers.date}.")
     ans = input(
       f"Send applicant listing to {file4app_report}? (y/n) ")
     if ans and ans[0] in 'yY':

@@ -68,7 +68,9 @@ queries = dict(
                 AND PS.statusID in (11, 15)
                 AND NOT P.email = ''
                 AND (PS.end = '' OR PS.end > {})
-            ;""".format(helpers.eightdigitdate),
+                AND (PS.begin = '' OR PS.begin < {})
+            ;""".format(helpers.eightdigitdate,
+                        helpers.eightdigitdate),
     Officers="""SELECT P.first, P.last, P.suffix
             FROM people as P
             JOIN Person_Status as PS
