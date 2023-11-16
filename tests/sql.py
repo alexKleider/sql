@@ -16,13 +16,15 @@ queries_w_keys = [
         FROM Receipts as R
         JOIN People as P
         ON P.personID = R.personID
-        WHERE R.date_received > "20230901"
+        WHERE R.ap_fee != 0
         ORDER BY R.date_received;
     """,
     "personID first last suffix received dues ap_fee".split(),
     ),
 
     ("""
+        SELECT 
+--      WHERE R.date_received > "20230901"
     """,
     '',
     ),

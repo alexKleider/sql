@@ -22,11 +22,13 @@ Provides
 
 def add2tables(data, report=None):
     """
+    One time use for each new applicant.
     <data> is a dict created based on an application.
     Entries need to be made into the following tables:
     People: demographics
     Person_Status: 1. no fee, 2. fee paid, (3. acknowledged (a0))
     Applicants: sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd
+    ## Missing is an entry into the Receipts table
     """
     # data for People table is standard demographics
     #   ... already collected but need assigned personID
@@ -59,6 +61,8 @@ def add2tables(data, report=None):
 
     # Set data needed and then make the Person_Status entry...
     if data["fee_rcvd"]:
+        ## good place to make entry into Receipts table ##
+        # .. use data['personID']
         data['statusID'] = 2
         data['begin'] = data['fee_rcvd']
     else:
@@ -77,17 +81,18 @@ def add2tables(data, report=None):
                 .format(**data),
             "Tables updated: People, Person_Status & Applicants.",
             "Still need to mail welcome letter.",
+            "Also: need to make an entry into Receipts table prn",
             ))
 
 
-def get_new_applicant_data(file_content, report=None):
+def file2app_data(file_content, report=None):
     """
+    Returns a dict with keys relevant to new applicants.
     <file_content> must refer to text read from a file having
     one line for each (except the first) field present in the
     'People' table schema followed by a line each for sponsor1,
     sponsor2, date application was received and date fee was
     received (enter '0' if fee did not accompany the application.
-    Returns a dict with keys relevant to new applicants.
     Note: Sponsors in the source are by three names (first, last,
     suffix) and a date (which is not used)
     but the code translates these into personID numbers.
@@ -119,10 +124,10 @@ def get_new_applicant_data(file_content, report=None):
         ret[sponsor] = res[0][0]
     if isinstance(report, list):
 #       report.append(
-#           f"get_new_applicant_data() called on\n{file_content}")
+#           f"file2app_data() called on\n{file_content}")
         if (not (len(data) == len(keys))):
             report.append("Lengths don't match.")
-        report.append(f"get_new_applicant_data returning:\n{ret}")
+        report.append(f"file2app_data returning:\n{ret}")
     return ret  # returns dict of new applicant data from file
 
 
@@ -164,7 +169,7 @@ def add_new_applicant_cmd():
                 continue
             # get the data taken from application and transcribed
             # into a text file one line per data item:
-            data = get_new_applicant_data(stream, report=ret)
+            data = file2app_data(stream, report=ret)
             break
         elif answer[0] in "cC":
             data = textual.get_demographics(report=ret)

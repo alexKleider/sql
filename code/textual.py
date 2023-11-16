@@ -16,45 +16,47 @@ except ImportError: import routines
 try: from code import helpers
 except ImportError: import helpers
 
-def get_demographics(report=None):
+def get_demographics(applicant=True, report=None):
     """
-    Uses a GUI to collect an entry for the People table.
-    Returns a dict or None if no entry.
+    Uses a GUI to collect all demographic data needed to create
+    an entry into the People table AND (unless <applicant> is set
+    to <False>) also collect two sponsor names and app_rcvd and
+    fee_rcvd fields.
+    Caution: do not hit the minimize button ([_] top right
+    corner!) This causes the system to hang!!!
+    Returns a dict or None (if user aborts.)
     Client is code/data_entry.py
     """
     routines.add2report(report,
             "Entering textual/get_demographics...")
     fields = routines.keys_from_schema("People", brackets=(1,0))
-    fields.extend(["sponsor1", "sponsor2", "app_rcvd", "fee_rcvd"])
+    if applicant==True:
+        fields.extend(["sponsor1", "sponsor2", "app_rcvd", "fee_rcvd"])
     layout = [  # the entry fields...
-            [sg.Text(f_name), sg.InputText()]
+            [sg.Text(f_name),
+                sg.Input(expand_x=True, key=f_name)]
             for f_name in fields
             ]    #  ...now and two Buttons:
     layout.append([sg.Button('OK'), sg.Button('Cancel')])
-    window = sg.Window('Enter demographics', layout)
 
-    # Create the event loop
-    while True:
-        data = None
-        event, values = window.read()
-        if event in (None, 'Cancel'):
-            break
-        elif event == 'OK':  # create a dict
-            data = {}
-            for n in range(len(values)):
-                data[fields[n]] = values[n]
-            break
-
+    window = sg.Window('Enter demographics', layout,
+#               no_titlebar=True
+                )
+    event, values = window.read()
     window.close()
-    if report:
-        if data:
-            entry = ["... gui/get_demographics returning:"]
-            for key, value in data.items():
-                entry.append(f"")
-        else:
-            entry = "... gui/get_demographics returning None."
-    routines.add2report(report, entry)
-    return data
+    if event in (None, 'Cancel'):
+        routines.add2report(report,
+                "... gui/get_demographics returning None.")
+        return
+    elif event == 'OK':
+        data = values
+        entry = ["... gui/get_demographics returning:"]
+        for key, value in data.items():
+            entry.append(f"\t{key}: {value}")
+        routines.add2report(report, entry)
+        return data
+    else:
+        assert False, f"!Unexpected event: {repr(event)}!"
 
 
 def create_dem_file(data, report=None):
@@ -393,7 +395,11 @@ def test_pick_person():
 
 
 if __name__ == "__main__":
-    test_pick_person()
+    report = []
+    get_demographics(report=report,
+            applicant=False)
+    print('\n'.join(report))
+#   test_pick_person()
 #   test_create_dem_file()
 #   main1()
 #   test_pick_People_record()

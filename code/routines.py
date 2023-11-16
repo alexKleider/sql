@@ -62,7 +62,10 @@ def add2report(report, line):
     Supports many routines which have a named 'report' param.
     """
     if isinstance(report, list):
-        report.append(line)
+        if isinstance(line, str):
+            report.append(line)
+        elif isinstance(line, list):
+            report.extend(line)
 
 
 def fetch(sql_source, db=db_file_name, params=None, data=None,
