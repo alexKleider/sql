@@ -92,97 +92,97 @@ def create_dem_file(data, report=None):
             else:
                 outf.write(value+'\n')
 
-def pick_People_record(header_prompt=None, report=None):
+def people_choices(header_prompt=None, report=None):
     """
-    Provides code/routines/pick_People_record functionality!
+    GUI method of getting a selected list of people from
+    which to choose: returns a listing of ID, first, last tuples
+    OR None.
+    1st step in providing 
+    code/routines/pick_People_record functionality!
     """
     routines.add2report(report,
-            "Entering textual/pick_People_record...")
-    while True:
-        # 1st collect the 'hints' ==> data:
-        fields = routines.keys_from_schema(
-                        "People", brackets=(1,7))
-        layout = [[sg.Text(f_name), sg.InputText()]
-                        for f_name in fields  ]
-        layout.append([sg.Button('OK'),
-                            sg.Button('Cancel')])
-        window = sg.Window(
-#           'Enter hints...',
-            'Enter hints using "%" as wild cards:',
-                                        layout)
-        while True:
-            data = None
-            event, values = window.read()
-            if event == 'OK':
-                if not values:  # could be an empty list
-                    print("Got an empty list; try again.")
-                    continue
-                data = {}
-                for n in range(len(values)):
-                    data[fields[n]] = values[n]
-                break  # got what we want!
-            elif event == None:
-                _ = input("event returns None!")
-                pass
-            elif event == 'Cancel':
-                _ = input("event returns Cancel")
-                pass
-        window.close()
-        # report prn (expect to redact this section...
-        routines.add2report(report, "... returning:")
-        if data:
-            for key, value in data.items():
-                routines.add2report(report,
-                        f"key: {key}   value: {value}")
-        else:
-            routines.add2report(report,
-                        f"... returned {repr(data)}")
-        # use hints to get candidates:
-        query_lines = [
-            "Select personID, first, last, suffix",
-                "from People where ", ]
-        additional_lines = []
-        if data['first']:
-            additional_lines.append(
-                f"""first like "{data['first']}" """)
-        if data['last']:
-            additional_lines.append(
-                f"""last like "{data['last']}" """)
-        if data['suffix']:
-            additional_lines.append(
-                f"""suffix like "{data['suffix']}" """)
-        additional_lines = " AND ".join(additional_lines)
-        query_lines.append(additional_lines)
-        query = ' '.join(query_lines)
-        query = query+';'
-        ret = routines.fetch(query, from_file=False)
-#       _ = input(repr(ret))
-#       for item in ret:
-#           print(item)
-        return ["{0!s:>3} {1:} {2:} {3:}".format(*item) 
-                for item in ret]
+            "Entering textual/people_choices...")
+    # 1st collect the 'hints' ==> data:
+    fields = routines.keys_from_schema(
+                    "People", brackets=(1,7))
+    layout = [[sg.Text(f_name), sg.InputText()]
+                    for f_name in fields  ]
+    layout.append([sg.Button('OK'),
+                        sg.Button('Cancel')])
+    window = sg.Window(
+        'Enter hints using "%" as wild cards:',
+                                    layout)
+    data = None
+    event, values = window.read()
+    if event == 'OK':
+#       print("event OK, set(values.values()): " +
+#           f"{repr(set(values.values()))}") 
+        if set(values.values()) == {''}:  # all empty strings
+            report.append("Got an empty list ==> returning None")
+            return
+        data = {}
+        for n in range(len(values)):
+            data[fields[n]] = values[n]
+    elif event in (None, "Cancel"): 
+        report.append(
+                f"event: {repr(event)} ==> returning None")
+        return
+    else:
+        assert False, f"Unexpected event: {repr(event)}"
+    window.close()
+    # report prn (expect to redact this section...
+    routines.add2report(report, "First window returning:")
+    for key, value in data.items():
+        routines.add2report(report,
+                f"key: {key}   value: {value}")
+    # use hints to get candidates:
+    query_lines = [
+        "Select personID, first, last, suffix",
+            "from People where ", ]
+    additional_lines = []
+    if data['first']:
+        additional_lines.append(
+            f"""first like "{data['first']}" """)
+    if data['last']:
+        additional_lines.append(
+            f"""last like "{data['last']}" """)
+    if data['suffix']:
+        additional_lines.append(
+            f"""suffix like "{data['suffix']}" """)
+    additional_lines = " AND ".join(additional_lines)
+    query_lines.append(additional_lines)
+    query = ' '.join(query_lines)
+    query = query+';'
+#   _ = input(f"query is {repr(query)}")
+    ret = routines.fetch(query, from_file=False)
+    routines.add2report(report, "query returning:")
+    for item in ret:
+        routines.add2report(report, repr(item))
+    return ["{0!s:>3} {1:} {2:} {3:}".format(*item) 
+            for item in ret]
 
 
 def choose(choices, header="CHOOSE ONE",
-                    subheader="Pick a person"):
+                    subheader="Pick a person",
+                    report= None):
     """
     Returns one of the <choices> (a list of strings)
     or something that'll evaluate to False
-    SELECT returns the choice
-    CANCEL returns "CANCEL"
-    [X] (close window) returns 0
-    Empty list ==> None
+    Adds to <report> (a list of strings) if provided.
     """
     #set the theme for the screen/window
-    if not choices: return
-    sg.theme('SandyBeach')
-    #define layout
+    routines.add2report(report,
+            "Entering code.textual.choose")
+    if not choices:
+        routines.add2report(report,
+                "No choices provided ==> exit")
+        return
+#   sg.theme('SandyBeach')
     layout=[[sg.Text(subheader,size=(30,1),
 #           font='Lucida',justification='left'
             )],
-            [sg.Combo(choices,
-                default_value=choices[0],
-                key='choice')],
+            [sg.Listbox(values=choices, select_mode='extended',
+                key='CHOICE', size=(30,len(choices)))],
             [sg.Button('SELECT',
 #               font=('Times New Roman',12)
                 ),
@@ -190,29 +190,19 @@ def choose(choices, header="CHOOSE ONE",
 #                   font=('Times New Roman',12)
                     )
             ]]
-    #Define Window
     win =sg.Window(header,layout)
-    #Read  values entered by user
     e, v = win.read()
-    #close first window
     win.close()
-    #access the selected value in the list box and add them to a string
-    print(f"e returns {e}")
-    if e == "CANCEL":
-#       print("Cancelled! ...returning 0")
-        return 0
+    routines.add2report(report,
+            f"Window returning e: {repr(e)}, v: {repr(v)}")
+
+    if (e != "SELECT") or not v['CHOICE']:
+        routines.add2report(report, "Returning None")
+        return
     else:
-#       print("you chose: ",end='')
-#       print(repr(v['choice']))
-        return v['choice']
-    # returns none if not cancelled and no choice made
-    # or if input list is empty
-    redact = '''
-    sg.popup('Option Chosen',
-                'You chose:'+ v['choice'])
-    print(f"tup: {tup}")
-    print(f"e: {e}, v: {v}")
-    '''
+        routines.add2report(report,
+          f"code.textual.choose returning {repr(v['CHOICE'])}")
+        return v['CHOICE']
 
 
 def test_create_dem_file():
@@ -249,33 +239,20 @@ def main1():
     if yn and yn[0] in "yY":
         create_dem_file(data, report=report)
 
-def test_pick_People_record():
-#   report = ["main2",]
-    report = None
-    ret = pick_People_record(report=report)
-    print("pick_People_record returned:")
-    n = 1
-    for item in ret:
-        print(f"{n}: {repr(item)}")
-        n+=1
-#   if report:
-#       for line in report:
-#           print(line)
-
 def test_choose():
-    listing = (
-        ['1 Alex Kleider', '2 Randy Rush', '3 Don Murch', ],
-        ['1 Alex Kleider', '2 Randy Rush', '3 Don Murch', ],
-        ['1 Alex Kleider', '2 Randy Rush', '3 Don Murch', ],
-        ['1 Alex Kleider', '2 Randy Rush', '3 Don Murch', ],
-        [],
-        )
-    for options in listing:
-        print(f"From options {options} your chose:")
-        ret = choose(options,
-                    header="[X] to abort, CANCEL to begin again",
-                    subheader="Select your choice.")
-        print(f"'choose' returning: {repr(ret)}")
+    options =['1 Alex Kleider',
+            '2 Randy Rush',
+            '3 Don Murch', ]
+    while True:
+        yn = input("\nRun test_choose? (y/n)")
+        report = []
+        if yn and yn[0] in 'yY':
+            ret = choose(options, report=report,
+                        header="[X] to abort, CANCEL to begin again",
+                        subheader="Select your choice.")
+            for line in report: print(line)
+        else:
+            break
 
 
 def pick_person(header="CHOOSE ONE",
@@ -354,18 +331,20 @@ def pick_person(header="CHOOSE ONE",
 
         #define layout
         layout=[[sg.Text(subheader,size=(30,1),
-    #           font='Lucida',justification='left'
                 )],
                 [sg.Combo(choices,
                     default_value=choices[0],
                     key='choice')],
                 [sg.Button('SELECT',
-    #               font=('Times New Roman',12)
                     ),
                 sg.Button('CANCEL',
-    #                   font=('Times New Roman',12)
                         )
                 ]]
+
+#       layout=[[sg.Text(choice), sg.InputText()]
+#               for choice in choices]
+#       layout.append([sg.Button('OK'),
+#           sg.Button('Cancel')])
         #Define Window
         win =sg.Window(header,layout)
         #Read  values entered by user
@@ -393,15 +372,27 @@ def test_pick_person():
         if not (yn and yn[0] in 'yY'):
             break
 
+def test_people_choices():
+    report = []
+    res = people_choices(report=report,
+        header_prompt = "Choose from the People table...")
+    if not res:
+        print(f"people_choices returned {repr(res)}")
+    else:
+        print("pick_Poeple_record returning the following...")
+        for item in res:
+            print(f"{repr(item)}")
+    print("\nReport follows...")
+    print('\n'.join(report))
+
+
 
 if __name__ == "__main__":
-    report = []
-    get_demographics(report=report,
-            applicant=False)
-    print('\n'.join(report))
+#   test_people_choices()
+#   get_demographics(report=report,
+#           applicant=False)
 #   test_pick_person()
 #   test_create_dem_file()
 #   main1()
-#   test_pick_People_record()
-#   test_choose()
+    test_choose()
 

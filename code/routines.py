@@ -931,6 +931,11 @@ def exercise_add_sponsorIDs():
     add_sponsorIDs(data)
     print(f"new data: {repr(data)}")
 
+def test_id_by_name():
+    while True:
+        # exit using ^D
+        _ = input(repr(id_by_name()))
+
 if __name__ == '__main__':
 #   print(get_sponsors(110))
 #   exercise_get_person_fields_by_ID(146)
@@ -943,4 +948,5 @@ if __name__ == '__main__':
 #   exercise_add_sponsor_cc2data()
 #   exercise_pick_People_record()
 #   exercise_keys_from_schema()
-    exercise_add_sponsorIDs()
+#   exercise_add_sponsorIDs()
+    test_id_by_name()
