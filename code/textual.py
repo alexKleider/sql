@@ -97,14 +97,14 @@ def people_choices(header_prompt=None, report=None):
     GUI method of getting a selected list of people from
     which to choose: returns a listing of ID, first, last tuples
     OR None.
+    Use '%' wild card for selection.
     1st step in providing 
     code/routines/pick_People_record functionality!
     """
     routines.add2report(report,
             "Entering textual/people_choices...")
-    # 1st collect the 'hints' ==> data:
-    fields = routines.keys_from_schema(
-                    "People", brackets=(1,7))
+    keys = routines.keys_from_schema("People")
+    fields = keys[1:4]
     layout = [[sg.Text(f_name), sg.InputText()]
                     for f_name in fields  ]
     layout.append([sg.Button('OK'),
@@ -115,8 +115,6 @@ def people_choices(header_prompt=None, report=None):
     data = None
     event, values = window.read()
     if event == 'OK':
-#       print("event OK, set(values.values()): " +
-#           f"{repr(set(values.values()))}") 
         if set(values.values()) == {''}:  # all empty strings
             report.append("Got an empty list ==> returning None")
             return
@@ -137,7 +135,8 @@ def people_choices(header_prompt=None, report=None):
                 f"key: {key}   value: {value}")
     # use hints to get candidates:
     query_lines = [
-        "Select personID, first, last, suffix",
+#       "Select personID, first, last, suffix",
+        "Select *",
             "from People where ", ]
     additional_lines = []
     if data['first']:
@@ -154,19 +153,25 @@ def people_choices(header_prompt=None, report=None):
     query = ' '.join(query_lines)
     query = query+';'
 #   _ = input(f"query is {repr(query)}")
-    ret = routines.fetch(query, from_file=False)
+#   ret = routines.fetch(query, from_file=False)
+    ret = routines.query2dict_listing(query, keys,
+            from_file=False)
+#   _ = input(f"{repr(ret)}")
     routines.add2report(report, "query returning:")
     for item in ret:
         routines.add2report(report, repr(item))
-    return ["{0!s:>3} {1:} {2:} {3:}".format(*item) 
-            for item in ret]
+    return ret
+#   return ["{0!s:>3} {1:} {2:} {3:}".format(*item) 
+#           for item in ret]
 
 
 def choose(choices, header="CHOOSE ONE",
                     subheader="Pick a person",
                     report= None):
     """
-    Returns one of the <choices> (a list of strings)
+    <choices> are a list of dicts; the first 3 fields are
+    presented for consideration.
+    Returns one of the dicts
     or something that'll evaluate to False
     Adds to <report> (a list of strings) if provided.
     """
@@ -178,10 +183,12 @@ def choose(choices, header="CHOOSE ONE",
                 "No choices provided ==> exit")
         return
 #   sg.theme('SandyBeach')
+    options = ["{personID:>3} {first} {last}".format(**rec)
+            for rec in choices]
     layout=[[sg.Text(subheader,size=(30,1),
 #           font='Lucida',justification='left'
             )],
-            [sg.Listbox(values=choices, select_mode='extended',
+            [sg.Listbox(values=options, select_mode='extended',
                 key='CHOICE', size=(30,len(choices)))],
             [sg.Button('SELECT',
 #               font=('Times New Roman',12)
@@ -195,14 +202,43 @@ def choose(choices, header="CHOOSE ONE",
     win.close()
     routines.add2report(report,
             f"Window returning e: {repr(e)}, v: {repr(v)}")
-
+#   _ = input(f"Window returning e: {repr(e)}, v: {repr(v)}")
+#   Window returning e: 'SELECT', v: {'CHOICE': [' 99 Andrew Kleinberg']}
+    personID = v['CHOICE'][0].strip().split()[0]
     if (e != "SELECT") or not v['CHOICE']:
         routines.add2report(report, "Returning None")
         return
     else:
         routines.add2report(report,
-          f"code.textual.choose returning {repr(v['CHOICE'])}")
-        return v['CHOICE']
+          "window in code.textual.choose returning..." +
+          f"\n{repr(v['CHOICE'])}")
+#       window in code.textual.choose returning...
+#       [' 99 Andrew Kleinberg']
+#       _ = input(f"iterating thru {repr(choices)}")
+        for rec in choices:
+            print(f"{repr(rec)}")
+            if rec['personID'] == int(personID):
+                return rec
+
+
+def selectP_record(header_prompt,
+                    subheader,
+                    report=None):
+    choices = people_choices(header_prompt=header_prompt,
+                            report=report)
+    if choices:
+        ret = choose(choices,
+                header=subheader,
+                report=report)
+        if ret:
+            return ret
+        else:
+            routines.add2report(report,
+            "code/textual.selectP_record 2nd stage failure.")
+            return
+    else:
+        routines.add2report(report,
+            "code/textual.selectP_record 1st stage failure.")
 
 
 def test_create_dem_file():
@@ -379,20 +415,33 @@ def test_people_choices():
     if not res:
         print(f"people_choices returned {repr(res)}")
     else:
-        print("pick_Poeple_record returning the following...")
+        print("pick_People_record returning the following...")
         for item in res:
             print(f"{repr(item)}")
     print("\nReport follows...")
     print('\n'.join(report))
 
 
+def test_selectP_record():
+    report = []
+    res = selectP_record("Provide hints", "make a choice", report)
+    if not res:
+        print(f"selectP_record returned {repr(res)}")
+    else:
+        print("selectP_record returning the following...")
+        for key, value in res.items():
+            print(f"key: {repr(key)}, value:{repr(value)}")
+    _ = input("\nReport follows...")
+    print('\n'.join(report))
+
 
 if __name__ == "__main__":
 #   test_people_choices()
+#   test_choose()
+    test_selectP_record()
 #   get_demographics(report=report,
 #           applicant=False)
 #   test_pick_person()
 #   test_create_dem_file()
 #   main1()
-    test_choose()
 
