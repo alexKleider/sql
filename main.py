@@ -19,7 +19,6 @@ Some development is taking place in utilities.py
 
 from code import commands
 
-
 if __name__ == '__main__':
     yn = input("Do you wish to see a report? (y/n): ")
     # 2do: report has to do with program progress

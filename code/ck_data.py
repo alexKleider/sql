@@ -364,21 +364,38 @@ def applicant_set():
     pass
     
 
-def display_google_contact_data():
-    print("data.py compiles without errors.")
+def google_contacts_report():
+    """
+    All google data in a human readable form.
+    """
+    report = []
     holder = club.Holder()
     gather_contacts_data(holder)
-    print("\n== gmail_by_name ==")
+    report.append("== gmail_by_name ==")
+    sub_report = []
     for key, value in holder.gmail_by_name.items(): 
-        print(f"{key}: {value}")
-    _ = input()
-    print("\n== groups_by_name ==")
+        sub_report.append(f"{key}: {value}")
+    report.extend(sorted(sub_report))
+    report.append("\n== groups_by_name ==")
+    sub_report = []
     for key, value in holder.groups_by_name.items():
-        print(f"{key}: {value}")
-    _ = input()
-    print("\n== g_by_group ==")
+        sub_report.append(f"{key}: {value}")
+    report.extend(sorted(sub_report))
+    report.append("\n== g_by_group ==")
+    sub_report = []
     for key, value in holder.g_by_group.items():
-        print(f"{key}: {value}")
+        sub_report.append(f"\n{key}: {sorted(value)}")
+    report.extend(sorted(sub_report))
+    fname = input("Enter file name or '' if to std out: ")
+    if fname:
+        with open(fname, 'w') as outf:
+            for line in report:
+                outf.write(line+'\n')
+    else:
+        for line in report:
+            print(line)
+    return report
+
 
 def ck_labels():
     """
@@ -466,6 +483,8 @@ def mooring_dock():
     return report
 
 def consistency_report():
+    """
+    """
     report = []
     report.extend(ck_labels())
     report.extend(mooring_dock())
@@ -473,10 +492,10 @@ def consistency_report():
 
 
 if __name__ == '__main__':
-#   display_google_contact_data()
-    for line in consistency_report(): 
-        print(line)
-    pass
+    google_contacts_report()
+#   for line in consistency_report(): 
+#       print(line)
+
 
 
 
