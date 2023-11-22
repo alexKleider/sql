@@ -1191,6 +1191,7 @@ def show_officers_cmd():
         for line in routines.fetch(query, from_file=False):
             stream.write(','.join([str(item) for item in line]) + '\n')
         ret.append(f"...results sent to {stream.name}")
+        print(f"File {stream.name} created.")
     return ret
 
 
