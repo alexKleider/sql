@@ -19,6 +19,7 @@ hierarchy = {
         "4web": [show.show_cmd,],
         "applicants": [show.show_applicants_cmd,],
         "4exec": [commands.report_cmd,],
+        "leadership": [commands.leadership_cmd,],
             },
     "Data Entry":{
         "Status Update": [data_entry.change_status_cmd],

@@ -559,9 +559,10 @@ def report_cmd(report=None):
     outfile = f"report{helpers.eightdigitdate}.txt"
     n = len(show.member_listing())
     ret = []
-    helpers.add_header2list("Membership Report (prepared {})"
-                            .format(helpers.date),
-                            ret, underline_char='=')
+    helpers.add_header2list(
+        "Membership Report (prepared {})"
+            .format(helpers.date),
+        ret, underline_char='=')
     ret.append('')
     ret.append('Club membership currently stands at {}.\n'
                   .format(n))
@@ -600,6 +601,36 @@ def report_cmd(report=None):
         outfile = response
     with open(outfile, 'w') as outf:
         outf.write('\n'.join(ret))
+    return ret
+
+def leadership_cmd(report=None):
+    """
+    Prepares listing of current leadership.
+    """
+    routines.add2report(report,
+        "Entering code.commands.leadership_cmd...")
+    outfile = "leadership.txt"
+    ret = []
+    helpers.add_header2list(
+        "Bolinas Rod & Boat Club Leadership (as of {})"
+                        .format(helpers.date),
+        ret, underline_char='=')
+    ret.append('')
+    for tup in routines.fetch(
+                    routines.import_query(
+                        "Sql/leadership_f.sql").format(
+                            helpers.eightdigitdate),
+                        from_file=False):
+        if tup[2]: last = tup[1] + tup[2]
+        else: last = tup[1]
+        name = "{} {}".format(tup[0], last)
+        position = tup[3]
+        ret.append("{:>15}: {}".format(name, position))
+    with open(outfile, 'w') as outf:
+        outf.write('\n'.join(ret))
+    report.append("Leader ship reported as ...")
+    report.extend(ret)
+    report.append("Leaving code.commands.leadership_cmd.")
     return ret
 
 
