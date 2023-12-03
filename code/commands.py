@@ -616,6 +616,8 @@ def leadership_cmd(report=None):
                         .format(helpers.date),
         ret, underline_char='=')
     ret.append('')
+    temp_tups = []
+    longest_name_length = 0
     for tup in routines.fetch(
                     routines.import_query(
                         "Sql/leadership_f.sql").format(
@@ -625,12 +627,18 @@ def leadership_cmd(report=None):
         else: last = tup[1]
         name = "{} {}".format(tup[0], last)
         position = tup[3]
-        ret.append("{:>15}: {}".format(name, position))
+        l = len(name)
+        if l > longest_name_length:
+            longest_name_length = l
+        temp_tups.append((name, position,))
+    f = f"{{:>{l+1}}}: {{}}"
+    for tup in temp_tups:
+        ret.append(f.format(*tup))
     with open(outfile, 'w') as outf:
         outf.write('\n'.join(ret))
     report.append("Leader ship reported as ...")
     report.extend(ret)
-    report.append("Leaving code.commands.leadership_cmd.")
+    report.append("\nLeaving code.commands.leadership_cmd.")
     return ret
 
 
