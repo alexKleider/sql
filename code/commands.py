@@ -553,32 +553,36 @@ def show_names():
         max_width=102, separator='  ')
 
 
-def report_cmd():
+def report_cmd(report=None):
+    routines.add2report(report,
+        "Entering code.commands.report_cmd...")
     outfile = f"report{helpers.eightdigitdate}.txt"
     n = len(show.member_listing())
-    report = []
+    ret = []
     helpers.add_header2list("Membership Report (prepared {})"
                             .format(helpers.date),
-                            report, underline_char='=')
-    report.append('')
-    report.append('Club membership currently stands at {}.\n'
+                            ret, underline_char='=')
+    ret.append('')
+    ret.append('Club membership currently stands at {}.\n'
                   .format(n))
-    report.extend(show.show_applicants_cmd())
+    ret.extend(show.show_applicants_cmd())
     try:
         with open(club.ADDENDUM2REPORT_FILE, 'r') as fobj:
-            addendum = fobj.read()
+            addendum = fobj.read(); addendum=addendum.strip()
             if addendum:
-                print('Appending addendum as found in file: {}'
+                line = ('Appending addendum as found in file: {}'
                         .format(fobj.name))
-                report.append("")
-                report.append(addendum)
+                print(line); routines.add2report(report,line)
+                ret.append("")
+                ret.append(addendum)
             else:
-                print("No addendum found in file: {}"
+                line = ("No addendum found in file: {}"
                         .format(fobj.name))
+                print(line); routines.add2report(report,line)
     except FileNotFoundError:
         print('No addendum (file: {}) found.'
                 .format(club.ADDENDUM2REPORT_FILE))
-    report.extend(
+    ret.extend(
         ['',
          "Respectfully submitted by...\n\n",
          "Alex Kleider, Membership Chair,",
@@ -586,7 +590,7 @@ def report_cmd():
          .format(helpers.next_first_friday(exclude=True)),
          "(or at their next meeting, which ever comes first.)",
          ])
-    report.extend(
+    ret.extend(
         ['',
          'PS Zoom ID: 527 109 8273; Password: 999620',
         ])
@@ -595,8 +599,8 @@ def report_cmd():
     if response:
         outfile = response
     with open(outfile, 'w') as outf:
-        outf.write('\n'.join(report))
-    return report
+        outf.write('\n'.join(ret))
+    return ret
 
 
 def get_non_member_stati():

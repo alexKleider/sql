@@ -48,12 +48,13 @@ def get_numbers(listing, verbose=False):
     """
     m0 = m1 = 0
     for item in listing:
-        status = item[-1]
+        status = item[9]
         if status == 11:
             m0 += 1
         elif status == 15:
             m1 += 1
         else:
+            _ = input(f"{repr(item)}")
             assert False, (
                 "In show.py get_numbers: " +
                 " member status must be 11 or 15!")
@@ -105,16 +106,19 @@ COMMITTEE.
         if last_initial != first_letter:
             first_letter = last_initial
             report.append("")
-        lastfield = item[-1]
-        if lastfield == 11:
+        status = item[9]
+        if status == 11:
             prefix = '*'
-        elif lastfield == 15:
+        elif status == 15:
             prefix = ' '
         else:
+            _ = input(f"Status: {status}")
             assert False, 'Status must be 11 or 15!'
-        report.append(str(prefix) +
-"""{0} {1} {2} [{3}] [{8}]
-\t{4}, {5}, {6} {7}""".format(*item))
+        entry = str(prefix) + """{0} {1} {2} [{3}] [{8}]
+\t{4}, {5}, {6} {7}""".format(*item)
+        if item[10]:
+            entry = entry+" -joined: " + str(item[10])
+        report.append(entry)
     report.extend(["","", ])
     return report
 
@@ -174,22 +178,28 @@ def report_applicants(listing):
         report.extend(entry)
     return report
 
-def show_applicants_cmd():
+def show_applicants_cmd(report=None):
+    routines.add2report(report,
+        "Entering code.show.show_applicants_cmd")
     listing = get_listing_2f(query_files["applicant"])
-    report = report_applicants(listing)
-    report.append(
+    ret = report_applicants(listing)
+    ret.append(
             f"\nReport generated {helpers.date}.")
     ans = input(
       f"Send applicant listing to {file4app_report}? (y/n) ")
     if ans and ans[0] in 'yY':
         with open(file4app_report, 'w') as outf:
-            outf.write('\n'.join(report))
-        report.append(
-            f"Applicant listing sent to {file4app_report}.")
-        print(report[-1])
-    return report
+            outf.write('\n'.join(ret))
+        line = f"Applicant listing sent to {file4app_report}." 
+        routines.add2report(report, line)
+        print(line)
+    routines.add2report(report,
+        "...leaving code/show/show_applicants_cmd")
+    return ret
 
-def show_cmd():
+def show_cmd(report=None):
+    routines.add2report(report,
+            "Entering code.show.show_cmd")
     member_part = show4web(get_listing_2f(
         query_files["member"]))
     applicant_part = report_applicants(get_listing_2f(
@@ -199,8 +209,12 @@ def show_cmd():
     if ans and ans[0] in 'yY':
         with open(file4web, 'w') as outf:
             outf.write("\n".join(ret))
-        ret.append(f"Data sent to {file4web}.")
+        line2add = f"Data sent to {file4web}."
+        ret.append(line2add)
+        report.append(line2add)
         print(ret[-1])
+    routines.add2report(report,
+        "...leaving code/show/show_cmd")
     return ret
 
 

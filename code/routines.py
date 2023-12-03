@@ -745,7 +745,10 @@ def add_sponsorIDs(data):
         while True:
             res = pick_People_record(header_prompt=
                             f'Listed sponsor is: {data[spName]}')
-            yn = input(f"Accept {repr(res)}? y/n: ")
+            to_show = (
+                    "{personID} {first} {last} {suffix}"
+                        .format(**res))
+            yn = input(f"Accept {to_show}? y/n: ")
             if yn and yn[0] in yn:
                 data[spID] = res['personID']
                 break
@@ -849,6 +852,24 @@ def add_sponsor_cc2data(data):
             data['cc'].append(sponsor_dict['email'])
     data['cc'] = ','.join(data['cc'])
 
+
+def assign_applicant_fee_pending(holder):
+#   assignees = getIds_by_status(1)
+    query = import_query("Sql/applicants_of_status_ff.sql")
+    query = query.format(1, helpers.eightdigitdate)
+    res = fetch(query, from_file=False)
+    keys = ("personID, last, first, suffix, phone, " +
+        "address, town, state, postal_code, email, " +
+        "sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd, " +
+        "meeting1, meeting2, meeting3, approved, " +
+        "dues_paid, notified, begin, end").split(', ')
+    listing = []
+    byID = {}
+    for entry in res:
+        mapping = dict(zip(keys, entry))
+        listing.append(mapping)
+        byID[entry[0]] = mapping
+    holder.working_data = byID
 
 def assign_applicants2welcome(holder):
 #   assignees = getIds_by_status(2)

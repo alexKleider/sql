@@ -18,6 +18,8 @@ and update.py
 
 Provides
     data_entry.add_new_applicant_cmd()
+    data_entry.change_status_cmd() (under development)
+    data_entry.applicant_update_cmd() (under development)
 """
 
 def add2tables(data, report=None):
@@ -185,11 +187,38 @@ def add_new_applicant_cmd():
             #3. Applicants
     return ret
 
+def change_status_cmd(report=None):
+    routines.add2report(report, 
+            "Entering code/data_entry/change_status_cmd...")
+    data = textual.selectP_record(report=report)
+    if not data:
+        routines.add2report(report,
+            "code/data_entry/selectP_record " +
+            "failed to return a record")
+        return
+    else:
+        routines.add2report(report,
+            "<data> now contains a People table entry")
+    personID = data['personID']
+    fields = ('personID', 'statusID', 'begin', 'end', )[1:]
+    e,v = textual.get_mode(data, fields)
+    rep = ["textual.get_mode(data,fields) returning ...",]
+    rep.append(f"e:{repr(e)}")
+    for key, value in v:
+        rep.append(f"{key}: {value}")
+    for line in rep:
+        report.append(line)
+        print(line)
+    routines.add2report(report,
+        "...finished code/data_entry/change_status.cmd.")
+
 
 def applicant_update_cmd():
     """
     """
     report = ["Entering applicant_update_cmd...", ]
+    report.extend(["under development....",
+            "Leaving applicant_update_cmd",])
     return report
 
 

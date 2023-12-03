@@ -6,7 +6,8 @@
 SELECT
     first, last, suffix, phone, address,
     town, state, postal_code, email,
-    PS.statusID
+    PS.statusID, PS.begin
+--   ^ [9]         ^ [10]
 --    St.key, P.first, P.last
 FROM
     People AS P

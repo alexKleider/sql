@@ -288,6 +288,17 @@ the Club data base.
 
 The process has begun!""",
 
+    applicant_fee_pending="""
+The Club is now in receipt of your application but there is
+still the application fee to be submitted.
+
+Once the Treasurer notifies me that it has come in, I will
+communicate further.
+
+In the mean time please keep in touch with your sponsors who
+have the duty to shepherd you through the application process.
+""",
+
     new_applicant_welcome="""
 As Membership Chair it is my pleasure to welcome you as a new
 applicant for membership in the Bolinas Rod and Boat Club.
@@ -637,6 +648,17 @@ content_types = dict(  # which_letter
         "holder_funcs": (club.set_include0_false,
                          routines.assign_owing, ),
         "funcs": (members.send_statement, ),
+        "e_and_or_p": "one_only",
+        },
+    applicant_fee_pending={
+        "subject": "BR&BC Application",
+        "from": authors["membership"],
+        "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
+        "body": letter_bodies["applicant_fee_pending"],
+        "post_scripts": (),
+        "holder_funcs": (routines.assign_applicant_fee_pending,),
+        "funcs": (members.std_mailing_func, ),
         "e_and_or_p": "one_only",
         },
     new_applicant_welcome={

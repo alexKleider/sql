@@ -16,6 +16,133 @@ except ImportError: import routines
 try: from code import helpers
 except ImportError: import helpers
 
+
+def valid_values(ev):
+    """
+    <ev> is what's returned by sg's window.read()
+    returns values if valid, None if not.
+    """
+    event, values = ev
+    if event in (None, "Cancel"):
+        print("None or Cancel")
+        return
+    if '' in values.values():
+        print("Missing values")
+        return
+    return values
+
+def show_fonts():
+    couriers = ["BPG Courier", "GPL&GNU",
+                "BPG Courier", "S GPL&GNU",
+                "Courier 10 Pitch",
+                "Free Courier",
+                ]
+    fonts = sg.Text.fonts_installed_list ()
+    for font in fonts:
+        if "Courier" in font:
+            print(font)
+    
+def show_stati():
+    """
+    provides an info box showing the stati
+    """
+    keys = routines.keys_from_schema("Stati")
+    res = routines.fetch("SELECT * FROM Stati;",
+            from_file=False)
+    layout = [[sg.Text("Stati table fields:",)],]
+    layout.extend([
+#       [sg.Text(repr(item), pad=(0,(0,0))),]
+        [sg.Text("{0:>2}: {1:>4},  {2:}".format(*item),
+                    pad=(1,(0,1)), font=("Free Courier", 7))]
+        for item in res
+        ])
+    window = sg.Window("For Info", layout,)
+    ret = window.read()
+    
+
+def get_fields4(p_data, fields):
+    """
+    Prompts user to supply values for each field.
+    p_data informs for which person data is being collected.
+    Returned are the values (if provided), else None
+    """
+    header = (
+        "Enter data for {personID}: {first} {last} {suffix}"
+                            .format(**p_data))
+    layout = [[sg.Text(header)],]
+    layout.extend([
+        [sg.Text(field), 
+            sg.Input(expand_x=True, key=field)]
+        for field in fields
+            ])
+    layout.append([sg.Button('OK'), sg.Button('Cancel')])
+
+    window = sg.Window('Enter values', layout,)
+#   event, values = window.read()
+    ret = window.read()
+    window.close()
+    ret = valid_values(ret)
+    return ret
+
+
+def get_mode(person_data, fields):
+    ID = person_data['personID']
+    res = routines.fetch(f"""SELECT * FROM Person_Status
+            WHERE personID = {ID}; """, from_file=False)
+#   _ = input(repr(res))
+    layout = [
+        [sg.Text(
+        "Member: {first} {last} {suffix}"
+                        .format(**person_data))],
+        [sg.Radio("INSERT", "RADIO", key='-INSERT-'),
+        sg.Radio("UPDATE", "RADIO", key='-UPDATE-')],
+        [sg.Text('Choose Fields',justification='left')],
+        [sg.Listbox(values=[field for field in fields],
+            select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
+            key='-FIELDS-', size=(30,6))],
+        [sg.Button('SAVE',), sg.Button('CANCEL',)],
+            ]
+    win = sg.Window('Action desired', layout)
+    e, v = win.read()
+    win.close()
+    if e != 'SAVE':
+        print(f"Decided to {e}")
+        return
+    else:
+        values = get_fields4(person_data, fields)
+        if not values:
+            print("Aborting code.textual.get_mode")
+            return
+        else:
+            values = ', '.join(values)
+        keys = ', '.join(v['-FIELDS-'])
+        if v['-INSERT-']:
+            query = f"""INSERT INTO Person_Status {keys}
+                        VALUES {values}
+                        ; """
+            print("insert query...")
+            print(query)
+        elif v['-UPDATE-']:
+            kv = zip(keys,values)
+            listofstrings = [f"{key} = {value}" for 
+                    key, value in kv]
+            entries = ', '.join(listofstrings) 
+            query = f"""UPDATE Person_Status SET
+            for key, value in
+            ;"""
+            fields2update = v['-FIELDS-']
+            print(f"fields2update: {repr(fields2update)}")
+        else:
+            assert False, "Impossible option in textual.get_mode"
+#       print(f"fields chosen: {repr(v['-FIELDS-'])}")
+        if ret:
+            return e, v
+
+
+note = """
+'SAVE' {'-INSERT-': False, '-UPDATE-': True, '-FIELDS-': ['begin', 'end']}
+"""
+
 def get_demographics(applicant=True, report=None):
     """
     Uses a GUI to collect all demographic data needed to create
@@ -116,14 +243,16 @@ def people_choices(header_prompt=None, report=None):
     event, values = window.read()
     if event == 'OK':
         if set(values.values()) == {''}:  # all empty strings
-            report.append("Got an empty list ==> returning None")
+            report.append(
+                "textual/people_choices got an empty list; " +
+                "returning None")
             return
         data = {}
         for n in range(len(values)):
             data[fields[n]] = values[n]
     elif event in (None, "Cancel"): 
         report.append(
-                f"event: {repr(event)} ==> returning None")
+            "textual/people_choices aborted; returning None")
         return
     else:
         assert False, f"Unexpected event: {repr(event)}"
@@ -135,7 +264,6 @@ def people_choices(header_prompt=None, report=None):
                 f"key: {key}   value: {value}")
     # use hints to get candidates:
     query_lines = [
-#       "Select personID, first, last, suffix",
         "Select *",
             "from People where ", ]
     additional_lines = []
@@ -160,9 +288,9 @@ def people_choices(header_prompt=None, report=None):
     routines.add2report(report, "query returning:")
     for item in ret:
         routines.add2report(report, repr(item))
+    routines.add2report(report,
+        "...leaving code/textual.people_choices()")
     return ret
-#   return ["{0!s:>3} {1:} {2:} {3:}".format(*item) 
-#           for item in ret]
 
 
 def choose(choices, header="CHOOSE ONE",
@@ -200,10 +328,6 @@ def choose(choices, header="CHOOSE ONE",
     win =sg.Window(header,layout)
     e, v = win.read()
     win.close()
-    routines.add2report(report,
-            f"Window returning e: {repr(e)}, v: {repr(v)}")
-#   _ = input(f"Window returning e: {repr(e)}, v: {repr(v)}")
-#   Window returning e: 'SELECT', v: {'CHOICE': [' 99 Andrew Kleinberg']}
     personID = v['CHOICE'][0].strip().split()[0]
     if (e != "SELECT") or not v['CHOICE']:
         routines.add2report(report, "Returning None")
@@ -212,26 +336,30 @@ def choose(choices, header="CHOOSE ONE",
         routines.add2report(report,
           "window in code.textual.choose returning..." +
           f"\n{repr(v['CHOICE'])}")
-#       window in code.textual.choose returning...
-#       [' 99 Andrew Kleinberg']
-#       _ = input(f"iterating thru {repr(choices)}")
         for rec in choices:
-            print(f"{repr(rec)}")
             if rec['personID'] == int(personID):
                 return rec
 
 
-def selectP_record(header_prompt,
-                    subheader,
+def selectP_record(header_prompt="Provide hints:",
+                    subheader="make a choice",
                     report=None):
+    routines.add2report(report,
+            "Entering code.textual.selectP_record")
     choices = people_choices(header_prompt=header_prompt,
                             report=report)
     if choices:
-        ret = choose(choices,
+        data = choose(choices,
                 header=subheader,
                 report=report)
-        if ret:
-            return ret
+        if data:
+            routines.add2report(report,
+                "code/textual.selectP_record returning " +
+                "(1st 3 key value pairs):..")
+            for key, value in data.items():
+                routines.add2report(report, f"{key}: {value}")
+                if key == 'suffix': break
+            return data
         else:
             routines.add2report(report,
             "code/textual.selectP_record 2nd stage failure.")
@@ -424,7 +552,8 @@ def test_people_choices():
 
 def test_selectP_record():
     report = []
-    res = selectP_record("Provide hints", "make a choice", report)
+    res = selectP_record(header_prompt="Provide hints",
+            subheader="make a choice", report=report)
     if not res:
         print(f"selectP_record returned {repr(res)}")
     else:
@@ -435,10 +564,44 @@ def test_selectP_record():
     print('\n'.join(report))
 
 
+person_data = {'personID': 97,
+                'first': 'Alex',
+                'last': 'Kleider',
+                'suffix': '',
+                }
+
+def test_get_mode():
+    fields = ('personID', 'statusID', 'begin', 'end', )[1:]
+    e,v = get_mode(person_data, fields)
+    rep = ["textual.get_mode(data,fields) returning ...",]
+    rep.append(f"e: {repr(e)}")
+    rep.append(f"v: {repr(v)}")
+    for key, value in v.items():
+        rep.append(f"{key}: {value}")
+#   for line in rep:
+#       print(line)
+
+def test_get_fields4():
+    fields = ['statusID', 'begin', ]
+    ret = get_fields4(person_data, fields)
+    if not ret:
+        print("invalid")
+    else:
+        for key, value in ret.items():
+            print(f"{key}: {value}")
+
+def test_show_stati():
+    show_stati()
+
+
 if __name__ == "__main__":
+#   show_fonts()
+    test_show_stati()
+#   test_get_fields4()
+#   test_get_mode()
+#   test_selectP_record()
 #   test_people_choices()
 #   test_choose()
-    test_selectP_record()
 #   get_demographics(report=report,
 #           applicant=False)
 #   test_pick_person()
