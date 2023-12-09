@@ -25,9 +25,12 @@ import sys
 import csv
 import json
 
-import club
-import helpers
-import routines
+try: from code import club
+except ImportError: import club
+try: from code import helpers
+except ImportError: import helpers
+try: from code import routines
+except ImportError: import routines
 
 
 DEBUGGING_FILE = 'debug.txt'
@@ -482,19 +485,18 @@ def mooring_dock():
         report.append("No mooring & dock overlap.")
     return report
 
-def consistency_report():
+def consistency_report(report):
     """
     """
-    report = []
     report.extend(ck_labels())
     report.extend(mooring_dock())
     return report
 
 
 if __name__ == '__main__':
-    google_contacts_report()
-#   for line in consistency_report(): 
-#       print(line)
+#   google_contacts_report()
+    for line in consistency_report(): 
+        print(line)
 
 
 

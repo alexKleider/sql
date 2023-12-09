@@ -12,6 +12,7 @@ from code import helpers
 from code import routines
 from code import commands
 from code import data_entry
+from code import ck_data
 from code import show
 
 hierarchy = {
@@ -20,6 +21,7 @@ hierarchy = {
         "applicants": [show.show_applicants_cmd,],
         "4exec": [commands.report_cmd,],
         "leadership": [commands.leadership_cmd,],
+        "check_data_consistenchy": [ck_data.consistency_report, ],
             },
     "Data Entry":{
         "Status Update": [data_entry.change_status_cmd],
@@ -60,8 +62,8 @@ def main_menu(report=None):
     win = sg.Window("Main Menu", layout)
     e, v = win.read()
     win.close()
-    routines.add2report(report,
-            f"e: {repr(e)}, v: {repr(v)}")
+#   routines.add2report(report,
+#           f"e: {repr(e)}, v: {repr(v)}")
     if e == 'CANCEL' or not v or not v["CHOICE"]:
         routines.add2report(report,
             "Cancelled or no choice made; aborting main menu")
@@ -79,8 +81,8 @@ def main_menu(report=None):
     win = sg.Window(f"{hkey} Menu", layout)
     e,v = win.read()
     win.close()
-    routines.add2report(report,
-            f"e: {repr(e)}, v: {repr(v)}")
+#   routines.add2report(report,
+#           f"e: {repr(e)}, v: {repr(v)}")
     if e == 'CANCEL' or not v or not v["CHOICE"]:
         routines.add2report(report,
             "Cancelled or no choice made; aborting sub menu")
@@ -104,10 +106,12 @@ if __name__ == "__main__":
             else:
                 print("No choice made.")
             yn = input("Print report (y/n) or file name: ")
-            if yn:
+            if yn:  # yn is either Y)es, N)o or a file name
                 if yn[0] in 'yY':
                     for line in report:
                         print(line)
+                elif yn[0] in 'nN':
+                    continue
                 else:
                     with open(yn, 'w') as outf:
                         for line in report:

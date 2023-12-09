@@ -310,8 +310,7 @@ our By-Laws.)
 To become eligible for membership (and not waste your application
 fee) you must attend a minimum of three meetings with in a six
 month period.  You may attend as the guest of any member; your
-sponsors are expected to introduce you although that is not a
-mandatory requirement.
+sponsors are expected to introduce you.
 
 Looking forward to seeing each other at future meetings.
 """,
