@@ -14,7 +14,9 @@ track of global values.  Only one instance at a time.
 
 import os.path as ospath
 
-ROOT = "/home/alex/Git/Sql/"
+
+# ROOT = "/home/alex/Git/Sql/"
+ROOT = ospath.split(ospath.dirname(ospath.realpath(__file__)))[0]
 DB = ospath.join(ROOT, "Secret/club.db")
 db_file_name = ospath.join(ROOT, "Secret/club.db")
 temp_db = ospath.join(ROOT, "Secret/temp.db")   # "/home/alex/Git/Sql/Secret/club.db"
