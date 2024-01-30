@@ -612,11 +612,11 @@ def prepend2file_name(word, file_name):
 def non_string_iterable(item, debug=False):
     if isinstance(item, str):
         if debug:
-            print(f"{item} is a string; returning False")
+            print(f"{repr(item)} is a string; returning False")
         return False
     if isinstance(item, collections.Iterable):
         if debug:
-            print(f"{item} is a non string iterable")
+            print(f"{repr(item)} is a non string iterable")
         return True
     else: return False
 

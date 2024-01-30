@@ -52,11 +52,21 @@ class Holder(object):
     @classmethod
     def inc_n_instances(cls):
         cls.n_instances += 1
+    @classmethod
+    def dec_n_instances(cls):
+        cls.n_instances -= 1
 
     def __init__(self):
         if self.n_instances > 0:
-            raise NotImplementedError("Only one instance allowed.")
+            raise NotImplementedError(
+                    "Only one instance allowed.")
         self.inc_n_instances()
+
+    def delete_instance(self):
+        for key in self.__dict__.keys():
+            self.__dict__[key] = None
+        self.dec_n_instances()
+        del self
 
 def set_include0_false(holder):
     holder.include0 = False
@@ -111,5 +121,11 @@ def t1():
 
 
 if __name__ == '__main__':
-    pass
+    holder1 = Holder()
+    print(holder1.n_instances)
+    holder1.delete_instance()
+    print(holder1.n_instances)
+    holder2 = Holder()
+    print(holder2.n_instances)
+
 

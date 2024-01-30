@@ -6,10 +6,10 @@
 Testing code.helpers.add2json_file()
 """
 
-import sys
-import os
 import json
-sys.path.insert(0, os.path.split(sys.path[0])[0])
+#import sys
+#import os
+#sys.path.insert(0, os.path.split(sys.path[0])[0])
 # print(sys.path)
 from code import helpers
 

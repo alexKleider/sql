@@ -192,7 +192,7 @@ def q_mailing(holder, data):
     specified by <data>: is a single record based on People
     table with additional fields as needed.
     """
-    print([item for item in data.items()])
+#   print([item for item in data.items()])
     data["subject"] = holder.which["subject"]
     # ^ the above should be assigned elsewhere!!
     # check how to send:

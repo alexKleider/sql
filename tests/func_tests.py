@@ -5,6 +5,9 @@
 """
 Begun as a place to describe work flow.
 _May_ eventually develope functional tests.
+The following may or may not be true:
+Currently simply prints out the content of each file in the Sql
+directory (except 'create_tables.sql' and 'redo_DKM_tables.sql'.)
 """
 
 import os
@@ -26,36 +29,6 @@ def queryDict():
         ret[name] = query
     return ret
 
-
-sqlQueries = [
-'add_person_status.sql',
-'applicants.sql',
-'ap_stati_in_use.sql',
-'changePersonStatus.sql',
-'create_tables.sql',
-'dropPersonStatus.sql',
-'find_by_stati.sql',
-'find.sql',
-'forAngie.sql',
-'getApplicants.sql',
-'get_appl_stati_from_Stati.sql',
-'get_app_stati.sql',
-'get_dock_users.sql',
-'get_non_member_stati.sql',
-'get_stati_by_ID.sql',
-'get_status_holders.sql',
-'get_status_id.sql',
-'meetings.sql',
-'no_email.sql',
-'non_member_stati.sql',
-'q1.sql',
-'q3.sql',
-'redo_DKM_tables.sql',
-'select_like.sql',
-'show.sql',
-'sqlite_master.sql',
-'stati_contents.sql',
-        ]
 
 scenarios = """
 new application arrives:

@@ -2,19 +2,19 @@
 
 # File: tests/test_routines.py
 
+import unittest
 import sys
 import os
-import unittest
 sys.path.insert(0, os.path.split(sys.path[0])[0])
 # print(sys.path)
 from code import routines
+from code import club
 
 """
 Only a tiny fraction of the code is tested.
 Suggested priority for writing test code:
     --
 """
-
 class Test_keys_from_schema(unittest.TestCase):
 
     def test_default(self):
@@ -26,8 +26,27 @@ class Test_keys_from_schema(unittest.TestCase):
             self.assertEqual(keys[begin:ending], 
                 routines.keys_from_schema("People",
                     brackets=(begin,end)))
-            pass
-        pass
+
+
+class Test_Assignations(unittest.TestCase):
+        
+    def test_assign_inductees4payment(self):
+        """
+        Testing code.club.assign_inductees4payment(holder)
+        which requires Sql.inducted.sql
+        """
+        holder = club.Holder()
+#       routines.assign_inductees4payment(holder)
+#       self.assertEqual(holder.working_data, {})
+#       for key, value in holder.working_data.items():
+#           if type(value) == dict:
+#               print(f"{key}:")
+#               for k, v in value.items():
+#                   print(f"    {k}: {v}")
+#           else:
+#               print(f"{key}: {value}")
+        holder.delete_instance()
+        
 
 if __name__ == '__main__':
     unittest.main()
