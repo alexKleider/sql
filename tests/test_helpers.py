@@ -6,6 +6,7 @@ import sys
 import os
 sys.path.insert(0, os.path.split(sys.path[0])[0])
 # print(sys.path)
+import json
 import unittest
 from code import helpers
 
@@ -18,6 +19,31 @@ Only a tiny fraction of the code is tested.
 Suggested priority for writing test code:
     helpers.get_int
 """
+
+def code2test_add2json_file():
+    """
+    Needs work! 
+    Need to mv Secret/jfile.json to tests directory
+    and have a setUp routine to cp it to something for testing
+    and then be "tearDown"ed afterwards
+    """
+    jfile = "Secret/jfile.json"
+
+    l = [{'A': 'alex', 'J': 'June', }]
+    d = {'BC': 'Cavin Rd', 'USA': 'Bolinas', }
+    d2 = {"name": 'Alex Kleider', 'phone': '650/269-8936',}
+    d3 = {'first': 'Alex', 'last': 'Kleider', 'bday': '19450703', }
+
+    for1stTimeOnly = """
+    response = input("Initialize the json file? (y/n): ")
+    if response and response[0] in 'yY':
+        with open(jfile, 'w', encoding='utf-8') as j_file:
+            json.dump(l, j_file)
+    """
+
+    helpers.add2json_file(d3, jfile)
+
+
 # result lists
 answers=dict(
 true_true=["first\t Alex\n","",
