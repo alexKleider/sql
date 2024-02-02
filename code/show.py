@@ -153,8 +153,9 @@ def report_applicants(listing):
         query = f"""SELECT
                 sponsor1ID, sponsor2ID,       -- 0, 1,
                 meeting1, meeting2, meeting3, -- 2,3,4
---              fee_rcvd                      -- 5
-                app_rcvd                      -- 5
+--              fee_rcvd,                     -- 5
+                app_rcvd,                     -- 5
+                approved                      -- 6
                 FROM Applicants
                 WHERE personID = {item[-3]};"""
 #       _ = input(query)
@@ -175,6 +176,7 @@ def report_applicants(listing):
         entry.append(sponsor_line)
         entry.append(f"    Applied: {app_data[5]}")
         if meetings: entry.append(meeting_line)
+        if app_data[6]: entry.append(f"    Approved: {app_data[6]}")
         report.extend(entry)
     return report
 
