@@ -4,9 +4,10 @@
 
 import sys
 import os
-sys.path.insert(0, os.path.split(sys.path[0])[0])
+# sys.path.insert(0, os.path.split(sys.path[0])[0])
 # print(sys.path)
 import json
+import shutil
 import unittest
 from code import helpers
 
@@ -20,77 +21,68 @@ Suggested priority for writing test code:
     helpers.get_int
 """
 
-def code2test_add2json_file():
-    """
-    Needs work! 
-    Need to mv Secret/jfile.json to tests directory
-    and have a setUp routine to cp it to something for testing
-    and then be "tearDown"ed afterwards
-    """
-    jfile = "Secret/jfile.json"
+class TestAdd2json(unittest.TestCase):
 
-    l = [{'A': 'alex', 'J': 'June', }]
-    d = {'BC': 'Cavin Rd', 'USA': 'Bolinas', }
-    d2 = {"name": 'Alex Kleider', 'phone': '650/269-8936',}
-    d3 = {'first': 'Alex', 'last': 'Kleider', 'bday': '19450703', }
+    a_dict = [{"A": "alex", "J": "June", }]
+    a_as_str = '[{"A": "alex", "J": "June"}]'
+    b_dict = {'BC': 'Cavin Rd', 'USA': 'Bolinas', }
+    b_as_str  = '{"BC": "Cavin Rd", "USA": "Bolinas"}'
+    c_dict = {"name": 'Alex Kleider', 'phone': '650/269-8936',}
+    c_as_str = '{"name": "Alex Kleider", "phone": "650/269-8936"}'
+    d_dict = {'first': 'Alex', 'last': 'Kleider', 'bday': '19450703', }
+    d_as_str = '{"first": "Alex", "last": "Kleider", "bday": "19450703"}'
+    pairs = [
+            (a_dict, a_as_str, "tests/temp0.json"),
+            (b_dict, b_as_str, "tests/temp1.json"),
+            (c_dict, c_as_str, "tests/temp2.json"),
+            (d_dict, d_as_str, "tests/temp3.json"),
+            ]
+    
+    def setUp(self):
+        """
+        dump dict into 'jfile'
+        """
+        for d, s, f in self.pairs:
+            with open(f, 'w', encoding='utf-8') as stream:
+                json.dump(d, stream)
 
-    for1stTimeOnly = """
-    response = input("Initialize the json file? (y/n): ")
-    if response and response[0] in 'yY':
-        with open(jfile, 'w', encoding='utf-8') as j_file:
-            json.dump(l, j_file)
-    """
+    def test_l(self):
+        for d, s, f in self.pairs:
+            self.assertEqual(helpers.content(f), s)
 
-    helpers.add2json_file(d3, jfile)
+    def tearDown(self):
+        for d, s, f in self.pairs:
+            if os.path.exists(f):
+                os.remove(f)
 
 
 # result lists
 answers=dict(
-true_true=["first\t Alex\n","",
-"last", "Kleider","",
-"payment","     200","",
-"personID","     145"],
-
-true_false=["personID","     145","",
-"first", "     Alex","",
-"last", "     Kleider", "",
-"payment", "     200"],
-
-false_true=['first: Alex','last: Kleider',
-'payment: 200', 'personID: 145'],
-
-false_false=["personID: 145", "first: Alex",
-"last: Kleider", "payment: 200"],
+false_true=[
+    "first: Alex",
+    "last: Kleider",
+    "payment: 200",
+    "personID: 145",
+    ],
+false_false=[
+    "personID: 145",
+    "first: Alex",
+    "last: Kleider",
+    "payment: 200",
+    ],
+true_true=[
+    'first\n\tAlex\n',
+    'last\n\tKleider\n',
+    'payment\n\t200\n',
+    'personID\n\t145\n',
+    ],
+true_false=[
+    "personID\n\t145\n",
+    "first\n\tAlex\n",
+    "last\n\tKleider\n",
+    "payment\n\t200\n"
+    ],
 )
-#for key, value in answers.items():
-#    print(key+": ",value)
-
-def main():
-    data = {}
-    data['personID'] = 145
-    data['first'] = "Alex"
-    data['last'] = "Kleider"
-    data['payment'] = 200
-    print("-----------true/true")
-    print(helpers.show_dict(data,
-                    extra_line=True,
-                    ordered=True))
-    print()
-    print("-----------true/false")
-    print(helpers.show_dict(data,
-                    extra_line=True,
-                    ordered=False))
-    print()
-    print("----------false/true")
-    print(helpers.show_dict(data,
-                    extra_line=False,
-                    ordered=True))
-    print()
-    print("----------false/false")
-    print(helpers.show_dict(data,
-                    extra_line=False,
-                    ordered=False))
-    print()
 
 class Test_Show_Dict(unittest.TestCase):
 
@@ -132,5 +124,4 @@ class Test_Show_Dict(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-#   main()
 

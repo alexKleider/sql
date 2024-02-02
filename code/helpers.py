@@ -80,6 +80,18 @@ def verify(notice, report=None):
         sys.exit()
     else: return True
 
+def content(file_name):
+    """
+    Assumes <file_name> is the name of a text file;
+    Returns its content as a single string.
+    """
+    try:
+        with open(file_name, 'r') as stream:
+            return stream.read()
+    except FileNotFoundError as err:
+        print("OS error:", err)
+        print(f"file {file_name} not found")
+        raise
 
 def equal_float(a, b):
     """
@@ -614,7 +626,7 @@ def non_string_iterable(item, debug=False):
         if debug:
             print(f"{repr(item)} is a string; returning False")
         return False
-    if isinstance(item, collections.Iterable):
+    if isinstance(item, collections.abc.Iterable):
         if debug:
             print(f"{repr(item)} is a non string iterable")
         return True
@@ -635,7 +647,7 @@ def show_dict(d, extra_line=True, ordered=True, debug=False):
         if non_string_iterable(value, debug=debug):
             value = ', '.join([val for val in sorted(value)])
         if extra_line:
-            lines.append("{}\n\t {}\n".format(key, value))
+            lines.append("{}\n\t{}\n".format(key, value))
         else:
             lines.append("{}: {}".format(key, value))
     return lines
