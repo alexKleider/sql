@@ -26,23 +26,23 @@ hierarchy = {
     "Data Entry":{
         "Status Update": [data_entry.change_status_cmd],
             #Person_Status table Insert or Update an entry
-        "New Applicant": [],
+        "New Applicant (not implemented)": [],
             #People, Applicant & Status tables
             #Google Contacts entry
-        "Meeting/newMember Update": [],
+        "Meeting/newMember Update (not implemented)": [],
             #Applicant and Person_Status tables
-        "Leadership Update": [],
+        "Leadership Update (not implemented)": [],
             #Status table: term ending & beginning
             },
-    "Prepare Mailing":{  # email.json & MailingDir populated
-        "First Notice": [],
-        "June Request": [],
+    "Prepare Mailing (not implemented)":{  # email.json & MailingDir populated
+        "First Notice (not implemented)": [],
+        "June Request (not implemented)": [],
             },
-    "Info":{  # csv files created
-        "Leadership": [],
-        "Owing": [],
-        "Receipts": [],
-        "No Email (need letter)": [],
+    "Info (not implemented)":{  # csv files created
+        "Leadership (not implemented)": [],
+        "Owing (not implemented)": [],
+        "Receipts (not implemented)": [],
+        "No Email (need letter) (not implemented)": [],
             },
         }
 
