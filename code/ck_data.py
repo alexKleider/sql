@@ -16,7 +16,9 @@ Module for routines that check for data consistency, specifically:
         Officers == statiID 20..25:  z[123456]* 
         Outer Basin Moorers
         secretary
+        Committee
     everyone with an email is in the google data base
+
 Began with already existing code in $CLUBU/data.py
 """
 
@@ -32,8 +34,6 @@ except ImportError: import helpers
 try: from code import routines
 except ImportError: import routines
 
-
-DEBUGGING_FILE = 'debug.txt'
 
 # The following queries are for comparison with Google
 # contacts 'Labels' i.e. those without email are excluded.
@@ -86,6 +86,13 @@ queries = dict(
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
                 AND PS.statusID = 22
+                AND (PS.end = '' OR PS.end > {})
+            ;""".format(helpers.eightdigitdate),
+    Committee="""SELECT P.first, P.last, P.suffix
+            FROM people as P
+            JOIN Person_Status as PS
+            WHERE PS.personID = P.personID
+                AND PS.statusID = 30
                 AND (PS.end = '' OR PS.end > {})
             ;""".format(helpers.eightdigitdate),
     expired="""SELECT P.first, P.last, P.suffix
@@ -412,7 +419,7 @@ def ck_labels():
 #   print(holder.g_by_group['applicant'])
 #   print(holder.g_by_group['inactive'])
     for label in labels:
-        print(f"Dealing with: {label}")
+        report.append(f"Dealing with: {label}")
         category_lst = []
         res = routines.fetch(queries[label],from_file=False)
         for item in res:
@@ -429,7 +436,7 @@ def ck_labels():
                 if category_lst[i] == category_lst[i-1]:
                     duplicates.append(category_lst[i])
             if duplicates:
-                _ = input(f"Duplicates in {label}: {duplicates}")
+                report.append(f"Duplicates in {label}: {duplicates}")
             redact = '''
             report.append(f"""
 Error condition regarding {label}:
@@ -438,23 +445,35 @@ Error condition regarding {label}:
     list: {sorted(category_lst)}
                 """)
             '''
-            print(f"len(category_set): {len(category_set)}")
-            _ = input(f"len(category_lst): {len(category_lst)}")
+            report.append(f"len(category_set): {len(category_set)}")
+            report.append(f"len(category_lst): {len(category_lst)}")
 
-        if category_set != holder.g_by_group[label]:
-            _ = input(f"""The following do _not_ match:
-                db {label}: {sorted(category_set)}
-            and
-            google {label}: {sorted(holder.g_by_group[label])}
-            """)
-            dif = (category_set -
-                    holder.g_by_group[label])
-            _ = input(f"{sorted(dif)}")
-            dif = (holder.g_by_group[label] -
-                    category_set)
-            _ = input(f"{sorted(dif)}")
+
+
+
+        try:
+            g_by_group = holder.g_by_group[label]
+        except IndexError:
+            report.extend([
+                f"There are no google label '{label}' entries",
+                f"to compare to {repr(category_set)}.",
+                ])
         else:
-            report.append(f"Labels match stati for {label}")
+            if category_set != g_by_group:
+                _ = input(f"""The following do _not_ match:
+                    db {label}: {sorted(category_set)}
+                and
+                google {label}: {sorted(holder.g_by_group[label])}
+                """)
+                dif = (category_set -
+                        holder.g_by_group[label])
+                _ = input(f"{sorted(dif)}")
+                dif = (holder.g_by_group[label] -
+                        category_set)
+                _ = input(f"{sorted(dif)}")
+            else:
+                report.append(f"Labels match stati for {label}")
+
     return report
 
 def mooring_dock():
@@ -497,9 +516,4 @@ if __name__ == '__main__':
 #   google_contacts_report()
     for line in consistency_report(): 
         print(line)
-
-
-
-
-
 
