@@ -34,6 +34,7 @@ except ImportError: import helpers
 try: from code import routines
 except ImportError: import routines
 
+holder = club.Holder()
 
 # The following queries are for comparison with Google
 # contacts 'Labels' i.e. those without email are excluded.
@@ -173,30 +174,31 @@ def get_gmail_record(g_rec):
         )
 
 
-def gather_contacts_data(club):    # used by ck_data #
+def gather_contacts_data(rbc):    # used by ck_data #
     """
+    <rbc>: and instance of club.Holder.
     Gets data from gmail contacts...
-    The club attributes populated <== first 3 lines of code.
+    The rbc attributes populated <== first 3 lines of code.
     """
-    club.gmail_by_name = dict()  # => string (email)
-    club.groups_by_name = dict()  # => set of groups
-    club.g_by_group = dict()  # >set of names
+    rbc.gmail_by_name = dict()  # => string (email)
+    rbc.groups_by_name = dict()  # => set of groups
+    rbc.g_by_group = dict()  # >set of names
 
     # Traverse contacts.csv => g_by_name
-    with open(club.contacts_spot, 'r',
+    with open(rbc.contacts_spot, 'r',
         encoding='utf-8', newline='') as file_obj:
         google_reader = csv.DictReader(file_obj)
         print('DictReading Google contacts file "{}"...'
             .format(file_obj.name))
         for g_rec in google_reader:
             g_dict = get_gmail_record(g_rec)
-            club.gmail_by_name[g_dict['gname']] = g_dict[
+            rbc.gmail_by_name[g_dict['gname']] = g_dict[
                                                     'g_email']
-            club.groups_by_name[g_dict['gname']] = g_dict[
+            rbc.groups_by_name[g_dict['gname']] = g_dict[
                                                     'groups']
             for key in g_dict["groups"]:
-                _ = club.g_by_group.setdefault(key, set())
-                club.g_by_group[key].add(g_dict["gname"])
+                _ = rbc.g_by_group.setdefault(key, set())
+                rbc.g_by_group[key].add(g_dict["gname"])
 
 
 
@@ -231,7 +233,7 @@ def get_dict(source_file, sep=":", maxsplit=1):
     return ret
 
 
-def ck_data(club):
+def ck_data(rbc):
     """
     Check integrity/consistency of of the Club's data bases:
     1.  MEMBERSHIP_SPoT  # the main club data base
@@ -259,29 +261,29 @@ def ck_data(club):
     expired applicants.)
     """
 #   print("Entering data.ck_data")
-    club.ret = []
-    club.ok = []
-    club.varying_amounts = []
-    club.not_matching_notice = ''
+    rbc.ret = []
+    rbc.ok = []
+    rbc.varying_amounts = []
+    rbc.not_matching_notice = ''
     helpers.add_header2list("Report Regarding Data Integrity",
-                club.ret, underline_char='#', extra_line=True)
-    gather_membership_data(club)  # from main data base
-    gather_contacts_data(club)  # club gmail account contacts
-    gather_extra_fees_data(club)  # data comes from SPoTs
-    populate_sponsor_data(club)
-    populate_applicant_data(club)
-    club.applicants_by_status = get_applicants_by_status(club)
+                rbc.ret, underline_char='#', extra_line=True)
+#   gather_membership_data(rbc)  # from main data base
+    gather_contacts_data(rbc)  # club gmail account contacts
+#   gather_extra_fees_data(rbc)  # data comes from SPoTs
+#   populate_sponsor_data(rbc)
+#   populate_applicant_data(rbc)
+#   rbc.applicants_by_status = get_applicants_by_status(rbc)
 
 
     ## First check that google groups match club data:
     # Deal with extra fees...
-    ck_malformed(club)
-    ck_fee_paying_labels(club)  # google groups vs club data
-    ck_fees_spots(club)  # mem list vs extra fees SPoT
+#   ck_malformed(rbc)
+#   ck_fee_paying_labels(rbc)  # google groups vs club data
+#   ck_fees_spots(rbc)  # mem list vs extra fees SPoT
     # Keep in mind that after payment amounts won't match
     # Can use '-d' options for details.
 
-    ck_gmail(club)
+#   ck_gmail(rbc)
 
 
     ## do we compare gmail vs memlist emails anywhere????
@@ -294,36 +296,36 @@ def ck_data(club):
     if non_member_contacts:
         helpers.add_sub_list(
             "Contacts without a corresponding Member email",
-            non_member_contacts, club.ret)
+            non_member_contacts, rbc.ret)
     else:
-        club.ok.append('No contacts that are not members.')
+        rbc.ok.append('No contacts that are not members.')
     pass
     emails_missing_from_contacts = []
     common_emails = []
 
     if emails_missing_from_contacts:
         helpers.add_sub_list("Emails Missing from Google Contacts",
-                         emails_missing_from_contacts, club.ret)
+                         emails_missing_from_contacts, rbc.ret)
     else:
-        club.ok.append("No emails missing from gmail contacts.")
+        rbc.ok.append("No emails missing from gmail contacts.")
 '''
 
-    ck_applicants(club)
+#   ck_applicants(rbc)
 
-    if club.ok:
+    if rbc.ok:
         helpers.add_sub_list(
-            "No Problems with the Following", club.ok, club.ret)
+            "No Problems with the Following", rbc.ok, rbc.ret)
     ai_notice = "Acceptable Inconsistency"
-    if club.not_matching_notice:
+    if rbc.not_matching_notice:
         helpers.add_header2list(ai_notice,
-                                club.ret, underline_char='=')
-        club.ret.append(club.not_matching_notice)
-    if club.varying_amounts:
+                                rbc.ret, underline_char='=')
+        rbc.ret.append(rbc.not_matching_notice)
+    if rbc.varying_amounts:
         helpers.add_header2list(
             "Fee Disparities: probably some have paid",
-            club.ret, underline_char='-', extra_line=True)
-        club.ret.extend(club.varying_amounts)
-    return club.ret
+            rbc.ret, underline_char='-', extra_line=True)
+        rbc.ret.extend(rbc.varying_amounts)
+    return rbc.ret
 
 
 
@@ -374,12 +376,11 @@ def applicant_set():
     pass
     
 
-def google_contacts_report():
+def google_contacts_report(holder=holder):
     """
     All google data in a human readable form.
     """
     report = []
-    holder = club.Holder()
     gather_contacts_data(holder)
     report.append("== gmail_by_name ==")
     sub_report = []
@@ -407,12 +408,11 @@ def google_contacts_report():
     return report
 
 
-def ck_labels():
+def ck_labels(holder=holder):
     """
     """
     report = []
     keys = "first, last, suffix".split(', ')
-    holder = club.Holder()
     gather_contacts_data(holder)
     labels = [key for key in queries.keys()]
 #   print(f"labels: {labels}")
@@ -504,9 +504,10 @@ def mooring_dock():
         report.append("No mooring & dock overlap.")
     return report
 
-def consistency_report(report):
+def consistency_report(report, holder=holder):
     """
     """
+    report.extend(ck_data(holder))
     report.extend(ck_labels())
     report.extend(mooring_dock())
     return report
@@ -514,6 +515,6 @@ def consistency_report(report):
 
 if __name__ == '__main__':
 #   google_contacts_report()
-    for line in consistency_report(): 
+    for line in consistency_report([]): 
         print(line)
 
