@@ -44,7 +44,8 @@ def show_fonts():
     
 def show_stati():
     """
-    provides an info box showing the stati
+    Provides an info box showing the stati:
+    ...stays open until explicitly closed.
     """
     keys = routines.keys_from_schema("Stati")
     res = routines.fetch("SELECT * FROM Stati;",
@@ -63,7 +64,8 @@ def show_stati():
 def get_fields4(p_data, fields):
     """
     Prompts user to supply values for each field.
-    p_data informs for which person data is being collected.
+    <p_data>, a dict, informs for which person data is being
+    collected and must at minimum include first, last & suffix.
     Returned are the values (if provided), else None
     """
     header = (
@@ -89,7 +91,7 @@ def get_mode(person_data, fields):
     ID = person_data['personID']
     res = routines.fetch(f"""SELECT * FROM Person_Status
             WHERE personID = {ID}; """, from_file=False)
-#   _ = input(repr(res))
+#   _ = input(repr(res))  #!# <res> is NOT USED!!!
     layout = [
         [sg.Text(
         "Member: {first} {last} {suffix}"
@@ -571,7 +573,7 @@ person_data = {'personID': 97,
                 }
 
 def test_get_mode():
-    fields = ('personID', 'statusID', 'begin', 'end', )[1:]
+    fields = ('statusID', 'begin', 'end', )
     e,v = get_mode(person_data, fields)
     rep = ["textual.get_mode(data,fields) returning ...",]
     rep.append(f"e: {repr(e)}")
@@ -596,8 +598,8 @@ def test_show_stati():
 
 if __name__ == "__main__":
 #   show_fonts()
-    test_show_stati()
-#   test_get_fields4()
+#   test_show_stati()
+    test_get_fields4()
 #   test_get_mode()
 #   test_selectP_record()
 #   test_people_choices()
