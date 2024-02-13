@@ -3,9 +3,9 @@
 # File: ck_data.py
 
 """
-
+Provides ck_data.consistency_report (for menu.py.)
 Module for routines that check for data consistency, specifically:
-    google data "labels" match sql Person_Status table
+    google data "labels"/contacts match sql Person_Status table
         applicant == statiID 1..10
         DockUsers
         GaveUpMembership
@@ -41,11 +41,12 @@ holder = club.Holder()
 queries = dict(
     # We've no intention of accepting applicants without email!
     applicant="""SELECT P.first, P.last, P.suffix
-            FROM people as P
-            JOIN Applicants as A
-            WHERE A.personID = P.personID
-                AND A.notified = ''
-            ;""",
+        FROM people as P
+        JOIN Applicants as A
+        WHERE A.personID = P.personID
+            AND A.notified = ''
+            -- excludes those that are no longer applicants
+        ;""",
     GaveUpMembership="""SELECT P.first, P.last, P.suffix
             FROM people as P
             JOIN Person_Status as PS
@@ -167,33 +168,118 @@ def get_gmail_record(g_rec):
         groups=set(group_membership),
         )
 
-
-def gather_contacts_data():    # used by ck_data #
-    """
-    Gets data from gmail contacts and returns 
-    three dicts:  see first 4 lines of code
-    """
-    ret = {}
-    ret['gmail_by_name'] = dict()  # => string (email)
-    ret['groups_by_name'] = dict()  # => set of groups
-    ret['g_by_group'] = dict()  # >set of names
-
-    # Traverse contacts.csv => g_by_name
-    with open(holder.contacts_spot, 'r',
+def yield_contacts():
+    with open(club.Holder.contacts_spot, 'r',
         encoding='utf-8', newline='') as file_obj:
         google_reader = csv.DictReader(file_obj)
         print('DictReading Google contacts file "{}"...'
             .format(file_obj.name))
         for g_rec in google_reader:
-            g_dict = get_gmail_record(g_rec)
-            name_key = "{last}, {first}".format(**g_dict)
-            if g_dict['suffix']:
-                name_key = name_key + ' ' + g_dict['suffix']
-            ret['gmail_by_name'][name_key] = g_dict['g_email']
+            yield get_gmail_record(g_rec)
+
+def members_and_applicants_filter(g_dict):
+        if ({"LIST", "applicant", "inactive"} &
+                g_dict['groups']):
+            return True
+    
+
+def gather_contacts_data(filter_func=None):  # used by ck_data #
+    """
+    Returns gmail contacts data possibly limited by <filter_func>.
+    Gets data from gmail contacts and returns 
+    a dict with 3 keys: 
+        values: one is a set of strings (names and emails)
+            other two are dicts
+    ... see first 4 lines of code
+    to compare sql data and google contacts data
+    Possible groups/labels: applicant, Committee, DockUsers,
+    everyone, expired, GaveUpMembership, inactive, Kayak, LIST,
+    Moorings, Officers, Outer Basin Moorers, secretary, 
+    """
+    ret = {}
+    ret['name_w_gmail'] = set()  # => strings (names and email)
+    ret['groups_by_name'] = dict()  # => set of groups
+    ret['names_by_group'] = dict()  # >set of names
+    # Traverse contacts.csv => g_by_name
+    for g_dict in yield_contacts():
+        name_key = "{last}, {first}".format(**g_dict)
+        if g_dict['suffix']:
+            name_key = name_key + ' ' + g_dict['suffix']
+            # suffixes have ' ' prepended in the sql db
+        if not filter_func or filter_func(g_dict):
+            ret['name_w_gmail'].add(
+                    name_key + ": " + g_dict['g_email'])
             ret['groups_by_name'][name_key] = g_dict['groups']
             for key in g_dict["groups"]:
-                _ = ret['g_by_group'].setdefault(key, set())
-                ret['g_by_group'][key].add(name_key)
+                _ = ret['names_by_group'].setdefault(key, set())
+                ret['names_by_group'][key].add(name_key)
+    return ret
+
+
+def gather_member_data():
+    """
+    Collects data from the sql data base returning
+    three dicts as does gather_contacts_data:
+    to compare sql data and google contacts data
+    Possible stati:
+1|a-|Application received without fee
+2|a|Application complete but not yet acknowledged
+3|a0|No meetings yet
+4|a1|Attended one meeting
+5|a2|Attended two meetings
+6|a3|Attended three (or more) meetings
+7|ai|Inducted, needs to be notified
+8|ad|Inducted & notified, membership pending payment of dues
+9|av|Vacancy ready to be filled pending payment of dues
+10|aw|Inducted & notified, awaiting vacancy
+11|am|New Member
+12|be|Email on record being rejected
+13|ba|Postal address => mail returned
+14|h|Honorary Member
+15|m|Current Member
+16|i|Inactive (continuing to receive minutes)
+17|r|Retiring/Giving up Club Membership
+18|t|Membership terminated (probably non payment of fees)
+19|w|Fees being waived
+20|z1_pres|President
+21|z2_vp|VicePresident
+22|z3_sec|Secretary
+23|z4_treasurer|Treasurer
+24|z5_d_odd|Director- odd year Feb
+25|z6_d_even|Director- even year Feb
+26|zae|Application expired or withdrawn
+27|zzz|No longer a member
+28|zzd|Died recently
+29|mc|Membership Chair
+30|com|Committee member
+    """
+    ret = {}  # member data
+    ret['name_w_email'] = set()  # => strings (names and email)
+    ret['stati_by_name'] = dict()  # => set of stati
+    ret['names_by_status'] = dict()  # >set of names
+
+    keys = "ID, last, first, suffix, email, status, end".split(', ')
+    query = f""" -- All applicants and members /w email
+    SELECT P.personID, P.last, P.first, P.suffix, P.email,
+        PS.statusID, PS.end
+    FROM People as P
+    JOIN Person_Status as PS 
+    ON 
+        (PS.statusID IN (3,4,5,6,7,8,9,10,11,14,15,16,17)
+        AND
+        PS.personID = P.personID)
+    WHERE PS.end > {helpers.eightdigitdate} or PS.end = ''
+        AND NOT email = '';
+    """
+    res = routines.query2dict_listing(query,
+                            keys, from_file=False)
+    for d in res:
+        name_key = "{last}, {first}".format(**d)
+        if d['suffix']:
+            name_key = name_key + d['suffix']
+        ret['name_w_email'].add(
+                name_key + ": " + d['email'])
+        pass
     return ret
 
 
@@ -228,7 +314,7 @@ def get_dict(source_file, sep=":", maxsplit=1):
     return ret
 
 
-def ck_data(holder):
+def ck_data():
     """
     Check integrity/consistency of of the Club's data bases:
     1.  MEMBERSHIP_SPoT  # the main club data base
@@ -263,7 +349,7 @@ def ck_data(holder):
     helpers.add_header2list("Report Regarding Data Integrity",
                 holder.ret, underline_char='#', extra_line=True)
 #   gather_membership_data(holder)  # from main data base
-    gather_contacts_data(holder)  # club gmail account contacts
+    gmail_data = gather_contacts_data()
 #   gather_extra_fees_data(holder)  # data comes from SPoTs
 #   populate_sponsor_data(holder)
 #   populate_applicant_data(holder)
@@ -368,51 +454,16 @@ def applicant_set():
     return app_set
     for entry in applicants:
         print(entry)
-    pass
-    
-
-def google_contacts_report(holder=holder):
-    """
-    All google data in a human readable form.
-    """
-    report = []
-    gather_contacts_data(holder)
-    report.append("== gmail_by_name ==")
-    sub_report = []
-    for key, value in holder.gmail_by_name.items(): 
-        sub_report.append(f"{key}: {value}")
-    report.extend(sorted(sub_report))
-    report.append("\n== groups_by_name ==")
-    sub_report = []
-    for key, value in holder.groups_by_name.items():
-        sub_report.append(f"{key}: {value}")
-    report.extend(sorted(sub_report))
-    report.append("\n== g_by_group ==")
-    sub_report = []
-    for key, value in holder.g_by_group.items():
-        sub_report.append(f"\n{key}: {sorted(value)}")
-    report.extend(sorted(sub_report))
-    fname = input("Enter file name or '' if to std out: ")
-    if fname:
-        with open(fname, 'w') as outf:
-            for line in report:
-                outf.write(line+'\n')
-    else:
-        for line in report:
-            print(line)
-    return report
 
 
-def ck_labels(holder=holder):
+def ck_labels():
     """
     """
     report = []
     keys = "first, last, suffix".split(', ')
-    gather_contacts_data(holder)
+    contacts_data = gather_contacts_data()
     labels = [key for key in queries.keys()]
 #   print(f"labels: {labels}")
-#   print(holder.g_by_group['applicant'])
-#   print(holder.g_by_group['inactive'])
     for label in labels:
         report.append(f"Dealing with: {label}")
         category_lst = []
@@ -442,28 +493,26 @@ Error condition regarding {label}:
             '''
             report.append(f"len(category_set): {len(category_set)}")
             report.append(f"len(category_lst): {len(category_lst)}")
-
-
-
-
         try:
-            g_by_group = holder.g_by_group[label]
+            # gather_contacts_data returns a
+            # names_by_group dict => set
+            names_by_group = holder.names_by_group[label]
         except IndexError:
             report.extend([
                 f"There are no google label '{label}' entries",
                 f"to compare to {repr(category_set)}.",
                 ])
         else:
-            if category_set != g_by_group:
+            if category_set != names_by_group:
                 _ = input(f"""The following do _not_ match:
                     db {label}: {sorted(category_set)}
                 and
-                google {label}: {sorted(holder.g_by_group[label])}
+                google {label}: {sorted(holder.names_by_group[label])}
                 """)
                 dif = (category_set -
-                        holder.g_by_group[label])
+                        holder.names_by_group[label])
                 _ = input(f"{sorted(dif)}")
-                dif = (holder.g_by_group[label] -
+                dif = (holder.names_by_group[label] -
                         category_set)
                 _ = input(f"{sorted(dif)}")
             else:
@@ -499,25 +548,76 @@ def mooring_dock():
         report.append("No mooring & dock overlap.")
     return report
 
-def consistency_report(report, holder=holder):
+def ck_m_vs_g_data():
     """
+    Compares member and applicant data for consistency between
+    sql db and gmail contacts (including stati/labels as
+    appropriate.) (Excludes those without emails since such
+    members don't appear in the gmail data.)
     """
-    report.extend(ck_data(holder))
+    report = []
+    report.append(
+        "Checking for gmail and sql db consistency...")
+    g_data = gather_contacts_data(members_and_applicants_filter)
+    m_data = gather_member_data()
+    if not g_data['name_w_gmail'] == m_data['name_w_email']:
+        report.extend(['',
+            "Gmail and People table emails don't match!..."])
+        only_gmail = sorted(g_data['name_w_gmail'] -
+                m_data['name_w_email'])
+        if only_gmail:
+            report.append("Entries in Gmail not in sql db:")
+            for item in only_gmail:
+                report.append(f'\t{item}')
+        only_sql = sorted(m_data['name_w_email'] -
+                    g_data['name_w_gmail'])
+        if only_sql:
+            report.append("Entries in sql db not in Gmail:")
+            for item in only_sql:
+                report.append(f'\t{item}')
+    else:
+        report.append("...OK")
+    return report
+
+def consistency_report(report):
+    """
+    Called by menu.py under Reports/check_data_consistency
+    """
+    report.extend(ck_m_vs_g_data())
     report.extend(ck_labels())
     report.extend(mooring_dock())
     return report
 
-
-if __name__ == '__main__':
-#   google_contacts_report()
-#   for line in consistency_report([]): 
-#       print(line)
-
+def ck_gather_contacts_data(members_and_applicants_filter):
     data = gather_contacts_data()
     for key in data.keys():
-        _ = input(key)
-        for k, v in data[key].items():
-            print(f'{k}: {v}')
-        _ = input("^^^^^" + key)
+        _ = input(f"{key} vvvvv")
+        if isinstance(data[key], dict):
+            for k, v in data[key].items():
+                print(f'{k}: {v}')
+            _ = input("^^^^^" + key)
+        else:
+            for item in sorted(data[key]):
+                print(item)
+            print("^^^^^^^")
+
+
+def ck_stati_vs_labels():
+    """
+    Still a work in progress
+    """
+    contact_data = gather_contacts_data()
+    groups_by_name = contact_data['groups_by_name']
+    sql_data = gather_member_data()
+    stati_by_name = sql_data['stati_by_name']
+
+
+if __name__ == '__main__':
+#   for line in consistency_report([]): 
+#       print(line)
+    for line in ck_m_vs_g_data():
+        print(line)
+#   ck_gather_contacts_data()
+#   res = gather_member_data()
     
 
