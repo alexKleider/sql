@@ -148,9 +148,9 @@ mooring_query = """SELECT P.first, P.last, P.suffix
 
 def get_gmail_record(g_rec):
     """
-    Client is gather_contacts_data.
-    <g_rec> is a record from the gmail contacts file.
     Returns a "g_dict" (only the info we need.)
+    Client is yield_contacts.
+    <g_rec> is a record from the gmail contacts file.
     NB: google calls them 'Labels', referred to here as 'groups'.
     "g_" prefix refers to google contact data.
     """
@@ -169,6 +169,10 @@ def get_gmail_record(g_rec):
         )
 
 def yield_contacts():
+    """
+    "yields" a dict (as defined by get_gmail_record)
+    for each google contact.
+    """
     with open(club.Holder.contacts_spot, 'r',
         encoding='utf-8', newline='') as file_obj:
         google_reader = csv.DictReader(file_obj)
@@ -183,11 +187,11 @@ def members_and_applicants_filter(g_dict):
             return True
     
 
-def gather_contacts_data(filter_func=None):  # used by ck_data #
+def gather_contacts_data(filter_func=None):
     """
-    Returns gmail contacts data possibly limited by <filter_func>.
-    Gets data from gmail contacts and returns 
-    a dict with 3 keys: 
+    Returns gmail contacts data (limited by <filter_func>
+    if provided.)
+    Returns a dict with 3 keys: 
         values: one is a set of strings (names and emails)
             other two are dicts
     ... see first 4 lines of code
@@ -215,61 +219,44 @@ def gather_contacts_data(filter_func=None):  # used by ck_data #
                 ret['names_by_group'][key].add(name_key)
     return ret
 
+applicants_and_members = (3,4,5,6,7,8,9,10,11,14,15,16,17)
 
-def gather_member_data():
+not_email_restriction = " AND NOT email = '' "
+
+def gather_member_data(stati2include=None,
+                        restriction=False):
     """
     Collects data from the sql data base returning
-    three dicts as does gather_contacts_data:
-    to compare sql data and google contacts data
-    Possible stati:
-1|a-|Application received without fee
-2|a|Application complete but not yet acknowledged
-3|a0|No meetings yet
-4|a1|Attended one meeting
-5|a2|Attended two meetings
-6|a3|Attended three (or more) meetings
-7|ai|Inducted, needs to be notified
-8|ad|Inducted & notified, membership pending payment of dues
-9|av|Vacancy ready to be filled pending payment of dues
-10|aw|Inducted & notified, awaiting vacancy
-11|am|New Member
-12|be|Email on record being rejected
-13|ba|Postal address => mail returned
-14|h|Honorary Member
-15|m|Current Member
-16|i|Inactive (continuing to receive minutes)
-17|r|Retiring/Giving up Club Membership
-18|t|Membership terminated (probably non payment of fees)
-19|w|Fees being waived
-20|z1_pres|President
-21|z2_vp|VicePresident
-22|z3_sec|Secretary
-23|z4_treasurer|Treasurer
-24|z5_d_odd|Director- odd year Feb
-25|z6_d_even|Director- even year Feb
-26|zae|Application expired or withdrawn
-27|zzz|No longer a member
-28|zzd|Died recently
-29|mc|Membership Chair
-30|com|Committee member
+    three dicts (similar to <gather_contacts_data()>)
+    <stati2include> (an iterable of strings) if provided
+    can limit what's returned.
+    <include_email> if set to False will exclude those without
+    an email entry although an empty string is still provided.
     """
+    query_on_line = ''
+    if stati2include:
+        listing = ','.join([repr(s) for s in stati2include])
+        query_on_line = f"""PS.statusID in ({listing}) 
+                AND
+                """
+    if not restriction:
+        restriction = ""
     ret = {}  # member data
     ret['name_w_email'] = set()  # => strings (names and email)
     ret['stati_by_name'] = dict()  # => set of stati
     ret['names_by_status'] = dict()  # >set of names
 
     keys = "ID, last, first, suffix, email, status, end".split(', ')
-    query = f""" -- All applicants and members /w email
+    query = f"""
     SELECT P.personID, P.last, P.first, P.suffix, P.email,
         PS.statusID, PS.end
     FROM People as P
     JOIN Person_Status as PS 
-    ON 
-        (PS.statusID IN (3,4,5,6,7,8,9,10,11,14,15,16,17)
-        AND
+    ON  (
+        {query_on_line}
         PS.personID = P.personID)
     WHERE PS.end > {helpers.eightdigitdate} or PS.end = ''
-        AND NOT email = '';
+        {restriction}   ;
     """
     res = routines.query2dict_listing(query,
                             keys, from_file=False)
@@ -559,7 +546,9 @@ def ck_m_vs_g_data():
     report.append(
         "Checking for gmail and sql db consistency...")
     g_data = gather_contacts_data(members_and_applicants_filter)
-    m_data = gather_member_data()
+    m_data = gather_member_data(
+                stati2include=applicants_and_members,
+                restriction = not_email_restriction)
     if not g_data['name_w_gmail'] == m_data['name_w_email']:
         report.extend(['',
             "Gmail and People table emails don't match!..."])
