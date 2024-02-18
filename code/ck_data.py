@@ -37,14 +37,16 @@ except ImportError: import routines
 holder = club.Holder()
 
 # The following queries are for comparison with Google
-# contacts 'Labels' i.e. those without email are excluded.
-queries = dict(
+# contacts 'Labels' i.e. those without email are excluded
+# since they wouldn't be amongst google contacts.
+queries = dict( # indexed by google contacts LABELs.
     # We've no intention of accepting applicants without email!
     applicant="""SELECT P.first, P.last, P.suffix
         FROM people as P
         JOIN Applicants as A
         WHERE A.personID = P.personID
             AND A.notified = ''
+            AND NOT P.email = ''
             -- excludes those that are no longer applicants
         ;""",
     GaveUpMembership="""SELECT P.first, P.last, P.suffix
@@ -132,17 +134,20 @@ queries['Outer Basin_Moorers -2023'] = """
             """
 '''
 
-dock_query = """SELECT P.first, P.last, P.suffix
+dock_query = """SELECT P.personID, P.first, P.last, P.suffix
             FROM people as P
             JOIN Dock_Privileges as DP
-            WHERE P.personID = DP.personID
-            ;"""
-mooring_query = """SELECT P.first, P.last, P.suffix
+            WHERE P.personID = DP.personID ;"""
+kayak_query = """SELECT K.slot_code, K.slot_cost, P.personID,
+                        P.first, P.last, P.suffix
+            FROM people as P
+            JOIN Kayak_Slots as K
+            WHERE P.personID = K.personID
+            ORDER by P.last, P.first;"""
+mooring_query = """SELECT P.personID, P.first, P.last, P.suffix
             FROM people as P
             JOIN Moorings as M
-            WHERE P.personID = M.personID
-                AND NOT P.email = ''
-            ;"""
+            WHERE P.personID = M.personID ;"""
 
 
 
@@ -366,10 +371,21 @@ def ck_stati_vs_labels():
     sql_data = gather_member_data()
     stati_by_name = sql_data['stati_by_name']
 
+def get_kayak_listing():
+    ret = routines.fetch(kayak_query, from_file=False)
+    ret = sorted(ret)
+    for entry in ret:
+        print(f"    {entry[4]}, {entry[3]}")
+
 
 if __name__ == '__main__':
-    for line in consistency_report([]): 
-        print(line)
+    get_kayak_listing()
+
+#   for line in consistency_report([
+#       "Consistency Report",
+#       "=================="]): 
+#       print(line)
+
 #   for line in ck_m_vs_g_data():
 #       print(line)
 #   ck_gather_contacts_data()

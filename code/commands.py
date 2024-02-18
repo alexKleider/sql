@@ -605,7 +605,7 @@ def report_cmd(report=None):
 
 def leadership_cmd(report=None):
     """
-    Prepares listing of current leadership.
+    Creates "leadership.txt": a listing of current leadership.
     """
     routines.add2report(report,
         "Entering code.commands.leadership_cmd...")
@@ -615,6 +615,8 @@ def leadership_cmd(report=None):
         "Bolinas Rod & Boat Club Leadership (as of {})"
                         .format(helpers.date),
         ret, underline_char='=')
+    for n in range(len(ret)):
+        ret[n] = " " * 4 + ret[n]
     ret.append('')
     temp_tups = []
     longest_name_length = 0
@@ -631,6 +633,7 @@ def leadership_cmd(report=None):
         if l > longest_name_length:
             longest_name_length = l
         temp_tups.append((name, position,))
+    l = longest_name_length + 8
     f = f"{{:>{l+1}}}: {{}}"
     for tup in temp_tups:
         ret.append(f.format(*tup))
