@@ -309,6 +309,23 @@ def mooring_dock():
         report.append("No mooring & dock overlap.")
     return report
 
+
+def compare(g_data, label, which_stati, report):
+    res = routines.fetch(queries[label],
+                        from_file=False)
+    set_members = set([f"{a[1]}, {a[0]}{a[2]}" for
+                    a in res])
+    if not (set_members ==
+            g_data['names_by_group'][label]):
+        report.append(
+            f"...{label} group doesn't match {which_stati}")
+        report.extend(helpers.check_sets(set_members, 
+                            g_data['names_by_group'][label]))
+    else:
+        report.append(
+            f"...{label} group matches {which_stati}")
+
+
 def ck_m_vs_g_data():
     """
     Compares member and applicant data for consistency between
@@ -327,41 +344,30 @@ def ck_m_vs_g_data():
     if not g_data['name_w_gmail'] == m_data['name_w_email']:
         report.extend(['',
             "Gmail and People table emails don't match!..."])
-        only_gmail = sorted(g_data['name_w_gmail'] -
-                m_data['name_w_email'])
-        if only_gmail:
-            report.append("Entries in Gmail not in sql db:")
-            for item in only_gmail:
-                report.append(f'\t{item}')
-        only_sql = sorted(m_data['name_w_email'] -
-                    g_data['name_w_gmail'])
-        if only_sql:
-            report.append("Entries in sql db not in Gmail:")
-            for item in only_sql:
-                report.append(f'\t{item}')
+        report.extend(helpers.check_sets(
+            g_data['name_w_gmail'], m_data['name_w_email'],
+            header_in1st_not2nd=
+                "Entries in Gmail not in sql db:",
+            header_in2nd_not1st=
+                "Entries in sql db not in Gmail:"))
     else:
         report.append("...emails consistent")
     # check that Labels/groups match stati:
-    # Applicants:
-    res = routines.fetch(queries['applicant'],
-                        from_file=False)
-    applicants = set([f"{a[1]}, {a[0]}{a[2]}" for
-                    a in res])
-    if not (applicants ==
-            g_data['names_by_group']['applicant']):
-        report.append("Applicant group doesn't match applicant_stati")
-    else:
-        report.append("...applicant group matches applicant_stati")
-    # Members:
-    res = routines.fetch(queries['LIST'],
-                        from_file=False)
-    members = set([f"{a[1]}, {a[0]}{a[2]}" for
-                    a in res])
-    if not (members ==
-            g_data['names_by_group']['LIST']):
-        report.append("...LIST group doesn't match member_stati")
-    else:
-        report.append("...LIST group matches member_stati")
+    # Applicants/applicant:
+    compare(g_data, 'applicant', 'applicant_stati', report)
+    # Members/LIST:
+    compare(g_data, 'LIST', 'member_stati', report)
+    # Committee
+    # DockUsers
+    # everyone
+    # expired
+    # GaveUpMembership
+    # inactive
+    # Kayak
+    # Moorings
+    # Officers
+    # Outer_Basin_Moorers_2023
+    # secretary
     report.append("...end of gmail vs SQL consistency check")
     return report
 
