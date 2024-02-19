@@ -7,6 +7,7 @@ Provides ck_data.consistency_report (for menu.py.)
 Module for routines that check for data consistency, specifically:
     google data "labels"/contacts match sql Person_Status table
         applicant == statiID 1..10
+        dropped
         DockUsers
         GaveUpMembership
         inactive
@@ -36,9 +37,9 @@ except ImportError: import routines
 
 # LABELS will have to be updated whenever
 # there's a change made to gmail contacts...
-LABELS = """applicant Committee DockUsers everyone expired
-GaveUpMembership inactive Kayak LIST Moorings Officers
-Outer_Basin_Moorers_2023 secretary""".split() 
+LABELS = set("""applicant dropped Committee DockUsers everyone
+ GaveUpMembership inactive Kayak LIST Moorings Officers
+ Outer_Basin_Moorers_2023 secretary""".split())
 
 holder = club.Holder()
 
@@ -105,7 +106,7 @@ queries = dict( # indexed by google contacts LABELs.
                 AND PS.statusID = 30
                 AND (PS.end = '' OR PS.end > {})
             ;""".format(helpers.eightdigitdate),
-    expired="""SELECT P.first, P.last, P.suffix
+    dropped="""SELECT P.first, P.last, P.suffix
             FROM people as P
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
@@ -171,13 +172,14 @@ def get_gmail_record(g_rec):
     if (group_membership and
             group_membership[-1] == '* myContacts'):
         group_membership = group_membership[:-1]
-    return dict(
+    ret = dict(
         first = g_rec["Given Name"],
         last = g_rec["Family Name"],
         suffix = g_rec["Name Suffix"],
         g_email=g_email,
         groups=set(group_membership),
         )
+    return ret
 
 def yield_contacts():
     """
@@ -190,7 +192,10 @@ def yield_contacts():
         print('DictReading Google contacts file "{}"...'
             .format(file_obj.name))
         for g_rec in google_reader:
-            yield get_gmail_record(g_rec)
+            ret = get_gmail_record(g_rec)
+#           _ = input("{last}, {first}: {groups}"
+#                               .format(**ret))
+            yield ret
 
 def members_and_applicants_filter(g_dict):
         if ({"LIST", "applicant", "inactive"} &
@@ -311,10 +316,21 @@ def mooring_dock():
 
 
 def compare(g_data, label, which_stati, report):
+    label_names = set(g_data['names_by_group'].keys())
+    if not label in label_names:
+        report.append(
+            f"!!'{label}' not in {repr(label_names)}!!")
+        return
+    if label == "Outer_Basin_Moorers_2023":
+        report.append(
+            f"!!not dealing with '{label}'!!")
+        return
     res = routines.fetch(queries[label],
                         from_file=False)
     set_members = set([f"{a[1]}, {a[0]}{a[2]}" for
                     a in res])
+#   print(which_stati + "...")
+#   _ = input(repr(sorted(set_members)))
     if not (set_members ==
             g_data['names_by_group'][label]):
         report.append(
@@ -353,21 +369,36 @@ def ck_m_vs_g_data():
     else:
         report.append("...emails consistent")
     # check that Labels/groups match stati:
+    g_data = gather_contacts_data()
+    m_data = gather_member_data(
+                restriction = not_email_restriction)
+    # First check that all 'labels' exist:
     # Applicants/applicant:
     compare(g_data, 'applicant', 'applicant_stati', report)
     # Members/LIST:
     compare(g_data, 'LIST', 'member_stati', report)
     # Committee
+    compare(g_data, 'Committee', 'comittee_stati', report)
     # DockUsers
+    compare(g_data, 'DockUsers', 'dock_user_stati', report)
     # everyone
-    # expired
+    # dropped
+#   compare(g_data, 'dropped', 'dropped_stati', report)
     # GaveUpMembership
+    compare(g_data, 'GaveUpMembership', 'quit_stati', report)
     # inactive
+    compare(g_data, 'inactive', 'inactive_stati', report)
     # Kayak
+    compare(g_data, 'Kayak', 'kayak_stati', report)
     # Moorings
+    compare(g_data, 'Moorings', 'moorings_stati', report)
     # Officers
+    compare(g_data, 'Officers', 'officers_stati', report)
     # Outer_Basin_Moorers_2023
+    compare(g_data, 'Outer_Basin_Moorers_2023',
+                            'outer_moorings_stati', report)
     # secretary
+    compare(g_data, 'secretary', 'secretary_stati', report)
     report.append("...end of gmail vs SQL consistency check")
     return report
 
