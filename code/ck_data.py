@@ -34,6 +34,12 @@ except ImportError: import helpers
 try: from code import routines
 except ImportError: import routines
 
+# LABELS will have to be updated whenever
+# there's a change made to gmail contacts...
+LABELS = """applicant Committee DockUsers everyone expired
+GaveUpMembership inactive Kayak LIST Moorings Officers
+Outer_Basin_Moorers_2023 secretary""".split() 
+
 holder = club.Holder()
 
 # The following queries are for comparison with Google
@@ -201,9 +207,7 @@ def gather_contacts_data(filter_func=None):
             other two are dicts
     ... see first 4 lines of code
     to compare sql data and google contacts data
-    Possible groups/labels: applicant, Committee, DockUsers,
-    everyone, expired, GaveUpMembership, inactive, Kayak, LIST,
-    Moorings, Officers, Outer Basin Moorers, secretary, 
+    Possible groups/labels defined by LABELS (see above.)
     """
     ret = {}
     ret['name_w_gmail'] = set()  # => strings (names and email)
@@ -282,7 +286,7 @@ def mooring_dock():
     Ensure that no one is charged for both mooring & dock usage.
     """
     report = []
-    keys = "first, last, suffix".split(', ')
+    keys = "personID, first, last, suffix".split(', ')
     mooring = routines.fetch(mooring_query,from_file=False)
     dock = routines.fetch(dock_query,from_file=False)
     for res in [mooring, dock]:
@@ -319,6 +323,7 @@ def ck_m_vs_g_data():
     m_data = gather_member_data(
                 stati2include=applicants_and_members,
                 restriction = not_email_restriction)
+    # check that names and emails match:
     if not g_data['name_w_gmail'] == m_data['name_w_email']:
         report.extend(['',
             "Gmail and People table emails don't match!..."])
@@ -335,7 +340,29 @@ def ck_m_vs_g_data():
             for item in only_sql:
                 report.append(f'\t{item}')
     else:
-        report.append("...OK")
+        report.append("...emails consistent")
+    # check that Labels/groups match stati:
+    # Applicants:
+    res = routines.fetch(queries['applicant'],
+                        from_file=False)
+    applicants = set([f"{a[1]}, {a[0]}{a[2]}" for
+                    a in res])
+    if not (applicants ==
+            g_data['names_by_group']['applicant']):
+        report.append("Applicant group doesn't match applicant_stati")
+    else:
+        report.append("...applicant group matches applicant_stati")
+    # Members:
+    res = routines.fetch(queries['LIST'],
+                        from_file=False)
+    members = set([f"{a[1]}, {a[0]}{a[2]}" for
+                    a in res])
+    if not (members ==
+            g_data['names_by_group']['LIST']):
+        report.append("...LIST group doesn't match member_stati")
+    else:
+        report.append("...LIST group matches member_stati")
+    report.append("...end of gmail vs SQL consistency check")
     return report
 
 def consistency_report(report=None):
@@ -379,16 +406,14 @@ def get_kayak_listing():
 
 
 if __name__ == '__main__':
-    get_kayak_listing()
+#   get_kayak_listing()
 
-#   for line in consistency_report([
-#       "Consistency Report",
-#       "=================="]): 
-#       print(line)
+    for line in consistency_report([
+        "Consistency Report",
+        "=================="]): 
+        print(line)
 
 #   for line in ck_m_vs_g_data():
 #       print(line)
 #   ck_gather_contacts_data()
 #   res = gather_member_data()
-    
-
