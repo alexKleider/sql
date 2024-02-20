@@ -149,10 +149,10 @@ def keys_from_schema(table, brackets=(0,0)):
 def query2dict_listing(query, keys,
                        from_file=False):
     """
-    Returns query result as a list of dicts.
-    Keep in mind, could be an empty list!
-    Assumes len(keys)==length of each tupple returned by the
-    query.
+    Returns query result as a (could be empty!) list of dicts
+    (which can be dumped into a json file.)
+    Fails if len(keys)!=length of tupples returned by the query.
+    <keys> parameter typically supplied by keys_from_schema().
     """
     ret = []
     res = fetch(query, from_file=from_file)

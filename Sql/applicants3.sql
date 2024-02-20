@@ -1,7 +1,4 @@
 /* Sql/applcants3.sql */
-/* Should be redacted: has an entry for each status
-   passed through by the applicant!  i.e. diplicates!!
-*/
 SELECT
     St.key, P.first, P.last, 
     P.phone, P.address, P.town, P.state, P.postal_code, P.email,
@@ -21,3 +18,4 @@ AND PS.end=''
 --        "a3", "ai", "ad", "av", "aw")
 ORDER BY P.last, P.first
 ;
+

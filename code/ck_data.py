@@ -316,6 +316,7 @@ def mooring_dock():
 
 
 def compare(g_data, label, which_stati, report):
+    # First check that all 'labels' exist...
     label_names = set(g_data['names_by_group'].keys())
     if not label in label_names:
         report.append(
@@ -325,12 +326,11 @@ def compare(g_data, label, which_stati, report):
         report.append(
             f"!!not dealing with '{label}'!!")
         return
+    # ... passed the check
     res = routines.fetch(queries[label],
                         from_file=False)
     set_members = set([f"{a[1]}, {a[0]}{a[2]}" for
                     a in res])
-#   print(which_stati + "...")
-#   _ = input(repr(sorted(set_members)))
     if not (set_members ==
             g_data['names_by_group'][label]):
         report.append(
@@ -368,11 +368,12 @@ def ck_m_vs_g_data():
                 "Entries in sql db not in Gmail:"))
     else:
         report.append("...emails consistent")
-    # check that Labels/groups match stati:
+    # check that Labels/groups match stati..
+    # need to lift restrictions to include all
+    # (not just members and applicants!)
     g_data = gather_contacts_data()
     m_data = gather_member_data(
                 restriction = not_email_restriction)
-    # First check that all 'labels' exist:
     # Applicants/applicant:
     compare(g_data, 'applicant', 'applicant_stati', report)
     # Members/LIST:
@@ -402,6 +403,34 @@ def ck_m_vs_g_data():
     report.append("...end of gmail vs SQL consistency check")
     return report
 
+
+def ck_appl_vs_status_tables():
+    """
+    Compares Applicants and Stati tables for consistency.
+    """
+    fs = "{:0} {:1}, {:2}{:3}"
+    report = []
+    report.append(
+        "Checking Applicant and Stati table consistency...")
+    res_app_table = routines.fetch(
+            "Sql/still_applicants.sql")
+    res_app = [fs.format(*entry) for entry in res_app_table]
+    res_status_table = routines.fetch(
+            "Sql/applicants_from_stati.sql")
+    res_status =  [fs.format(*entry) for entry in
+                                        res_status_table]
+    if res_app != res_status:
+        report.extend(helpers.check_sets(
+                set(res_app), set(res_status)))
+#       for entry in res_app:
+#           print(entry)
+#       print()
+#       for entry in res_app:
+#           print(entry)
+    report.append("... App/Stati consistency check done.")
+    return report
+
+
 def consistency_report(report=None):
     """
     Called by menu.py under Reports/check_data_consistency
@@ -409,8 +438,10 @@ def consistency_report(report=None):
     if not report:
         report = []
     report.extend(ck_m_vs_g_data())
+    report.extend(ck_appl_vs_status_tables())
     report.extend(mooring_dock())
     return report
+
 
 def ck_gather_contacts_data(members_and_applicants_filter):
     data = gather_contacts_data()
@@ -445,11 +476,12 @@ def get_kayak_listing():
 if __name__ == '__main__':
 #   get_kayak_listing()
 
-    for line in consistency_report([
-        "Consistency Report",
-        "=================="]): 
+#   for line in consistency_report([
+#       "Consistency Report",
+#       "=================="]): 
+#       print(line)
+    for line in ck_appl_vs_status_tables():
         print(line)
-
 #   for line in ck_m_vs_g_data():
 #       print(line)
 #   ck_gather_contacts_data()
