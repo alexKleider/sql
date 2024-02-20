@@ -407,6 +407,9 @@ def ck_m_vs_g_data():
 def ck_appl_vs_status_tables():
     """
     Compares Applicants and Stati tables for consistency.
+    Sql/aS.sql queries get info from Applicant table
+    Sql/sS.sql queries get info from Status table
+    "S" can be one of the following: 0, 1, 2, 3, d
     """
     fs = "{:0} {:1}, {:2}{:3}"
     report = []
@@ -422,11 +425,23 @@ def ck_appl_vs_status_tables():
     if res_app != res_status:
         report.extend(helpers.check_sets(
                 set(res_app), set(res_status)))
-#       for entry in res_app:
-#           print(entry)
-#       print()
-#       for entry in res_app:
-#           print(entry)
+    queries = (
+                ('Sql/a0.sql', 'Sql/s0.sql', ),
+                ('Sql/a1.sql', 'Sql/s1.sql', ),
+                ('Sql/a2.sql', 'Sql/s2.sql', ),
+                ('Sql/a3.sql', 'Sql/s3.sql', ),
+                ('Sql/ad.sql', 'Sql/sd.sql', ),
+            )
+    ok = True
+    for querya, querys in queries:
+        res_a = routines.fetch(querya)
+        res_s = routines.fetch(querys)
+        if res_a != res_s:
+            ok = False
+            report.append(
+                "Applicant and Person_Status table missmatch!")
+#   if not ok:
+#       report.append("Problems")
     report.append("... App/Stati consistency check done.")
     return report
 
