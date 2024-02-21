@@ -29,6 +29,7 @@ date_year_template = "%y"
 today = datetime.datetime.today()
 # sixdigitdate = today.strftime("%y%m%d")
 eightdigitdate = today.strftime("%Y%m%d")
+eightdigitdate4filename = today.strftime("%Y-%m-%d")
 timestamp = today.strftime("%Y-%m-%d_%H:%M")
 timestamp4filename = today.strftime("%Y-%m-%d_%H-%M")
 month = today.month
