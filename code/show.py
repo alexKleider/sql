@@ -24,8 +24,8 @@ file4app_report = "applicants.txt"
 
 def get_listing_2f(query_file):
     """
-    Returns query result.  "_2f": twice formatted
-    Query is content of <query_file> formatted twice
+    Returns query result.  "_2f": two format fields.
+    Query is content of <query_file> formatted (2 locations)
     with today's <helper.eightdigitdate>
     """
     date = helpers.eightdigitdate
@@ -134,6 +134,11 @@ def get_sponsor_first_last(sponsorID):
 
 
 def report_applicants(listing):
+    """
+    <listing> as supplied by get_listing_2f()
+    Flushes out sponsors and dates and orders in groups
+    by number of meetings ==> a report (list of strings.)
+    """
     n = len(listing)
     report = ['', f"Applicants (Currently {n} in number)", ]
     report.append("=" * len(report[-1]))
