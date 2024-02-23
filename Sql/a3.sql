@@ -9,5 +9,6 @@ ON A.personID = P.personID
 WHERE A.notified = ""
   AND A.meeting3 != ""
   AND A.approved = ""
+  AND A.notified = ""
 ORDER BY P.last, P.first, P.suffix
 ;

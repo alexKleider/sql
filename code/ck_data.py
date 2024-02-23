@@ -426,6 +426,7 @@ def ck_appl_vs_status_tables():
         report.extend(helpers.check_sets(
                 set(res_app), set(res_status)))
     queries = (
+                ('Sql/a0-.sql', 'Sql/s0-.sql', ),
                 ('Sql/a0.sql', 'Sql/s0.sql', ),
                 ('Sql/a1.sql', 'Sql/s1.sql', ),
                 ('Sql/a2.sql', 'Sql/s2.sql', ),
@@ -433,13 +434,17 @@ def ck_appl_vs_status_tables():
                 ('Sql/ad.sql', 'Sql/sd.sql', ),
             )
     ok = True
-    for querya, querys in queries:
-        res_a = routines.fetch(querya)
-        res_s = routines.fetch(querys)
+    for n in range(len(queries)):
+        res_a = routines.fetch(queries[n][0])
+        res_s = routines.fetch(queries[n][1])
         if res_a != res_s:
             ok = False
             report.append(
                 "Applicant and Person_Status table missmatch!")
+            report.extend(helpers.check_sets(
+                set(res_a), set(res_s),
+                header_in1st_not2nd=
+                f"in {queries[n][0]}, not {queries[n][1]}"))
 #   if not ok:
 #       report.append("Problems")
     report.append("... App/Stati consistency check done.")
