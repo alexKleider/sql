@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# File: gui.py
+# File: code/textual.py
 
 """ Gui-like interface:
 Using pysimplegui @
@@ -9,6 +9,7 @@ https://www.pysimplegui.org/en/latest/#github-statistics
 as a possible alternative.)
 """
 
+import asyncio
 import PySimpleGUI as sg
 
 try: from code import routines
@@ -17,19 +18,19 @@ try: from code import helpers
 except ImportError: import helpers
 
 
-def valid_values(ev):
+def valid_values(ev, allow_blanks=False):
     """
     <ev> is what's returned by sg's window.read()
-    returns values if valid, None if not.
+    Returns a dict if values are valid, 
+    Returns a string if not.
     """
-    event, values = ev
+    event, the_dict = ev
     if event in (None, "Cancel"):
-        print("None or Cancel")
-        return
-    if '' in values.values():
-        print("Missing values")
-        return
-    return values
+        return "None or Cancel"
+    if not allow_blanks:
+        if '' in the_dict.values():
+            return "Missing value(s)"
+    return the_dict
 
 def show_fonts():
     couriers = ["BPG Courier", "GPL&GNU",
@@ -42,6 +43,28 @@ def show_fonts():
         if "Courier" in font:
             print(font)
     
+
+def f2run():
+    _ = input("Running function f2run")
+    
+def a_show_stati(f2run):
+    """
+    A work in progress
+    """
+    keys = routines.keys_from_schema("Stati")
+    res = routines.fetch("SELECT * FROM Stati;",
+            from_file=False)
+    layout = [[sg.Text("Stati table fields:",)],]
+    layout.extend([
+#       [sg.Text(repr(item), pad=(0,(0,0))),]
+        [sg.Text("{0:>2}: {1:>4},  {2:}".format(*item),
+                    pad=(1,(0,1)), font=("Free Courier", 7))]
+        for item in res
+        ])
+    window = sg.Window("For Info", layout,finalize=True)
+    f2run()
+    ret = window.read()
+
 def show_stati():
     """
     Provides an info box showing the stati:
@@ -59,6 +82,29 @@ def show_stati():
         ])
     window = sg.Window("For Info", layout,)
     ret = window.read()
+
+
+def get_fields(fields, header="Enter values for each key"):
+    """
+    Prompts user to supply values for each field.
+    Returns a dict of entered (possibly empty) strings
+    keyed by <fields>.  Returns None if user aborts.
+    """
+    layout = [[sg.Text(header)],]
+    layout.extend([
+        [sg.Text(field), 
+            sg.Input(expand_x=True, key=field)]
+        for field in fields
+            ])
+    layout.append([sg.Button('OK'), sg.Button('Cancel')])
+
+    window = sg.Window('Enter values', layout,)
+#   event, values = window.read()
+    event, the_dict = window.read()
+    window.close()
+    if event in (None, "Cancel"):
+        return
+    return the_dict
     
 
 def get_fields4(p_data, fields):
@@ -592,14 +638,28 @@ def test_get_fields4():
         for key, value in ret.items():
             print(f"{key}: {value}")
 
-def test_show_stati():
-    show_stati()
+def test_get_fields():
+    ret = get_fields(
+        'first, last, address'.split(', ') )
+    if isinstance(ret, dict):
+        for key, value in ret.items():
+            print(f"{key}: {value}")
+    elif isinstance(ret, type(None)):
+        print("None was returned")
+    else:
+        assert False
+
+
+def test_a_show_stati():
+    a_show_stati(f2run)
+    print("Window has been closed.")
 
 
 if __name__ == "__main__":
 #   show_fonts()
-#   test_show_stati()
-    test_get_fields4()
+    test_a_show_stati()
+#   test_get_fields4()
+#   test_get_fields()
 #   test_get_mode()
 #   test_selectP_record()
 #   test_people_choices()

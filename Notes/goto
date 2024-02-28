@@ -1,8 +1,6 @@
         # File: ~/Sql/Notes/goto
 
-        SELECT FROM Table
-            GROUP BY
-            ORDER BY
+        SELECT [DISTINCT] FROM Table [Clauses ... ]
         INSERT INTO Table (...) VALUES (...);
         UPDATE Table SET ..=.., .... WHERE ....
         DELETE FROM Table WHERE ..=..  --use SELECT first to be sure!
@@ -17,11 +15,12 @@
         LIMIT xx
 
         Operators    ('BETWEEN' operator is inclusive)
-        =========    ('LIKE': use % wild card)
+        =========    ('LIKE': use % or _ wild card)
         Comparison  Logical     Arithmetic
         ----------  -------     ----------
         =, >, <,    BETWEEN    +, -, /, *, %
         >=, <=, <>  IN, LIKE    
+        IS NULL or IS NOT NULL (other NULL expressions => NULL)
 
 
 
@@ -55,4 +54,4 @@ sqlite> select * from Stati;
 27|zzz|No longer a member
 28|zzd|Died recently
 29|mc|Membership Chair
-
+30|com|Committee member

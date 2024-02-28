@@ -26,7 +26,7 @@ hierarchy = {
     "Data Entry":{
         "Status Update": [data_entry.change_status_cmd],
             #Person_Status table Insert or Update an entry
-        "New Applicant (not implemented)": [],
+        "New Applicant": [data_entry.add_new_applicant_cmd],
             #People, Applicant & Status tables
             #Google Contacts entry
         "Meeting/newMember Update (not implemented)": [],
@@ -38,7 +38,8 @@ hierarchy = {
         "First Notice (not implemented)": [],
         "June Request (not implemented)": [],
             },
-    "Info (not implemented)":{  # csv files created
+    "Info":{  # csv files created
+        "ZIP of CSV version of DB tables": [routines.db2csv],
         "Leadership (not implemented)": [],
         "Owing (not implemented)": [],
         "Receipts (not implemented)": [],

@@ -133,7 +133,7 @@ def file2app_data(file_content, report=None):
     return ret  # returns dict of new applicant data from file
 
 
-def add_new_applicant_cmd():
+def add_new_applicant_cmd(report=None):
     """
     Provides ability to enter one new applicant into the db:
     Creats appropriage entries in "People", "Person_Status"
@@ -185,6 +185,8 @@ def add_new_applicant_cmd():
             #1. People
             #2. Person_Status
             #3. Applicants
+    if report and isinstance(report, list):
+        report.extend(ret)
     return ret
 
 def change_status_cmd(report=None):
