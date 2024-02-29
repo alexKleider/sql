@@ -563,8 +563,8 @@ def report_cmd(report=None):
         "Membership Report (prepared {})"
             .format(helpers.date),
         ret, underline_char='=')
-    ret.append('')
-    ret.append('Club membership currently stands at {}.\n'
+#   ret.append('')
+    ret.append('Club membership currently stands at {}.'
                   .format(n))
     ret.extend(show.show_applicants_cmd())
     try:

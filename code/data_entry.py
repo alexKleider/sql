@@ -190,6 +190,8 @@ def add_new_applicant_cmd(report=None):
     return ret
 
 def change_status_cmd(report=None):
+    if report is NoneType:
+        report = []
     routines.add2report(report, 
             "Entering code/data_entry/change_status_cmd...")
     data = textual.selectP_record(report=report)
@@ -213,6 +215,7 @@ def change_status_cmd(report=None):
         print(line)
     routines.add2report(report,
         "...finished code/data_entry/change_status.cmd.")
+    return report
 
 
 def applicant_update_cmd():

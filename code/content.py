@@ -526,6 +526,8 @@ authors = dict(  # from
         email_signature="\nSincerely,\nAlex Kleider (Membership)",
         email="rodandboatclub@gmail.com",
         reply2="rodandboatclub@gmail.com",
+#       email="alex@kleider.ca",
+#       reply2="alex@kleider.ca",
         mail_signature="\nSincerely,\n\n\nAlex Kleider (Membership)",
         ),
     )  # end of authors
@@ -676,6 +678,7 @@ content_types = dict(  # which_letter
         "subject": "Application Expired",
         "from": authors["membership"],
         "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
         "body": letter_bodies["expired_application"],
         "post_scripts": (),
         "holder_funcs": (routines.assign_mannually, 
@@ -826,6 +829,7 @@ content_types = dict(  # which_letter
         "subject": "Application Received",
         "from": authors["membership"],
         "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
         "body": letter_bodies["waiting4application_fee"],
         "post_scripts": (
             post_scripts["remittance"],
@@ -841,6 +845,7 @@ content_types = dict(  # which_letter
         "subject": "Membership pending vacancy",
         "from": authors["membership"],
         "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
         "body": letter_bodies["awaiting_vacancy"],
         "post_scripts": (),
         "funcs": (members.std_mailing_func,),
@@ -852,6 +857,7 @@ content_types = dict(  # which_letter
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
         "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
         "body": letter_bodies["vacancy_open"],
         "post_scripts": (
             post_scripts["remittance"],
@@ -867,6 +873,7 @@ content_types = dict(  # which_letter
         "subject": "Still awaiting Club dues",
         "from": authors["membership"],
         "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
         "body": letter_bodies[
             "second_request_inductee_payment"],
         "post_scripts": (
@@ -883,6 +890,7 @@ content_types = dict(  # which_letter
         "subject": "You are a member!",
         "from": authors["membership"],
         "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
         "body": letter_bodies["welcome2full_membership"],
         "post_scripts": (post_scripts["ref1_email_or_PO"],
                          ),

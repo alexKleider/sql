@@ -21,11 +21,12 @@ hierarchy = {
         "applicants": [show.show_applicants_cmd,],
         "4exec": [commands.report_cmd,],
         "leadership": [commands.leadership_cmd,],
-        "check_data_consistenchy": [ck_data.consistency_report, ],
+        "check_data_consistenchy":
+                [ck_data.consistency_report, ],
             },
     "Data Entry":{
         "Status Update": [data_entry.change_status_cmd],
-            #Person_Status table Insert or Update an entry
+            #Inserts or Updates a Person_Status table entry
         "New Applicant": [data_entry.add_new_applicant_cmd],
             #People, Applicant & Status tables
             #Google Contacts entry
@@ -34,7 +35,8 @@ hierarchy = {
         "Leadership Update (not implemented)": [],
             #Status table: term ending & beginning
             },
-    "Prepare Mailing (not implemented)":{  # email.json & MailingDir populated
+    "Prepare Mailing (under development)":{
+        # populates email.json &/- MailingDir
         "First Notice (not implemented)": [],
         "June Request (not implemented)": [],
             },
