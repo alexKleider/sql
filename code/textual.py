@@ -269,9 +269,10 @@ def create_dem_file(data, report=None):
 
 def people_choices(header_prompt=None, report=None):
     """
-    GUI method of getting a selected list of people from
-    which to choose: returns a listing of ID, first, last tuples
-    OR None.
+    GUI method of getting a list of people records.
+    Returns a listing of dicts keyed by ID, first, last
+    OR None (if user cancels/quits, no entries are made
+    or no results obtained.)
     Use '%' wild card for selection.
     1st step in providing 
     code/routines/pick_People_record functionality!
@@ -290,7 +291,8 @@ def people_choices(header_prompt=None, report=None):
     data = None
     event, values = window.read()
     if event == 'OK':
-        if set(values.values()) == {''}:  # all empty strings
+        if set(values.values()) == {''}:
+            # all empty strings i.e. no data entered
             report.append(
                 "textual/people_choices got an empty list; " +
                 "returning None")
@@ -312,23 +314,23 @@ def people_choices(header_prompt=None, report=None):
                 f"key: {key}   value: {value}")
     # use hints to get candidates:
     query_lines = [
-        "Select *",
-            "from People where ", ]
+        "SELECT *",
+            "FROM People WHERE ", ]
     additional_lines = []
     if data['first']:
         additional_lines.append(
-            f"""first like "{data['first']}" """)
+            f"""first LIKE "{data['first']}" """)
     if data['last']:
         additional_lines.append(
-            f"""last like "{data['last']}" """)
+            f"""last LIKE "{data['last']}" """)
     if data['suffix']:
         additional_lines.append(
-            f"""suffix like "{data['suffix']}" """)
+            f"""suffix LIKE "{data['suffix']}" """)
     additional_lines = " AND ".join(additional_lines)
     query_lines.append(additional_lines)
     query = ' '.join(query_lines)
-    query = query+';'
-#   _ = input(f"query is {repr(query)}")
+    query = query+"ORDER BY last, first"+';'
+    _ = input(f"query is {repr(query)}")
 #   ret = routines.fetch(query, from_file=False)
     ret = routines.query2dict_listing(query, keys,
             from_file=False)
@@ -593,9 +595,10 @@ def test_people_choices():
     else:
         print("pick_People_record returning the following...")
         for item in res:
-            print(f"{repr(item)}")
-    print("\nReport follows...")
-    print('\n'.join(report))
+            print("{personID:>3} {first} {last}".format(
+                **item))
+#   print("\nReport follows...")
+#   print('\n'.join(report))
 
 
 def test_selectP_record():
@@ -657,12 +660,12 @@ def test_a_show_stati():
 
 if __name__ == "__main__":
 #   show_fonts()
-    test_a_show_stati()
+#   test_a_show_stati()
 #   test_get_fields4()
 #   test_get_fields()
 #   test_get_mode()
 #   test_selectP_record()
-#   test_people_choices()
+    test_people_choices()
 #   test_choose()
 #   get_demographics(report=report,
 #           applicant=False)
