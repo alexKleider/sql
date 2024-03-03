@@ -312,7 +312,8 @@ fee) you must attend a minimum of three meetings with in a six
 month period.  You may attend as the guest of any member; your
 sponsors are expected to introduce you.
 
-Looking forward to seeing each other at future meetings.
+Looking forward to seeing each other at future meetings held at
+the Club: 83 Wharf Rd., Bolinas, CA 94924
 """,
 
     awaiting_vacancy="""

@@ -109,6 +109,7 @@ def get_fields(fields, header="Enter values for each key"):
 
 def get_fields4(p_data, fields):
     """
+    Will probably deprecate in favour of get_fields()
     Prompts user to supply values for each field.
     <p_data>, a dict, informs for which person data is being
     collected and must at minimum include first, last & suffix.
@@ -341,6 +342,21 @@ def people_choices(header_prompt=None, report=None):
     routines.add2report(report,
         "...leaving code/textual.people_choices()")
     return ret
+
+
+def test_people_choices():
+    report = []
+    res = people_choices(report=report,
+        header_prompt = "Choose from the People table...")
+    if not res:
+        print(f"people_choices returned {repr(res)}")
+    else:
+        print("pick_People_record returning the following...")
+        for item in res:
+            print("{personID:>3} {first} {last}".format(
+                **item))
+#   print("\nReport follows...")
+#   print('\n'.join(report))
 
 
 def choose(choices, header="CHOOSE ONE",
@@ -586,20 +602,53 @@ def test_pick_person():
         if not (yn and yn[0] in 'yY'):
             break
 
-def test_people_choices():
-    report = []
-    res = people_choices(report=report,
-        header_prompt = "Choose from the People table...")
-    if not res:
-        print(f"people_choices returned {repr(res)}")
-    else:
-        print("pick_People_record returning the following...")
-        for item in res:
-            print("{personID:>3} {first} {last}".format(
-                **item))
-#   print("\nReport follows...")
-#   print('\n'.join(report))
+def menu(options, headers=["Main Menu", "Make a Choice"],
+        report=None):
+    """
+    <options> is a list of key/value pairs:
+        keys are menu item strings
+        Returned is the object/value corresponding to key chosen
+    <headers> self explanatory (a header and a subheader)
+    Returns None if user aborts/no key is chosen.
+    Note: values can be functions!
+    """
+    routines.add2report(report, "Entering wip/menu...")
+    keys = [key for key in options.keys()]
+    layout = [
+        [sg.Text(headers[1], size=(30,1),)],
+        [sg.Listbox(values=keys, select_mode='extended',
+            key='CHOICE', size=(30, len(options)))],
+        [sg.Button('SELECT',), sg.Button('CANCEL'),]
+            ]
+    win = sg.Window(headers[0], layout)
+    e, v = win.read()
+    win.close()
+    if e == 'CANCEL' or not v or not v["CHOICE"]:
+        routines.add2report(report,
+            f"Cancelled or no choice made; aborting {headers[0]}")
+        if report: print(report[-1])
+        return
+#   _ = input(repr(v))
+    ret = options[v['CHOICE'][0]]
+    routines.add2report(report,
+        f"...wip/menu() returning {repr(ret)}")
+    return ret
 
+def test_menu():
+    res = menu(dict(
+        choice1="f1", choice2="f2", choice3="f3"),
+            headers=["Main Menu", "Choosing strings"])
+    _ = input(repr(res))
+    def f1():
+        print("f1 chosen")
+    def f2():
+        print("f2 chosen")
+    def f3():
+        print("f3 chosen")
+    res = menu(dict(choice1=f1, choice2=f2, choice3=f3))
+    _ = input(repr(res))
+    if res:
+        res()
 
 def test_selectP_record():
     report = []
@@ -665,11 +714,11 @@ if __name__ == "__main__":
 #   test_get_fields()
 #   test_get_mode()
 #   test_selectP_record()
-    test_people_choices()
+#   test_people_choices()
 #   test_choose()
 #   get_demographics(report=report,
 #           applicant=False)
 #   test_pick_person()
 #   test_create_dem_file()
 #   main1()
-
+    test_menu()
