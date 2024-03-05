@@ -29,7 +29,7 @@ if __name__ == '__main__':
             res = cmd()
             if yn and yn[0] in 'Yy':
                 outfile = input(
-                "Send result to file (blank if to StdOut:) ")
+                "Send report to file (blank if to StdOut:) ")
                 if outfile:
                     with open(outfile, 'w') as outstream:
                         outstream.write('\n'.join(res))

@@ -606,11 +606,13 @@ def menu(options, headers=["Main Menu", "Make a Choice"],
         report=None):
     """
     <options> is a list of key/value pairs:
-        keys are menu item strings
-        Returned is the object/value corresponding to key chosen
-    <headers> self explanatory (a header and a subheader)
+      keys are strings representing items from which to choose.
+      Returned is the object/value corresponding to key chosen
+        Note: values can be functions!
     Returns None if user aborts/no key is chosen.
-    Note: values can be functions!
+    <headers> self explanatory (a header and a subheader)
+    <report> if provided must be an iterable to which strings
+    representing progress (or lack there of) are appended.
     """
     routines.add2report(report, "Entering wip/menu...")
     keys = [key for key in options.keys()]

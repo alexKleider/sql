@@ -722,36 +722,49 @@ def yet2bNamed():
     return ret
 
 
-def no_email_cmd():
+def no_email_cmd(report=None):
     """
     Provides a listing of _members_ without email.
     """
+    ret = []
+    default_file_name = "no_email.csv"
     query = routines.import_query("Sql/no_email_f.sql")
     query = query.format(helpers.eightdigitdate)
     res = routines.fetch(query, from_file=False)
     n = len(res)
 #   _ = input(res)
-    ret = [
+    line2add = (
      "Member ID, Names and Demographics of {} without email"
-     .format(n),]
-    ret.append("=" * len(ret[0]))
-    csv_file = input(
-        "Name of csv file (return if not needed): ")
-    if csv_file:
-        fieldnames = ["personID", "first", "last",
-            "address", "town", "state", "postal_code"]
-        with open(csv_file, 'w', newline='') as outstream:
-            writer = csv.DictWriter(outstream,
-                    fieldnames=fieldnames)
-            writer.writeheader()
-            for line in res:
-                pairs = zip(fieldnames, line)
-                row = {}
-                for key, value in pairs:
-                    row[key] = value
-                writer.writerow(row)
+     .format(n)  )
+    routines.add2report(report, line2add)
+    routines.add2report(report, 
+            "=" * len(line2add))
+    csv_file = input(f"Change default '{default_file_name}' " +
+                        "or [Enter] to continue: ")
+    if not csv_file:
+        csv_file = default_file_name
+    routines.add2report(report,
+            f"...sending data to '{csv_file}'...")
+    fieldnames = ["personID", "first", "last",
+        "address", "town", "state", "postal_code"]
+    ret.append(
+        "{:>3}: {} {}: {}, {}, {} {}".format(*fieldnames))
+    with open(csv_file, 'w', newline='') as outstream:
+        writer = csv.DictWriter(outstream,
+                fieldnames=fieldnames)
+        writer.writeheader()
+        for line in res:
+            pairs = zip(fieldnames, line)
+            row = {}
+            for key, value in pairs:
+                row[key] = value
+            writer.writerow(row)
     for line in res:
-        ret.append("{:>3}: {} {}: {}, {}, {} {}".format(*line))
+        entry = "{:>3}: {} {}: {}, {}, {} {}".format(*line)
+        ret.append(entry)
+        routines.add2report(report, entry)
+    routines.add2report(report,
+            "...end of members without email listing.")
     return ret
 
 

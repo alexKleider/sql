@@ -21,6 +21,7 @@ hierarchy = {
         "applicants": [show.show_applicants_cmd,],
         "4exec": [commands.report_cmd,],
         "leadership": [commands.leadership_cmd,],
+        "no email=>csv": [commands.no_email_cmd, ],
         "check_data_consistenchy":
                 [ck_data.consistency_report, ],
             },
