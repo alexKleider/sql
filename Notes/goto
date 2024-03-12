@@ -1,5 +1,7 @@
         # File: ~/Sql/Notes/goto
 
+        clear terminal with CTL-L
+
         SELECT [DISTINCT] FROM Table [Clauses ... ]
         INSERT INTO Table (...) VALUES (...);
         UPDATE Table SET ..=.., .... WHERE ....

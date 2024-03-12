@@ -9,7 +9,7 @@ JOIN
     Stati as St
 ON St.statusID = PS.statusID
 WHERE P.email = ''
-    AND St.key IN ('m', 'am')
+    AND St.key IN ('m', 'am', 'h', 'i', 'r')
     AND ((PS.end = "") OR (PS.end > {})) 
 ORDER BY P.last, P.first
 ;

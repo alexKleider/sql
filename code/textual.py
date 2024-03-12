@@ -605,7 +605,7 @@ def test_pick_person():
 def menu(options, headers=["Main Menu", "Make a Choice"],
         report=None):
     """
-    <options> is a list of key/value pairs:
+    <options> is a dict/mapping (key/value pairs):
       keys are strings representing items from which to choose.
       Returned is the object/value corresponding to key chosen
         Note: values can be functions!
