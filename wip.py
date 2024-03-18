@@ -27,38 +27,75 @@ def params(one, two, kw1="kw1", kw2='kw2'):
 def test_params():
     params(two=2, one=1, kw1="KW1", kw2="KW2")
 
-query1 = """ -- current applicants
-        SELECT P.personID, P.last, P.first, 
-                A.meeting1, A.meeting2, A.meeting3
-        FROM People as P
-        JOIN Applicants as A
-        WHERE A.personID = P.personID
-        AND A.notified = ""
-    ;"""
+# the following (app_keys, date_keys and app_query) are
+# used by choose_applicant and some by add_applicant_date
+app_keys = ("personID, last, first, suffix,"  # 4
+      + " sponsor1ID, sponsor2ID,"      # +2 = 6 or -8
+      + " app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,"
+      + " approved, dues_paid, notified").split(", ")
+date_keys = app_keys[6:]
+app_query = """ -- current applicants
+    SELECT P.personID, P.last, P.first, P.suffix,
+        A.sponsor1ID, A.sponsor2ID, A.app_rcvd, A.fee_rcvd,
+        A.meeting1, A.meeting2, A.meeting3, approved,
+        dues_paid, notified
+    FROM People as P JOIN Applicants as A
+    WHERE A.personID = P.personID
+    AND A.notified = "";"""
 
-def current(report):
+
+def choose_applicant(report=None):
+    """
+    Offers a menu/choice of all current applicants.
+    Returns a dict representing chosen applicant
+    OR None if no choice made (possibly no applicants.)
+    """
+    # keys of the dict expected to be returned:
+#   _ = input(f"keys: {repr(app_keys)}")
+#   _ = input(f"date_keys: {repr(date_keys)}")
+    # first query current applicants...
     routines.add2report(report,
-            "Working on 'current' function...")
-    res = routines.fetch(query1, from_file=False)
+            "Entering 'choose_applicant' function...")
+    res = routines.query2dict_listing(app_query,
+                            app_keys, from_file=False)
     n_res = len(res)
     routines.add2report(report,
-            f"...presenting {n_res} options...")
+        f"...found {n_res} applicants from which to choose...")
+    if n_res == 0: return  # return None if no applicants
+    # set up mapping for the menu function
     mapping = {}
-    for line in res:
-#       key = f"{res[0]:4d>} {res[1]:}, {res[2]:}"
-        key = f"{line[0]:>4d} {line[1]}, {line[2]}"
-#       value = line[0]
-#       mapping[key] = value
-        mapping[key] = key
+    for entry in res:
+        if entry['suffix']: suffix = f' [{suffix.strip()}]'
+        else: suffix = ''
+        key = (f'{entry["personID"]:>4d} {entry["last"]}, '
+            + f'{entry["first"]}' + suffix)
+#       limited_entry = {}
+#       for k in date_keys:
+#           limited_entry[k] = entry[k]
+#       mapping[key] = limited_entry
+        mapping[key] = entry
     routines.add2report(report,
-            "...finished working on 'current' function.")
+        "...returning from 'choose_applicant' function.")
+    # use menu function to choose (and return) applicant
     return textual.menu(mapping, report=report,
-            headers=["Member Listing", "Pick a member"])
+            headers=["Current Applicants", "Pick an applicant"])
+
+def add_applicant_date(applicant, report=None):
+    if not applicant: # { choose_applicant
+        return        # { might return None
+    routines.add2report(report,
+        "Entering 'add_applicant_date' function...")
+    options = {key: value for (key, value) in }
+    pass
+    routines.add2report(report,
+        "...returning from 'add_applicant_date' function.")
 
 if __name__ == "__main__":
     report = []
-    ret = current(report)
-    yn = input(f"Returned '{ret}'; show report? y/n: ")
+    ret = choose_applicant(report)
+    for key, value in ret.items():
+        print(f"{key}: {value}")
+    yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
         for line in report:
             print(line)

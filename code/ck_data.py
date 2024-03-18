@@ -155,8 +155,18 @@ mooring_query = """SELECT P.personID, P.first, P.last, P.suffix
             FROM people as P
             JOIN Moorings as M
             WHERE P.personID = M.personID ;"""
-
-
+members4dues = """SELECT P.personID
+            FROM people as P
+            JOIN Person_Status as PS
+            WHERE PS.personID = P.personID
+                AND PS.statusID in (11, 15)
+                AND (PS.end = '' OR PS.end > {})
+                AND (PS.begin = '' OR PS.begin < {})
+            ORDER BY P.personID
+            ;""".format(helpers.eightdigitdate,
+                        helpers.eightdigitdate) 
+dues_listing = """SELECT personID from Dues
+            ORDER by personID;"""
 
 def get_gmail_record(g_rec):
     """
@@ -450,6 +460,24 @@ def ck_appl_vs_status_tables():
     report.append("... App/Stati consistency check done.")
     return report
 
+def ck_members_vs_dues(report=None):
+    if not report: report = []
+    res1 = routines.fetch(members4dues, from_file=False)
+    s1 = set([item[0] for item in res1])
+    res2 = routines.fetch(dues_listing, from_file=False)
+    s2 = set([item[0] for item in res2])
+    if s1 != s2:
+        report.append(
+            "Member listing and Dues table missmatch:")
+        report.append(
+            f"In members not dues: {repr(sorted(s1-s2))}")
+        report.append(
+            f"In dues not members: {repr(sorted(s2-s1))}")
+    else:
+        report.append(
+            "Member listing and Dues table correspond.")
+    return report
+
 
 def consistency_report(report=None):
     """
@@ -460,6 +488,7 @@ def consistency_report(report=None):
     report.extend(ck_m_vs_g_data())
     report.extend(ck_appl_vs_status_tables())
     report.extend(mooring_dock())
+    report.extend(ck_members_vs_dues())
     return report
 
 
@@ -494,14 +523,17 @@ def get_kayak_listing():
 
 
 if __name__ == '__main__':
+    pass
 #   get_kayak_listing()
 
 #   for line in consistency_report([
 #       "Consistency Report",
 #       "=================="]): 
 #       print(line)
-    for line in ck_appl_vs_status_tables():
-        print(line)
+
+#   for line in ck_appl_vs_status_tables():
+#       print(line)
+
 #   for line in ck_m_vs_g_data():
 #       print(line)
 #   ck_gather_contacts_data()

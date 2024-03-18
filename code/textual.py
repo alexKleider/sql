@@ -105,6 +105,40 @@ def get_fields(fields, header="Enter values for each key"):
     if event in (None, "Cancel"):
         return
     return the_dict
+
+def change_or_add_values(mapping,
+            headers=["Correct or Enter new value(s)",
+                    "Choose from...",]):
+    """
+    Prompts user to change/add mapping values.
+    Returns the modified dict or None if user aborts.
+    """
+    layout = [[sg.Text(headers[0])],]
+    layout.extend([
+        [sg.Text(key), 
+            sg.Input(expand_x=True, key=key, default_text=value)]
+        for key, value in mapping.items()
+            ])
+    layout.append([sg.Button('OK'), sg.Button('Cancel')])
+
+    window = sg.Window(headers[1], layout,)
+#   event, values = window.read()
+    event, new_dict = window.read()
+    window.close()
+    if event in (None, "Cancel"): return
+    return new_dict
+
+def test_cora():
+    mapping=dict(first= "Alex",
+                last="Kleider",
+                date1 ="",
+                )
+    ret = change_or_add_values(mapping).items()
+    if ret == None: print("Returned None")
+    else:
+        for key, value in ret:
+            print(f"{key}: {value}")
+
     
 
 def get_fields4(p_data, fields):
@@ -204,7 +238,7 @@ def get_demographics(applicant=True, report=None):
     Client is code/data_entry.py
     """
     routines.add2report(report,
-            "Entering textual/get_demographics...")
+            "Entering code/textual/get_demographics...")
     fields = routines.keys_from_schema("People", brackets=(1,0))
     if applicant==True:
         fields.extend(["sponsor1", "sponsor2", "app_rcvd", "fee_rcvd"])
@@ -279,7 +313,7 @@ def people_choices(header_prompt=None, report=None):
     code/routines/pick_People_record functionality!
     """
     routines.add2report(report,
-            "Entering textual/people_choices...")
+            "Entering code/textual/people_choices...")
     keys = routines.keys_from_schema("People")
     fields = keys[1:4]
     layout = [[sg.Text(f_name), sg.InputText()]
@@ -614,7 +648,7 @@ def menu(options, headers=["Main Menu", "Make a Choice"],
     <report> if provided must be an iterable to which strings
     representing progress (or lack there of) are appended.
     """
-    routines.add2report(report, "Entering wip/menu...")
+    routines.add2report(report, "Entering code/textual.menu...")
     keys = [key for key in options.keys()]
     layout = [
         [sg.Text(headers[1], size=(30,1),)],
@@ -633,7 +667,7 @@ def menu(options, headers=["Main Menu", "Make a Choice"],
 #   _ = input(repr(v))
     ret = options[v['CHOICE'][0]]
     routines.add2report(report,
-        f"...wip/menu() returning {repr(ret)}")
+        f"...code/textual.menu() returning {repr(ret)}")
     return ret
 
 def test_menu():
@@ -723,4 +757,6 @@ if __name__ == "__main__":
 #   test_pick_person()
 #   test_create_dem_file()
 #   main1()
-    test_menu()
+#   test_menu()
+    test_cora()
+
