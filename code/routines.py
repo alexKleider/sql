@@ -150,13 +150,31 @@ def keys_from_schema(table, brackets=(0,0)):
     return  [item[1] for item in res[begin:end]]
     # item[1] is the column/key.
 
+
+def keys_from_query(query):
+    """
+    Returns a listing of keys requested in the query
+    """
+    nselect = query.find("SELECT")
+    nfrom = query.find("FROM")
+    keystring = query[nselect+6:nfrom]
+    nowhitespace = ''
+    for ch in keystring:
+        if ch.split():
+            nowhitespace = nowhitespace + ch
+    keys = nowhitespace.split(",")
+    splitkeys = [key.split('.') for key in keys]
+    return [key[-1] for key in splitkeys]
+
+
 def query2dict_listing(query, keys,
                        from_file=False):
     """
     Returns query result as a (could be empty!) list of dicts
     (which can be dumped into a json file.)
     Fails if len(keys)!=length of tupples returned by the query.
-    <keys> parameter typically supplied by keys_from_schema().
+    <keys> parameter typically supplied by keys_from_schema()
+    or keys_from_query.
     """
     ret = []
     res = fetch(query, from_file=from_file)
