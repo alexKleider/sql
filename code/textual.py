@@ -106,13 +106,15 @@ def get_fields(fields, header="Enter values for each key"):
         return
     return the_dict
 
-def change_or_add_values(mapping,
+def change_or_add_values(mapping, report=None,
             headers=["Correct or Enter new value(s)",
                     "Choose from...",]):
     """
     Prompts user to change/add mapping values.
     Returns the modified dict or None if user aborts.
     """
+    routines.add2report(report,
+        "Entering code/textual.change_or_add_values...")
     layout = [[sg.Text(headers[0])],]
     layout.extend([
         [sg.Text(key), 
@@ -125,7 +127,12 @@ def change_or_add_values(mapping,
 #   event, values = window.read()
     event, new_dict = window.read()
     window.close()
-    if event in (None, "Cancel"): return
+    if event in (None, "Cancel"):
+        routines.add2report(report,
+            "...change_or_add_values cancelled.")
+        return
+    routines.add2report(report,
+        "...change_or_add_values returning a new dict.")
     return new_dict
 
 def test_cora():

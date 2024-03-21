@@ -15,6 +15,7 @@ window types:
 """
 
 import PySimpleGUI as sg
+from code import helpers
 from code import routines
 from code import textual
 
@@ -28,7 +29,7 @@ def test_params():
     params(two=2, one=1, kw1="KW1", kw2="KW2")
 
 # the following (app_keys, date_keys and app_query) are
-# used by choose_applicant and some by add_applicant_date
+# used by choose_applicant and some by get_key_val2change
 app_keys = ("personID, last, first, suffix,"  # 4
       + " sponsor1ID, sponsor2ID,"      # +2 = 6 or -8
       + " app_rcvd, fee_rcvd, meeting1, meeting2, meeting3,"
@@ -50,14 +51,11 @@ def choose_applicant(report=None):
     Returns a dict representing chosen applicant
     OR None if no choice made (possibly no applicants.)
     """
-    # keys of the dict expected to be returned:
-#   _ = input(f"keys: {repr(app_keys)}")
-#   _ = input(f"date_keys: {repr(date_keys)}")
-    # first query current applicants...
     routines.add2report(report,
             "Entering 'choose_applicant' function...")
+    # first query current applicants...
     res = routines.query2dict_listing(app_query,
-                            app_keys, from_file=False)
+        routines.keys_from_query(app_query), from_file=False)
     n_res = len(res)
     routines.add2report(report,
         f"...found {n_res} applicants from which to choose...")
@@ -80,21 +78,67 @@ def choose_applicant(report=None):
     return textual.menu(mapping, report=report,
             headers=["Current Applicants", "Pick an applicant"])
 
-def add_applicant_date(applicant, report=None):
-    if not applicant: # { choose_applicant
+def get_key_val2change(mapping, report=None):
+    """
+    Presents a dialog box containing <mapping>'s key/value pairs.
+    Returns a mapping of any key/value pairs that were changed...
+    or None if nothing changed or user "CANCEL"s.
+    """
+    if not mapping: # { choose_applicant
         return        # { might return None
     routines.add2report(report,
-        "Entering 'add_applicant_date' function...")
-    options = {key: value for (key, value) in }
-    pass
-    routines.add2report(report,
-        "...returning from 'add_applicant_date' function.")
+        "Entering 'get_key_val2change' function...")
+    ret = textual.change_or_add_values(mapping,
+        report=report,
+        headers=["Applicant Data", "Change or add an item..."])
+    if not ret:
+        routines.add2report(report,
+            "...'get_key_val2change' returning None.")
+        return
+#   helpers.print_key_value_pairs(mapping)
+#   helpers.print_key_value_pairs(ret)
+    changes = {}
+    for key in mapping.keys():
+        if str(mapping[key]) != str(ret[key]):
+#           print(f"{key}: '{mapping[key]}' != '{ret[key]}'")
+            changes[key] = ret[key]
+    if changes:
+        routines.add2report(report,
+            "...'get_key_val2change' returning changes.")
+        return changes
+    else:
+        routines.add2report(report,
+            "...'get_key_val2change' made no changes")
+
+
+def query2update_applicant_table(personID, mapped_changes,
+                            report=None):
+    """
+    Returns a query to update the Applicant table.
+    """
+    query = f"""UPDATE Applicants SET
+            {{}}
+            WHERE personID = {personID};"""
+    entries = ', '.join([f"{key} = {value}" for key, value in
+            mapped_changes.items()])
+    return query.format(entries)
+
 
 if __name__ == "__main__":
     report = []
-    ret = choose_applicant(report)
-    for key, value in ret.items():
-        print(f"{key}: {value}")
+    chosen_applicant = choose_applicant(report)
+    personID = chosen_applicant["personID"]
+    changes = get_key_val2change(chosen_applicant, report)
+    if changes:
+        print(
+            query2update_applicant_table(personID,
+                changes, report))
+#       print("Changes to be made:")
+#       for key, value in changes.items():
+#           print(f"{key}: {value}")
+    else:
+        print('User "CANCEL"ed.')
+    pass
     yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
         for line in report:

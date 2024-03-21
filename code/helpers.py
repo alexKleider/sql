@@ -653,6 +653,12 @@ def show_dict(d, extra_line=True, ordered=True, debug=False):
             lines.append("{}: {}".format(key, value))
     return lines
 
+def print_key_value_pairs(mapping):
+    for line in show_dict(mapping,
+                    extra_line=False, ordered=False):
+        print(line)
+
+
 def get_fieldnames(csv_file: "name of csv file", report=True
         ) -> "list of the csv file's field names":
     """
