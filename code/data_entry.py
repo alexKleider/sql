@@ -21,6 +21,14 @@ Provides
     data_entry.change_status_cmd() (under development)
     data_entry.applicant_update_cmd() (under development)
 """
+app_query = """ -- current applicants
+    SELECT P.personID, P.last, P.first, P.suffix,
+        A.sponsor1ID, A.sponsor2ID, A.app_rcvd, A.fee_rcvd,
+        A.meeting1, A.meeting2, A.meeting3, approved,
+        dues_paid, notified
+    FROM People as P JOIN Applicants as A
+    WHERE A.personID = P.personID
+    AND A.notified = "";"""
 
 def add2tables(data, report=None):
     """
@@ -189,7 +197,112 @@ def add_new_applicant_cmd(report=None):
         report.extend(ret)
     return ret
 
+
+def choose_applicant(report=None):
+    """
+    Offers a menu/choice of all current applicants.
+    Returns a dict representing chosen applicant
+    OR None if no choice made (possibly no applicants.)
+    """
+    routines.add2report(report,
+            "Entering 'choose_applicant' function...")
+    # first query current applicants...
+    res = routines.query2dict_listing(app_query,
+        routines.keys_from_query(app_query), from_file=False)
+    n_res = len(res)
+    routines.add2report(report,
+        f"...found {n_res} applicants from which to choose...")
+    if n_res == 0: return  # return None if no applicants
+    # set up mapping for the menu function
+    mapping = {}
+    for entry in res:
+        if entry['suffix']: suffix = f' [{suffix.strip()}]'
+        else: suffix = ''
+        key = (f'{entry["personID"]:>4d} {entry["last"]}, '
+            + f'{entry["first"]}' + suffix)
+#       limited_entry = {}
+#       for k in date_keys:
+#           limited_entry[k] = entry[k]
+#       mapping[key] = limited_entry
+        mapping[key] = entry
+    routines.add2report(report,
+        "...returning from 'choose_applicant' function.")
+    # use menu function to choose (and return) applicant
+    applicant = textual.menu(mapping, report=report,
+            headers=["Current Applicants", "Pick an applicant"])
+    print("Applicant chosen: {personID:>3d} {last}, {first}"
+            .format(**applicant))
+    return applicant
+
+
+def get_key_val2change(mapping, report=None):
+    """ moved into code/data_entry
+    Presents a dialog box containing <mapping>'s key/value pairs.
+    Returns a mapping of any key/value pairs that were changed...
+    or None if nothing changed or user "CANCEL"s.
+    """
+    if not mapping: # { choose_applicant
+        return        # { might return None
+    routines.add2report(report,
+        "Entering 'get_key_val2change' function...")
+    ret = textual.change_or_add_values(mapping,
+        report=report,
+        headers=["Applicant Data", "Change or add an item..."])
+    if not ret:
+        routines.add2report(report,
+            "...'get_key_val2change' returning None.")
+        return
+#   helpers.print_key_value_pairs(mapping)
+#   helpers.print_key_value_pairs(ret)
+    changes = {}
+    for key in mapping.keys():
+        if str(mapping[key]) != str(ret[key]):
+#           print(f"{key}: '{mapping[key]}' != '{ret[key]}'")
+            changes[key] = ret[key]
+    if changes:
+        routines.add2report(report,
+            "...'get_key_val2change' returning changes.")
+        return changes
+    else:
+        routines.add2report(report,
+            "...'get_key_val2change' made no changes")
+
+
+def query2update_applicant_table(personID, mapped_changes,
+                            report=None):
+    """
+    Returns a query to update the Applicant table.
+    """
+    query = f"""UPDATE Applicants SET
+            {{}}
+            WHERE personID = {personID};"""
+    entries = ', '.join([f"{key} = {value}" for key, value in
+            mapped_changes.items()])
+    query = query.format(entries)
+    print("Generated query is:\n" + query)
+    yn = input("Proceed with the preceding query? (y/n) :")
+    return query
+
+def check_applicant_update():
+    report = []
+    chosen_applicant = choose_applicant(report)
+    personID = chosen_applicant["personID"]
+    changes = get_key_val2change(chosen_applicant, report)
+    if changes:
+        print(
+            query2update_applicant_table(personID,
+                changes, report))
+    else:
+        print('User "CANCEL"ed.')
+    yn = input("Show report? y/n: ")
+    if yn and yn[0] in "yY":
+        for line in report:
+            print(line)
+
+
 def change_status_cmd(report=None):
+    """
+    """
     if report is NoneType:
         report = []
     routines.add2report(report, 
@@ -232,4 +345,6 @@ def test_add_new_applicant_cmd():
         print(line)
 
 if __name__ == "__main__":
-    test_add_new_applicant_cmd()
+    check_applicant_update()
+#   test_add_new_applicant_cmd()
+

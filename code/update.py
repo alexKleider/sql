@@ -3,6 +3,10 @@
 # File: update.py
 
 """
+Probably superceeded by data_entry.py
+Expect this file will be redacted.
+Equivalent code is now in code/data_entry.py
+
 Prototyping a status_change_cmd
   new_person
     New applicant

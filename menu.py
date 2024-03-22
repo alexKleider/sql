@@ -31,7 +31,8 @@ hierarchy = {
         "New Applicant": [data_entry.add_new_applicant_cmd],
             #People, Applicant & Status tables
             #Google Contacts entry
-        "Meeting/newMember Update (not implemented)": [],
+        "Applicant (date) Update)": [
+                    data_entry.update_applicant_date_cmd],
             #Applicant and Person_Status tables
         "Leadership Update (not implemented)": [],
             #Status table: term ending & beginning

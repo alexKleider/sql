@@ -11,8 +11,8 @@ Also former_members() is provided.
 """
 
 import csv
-try: import helpers, routines, commands
-except ImportError: from code import helpers, routines, commands
+try: import helpers, routines
+except ImportError: from code import helpers, routines
 
 query_files = dict(  # require formatting x2 with today' date
         applicant=      "Sql/app4join_ff.sql",
@@ -20,6 +20,7 @@ query_files = dict(  # require formatting x2 with today' date
                )       #  ^^   SQL files used ^^    #
 file4web = "4web.txt"
 file4app_report = "applicants.txt"
+file4attrition = "former_members.txt"
 
 
 def get_listing_2f(query_file):
@@ -235,7 +236,7 @@ def former_members():
         28: 'zzd' Died recently
     """
     query = """ SELECT 
-            P.personID, P.first, P.last, P.suffix, P.email
+            P.personID, PS.begin, P.first, P.last, P.suffix, P.email
         FROM people as P
         JOIN Person_Status as PS
         ON PS.personID = P.personID
@@ -250,22 +251,25 @@ def former_members():
     res = routines.fetch(query, from_file=False)
     ret = []
     for entry in res:
-        if entry[3]: entry[2] += entry[3]
-        ret.append("{0:>3} {1:>10} {2:<13} {4:}".format(*entry))
+        if entry[4]: entry[3] += entry[4]
+        ret.append("{0:>3} {1:<8}{2:>10} {3:<13} {5:}".format(*entry))
     return ret
 
 
 if __name__ == "__main__":
     funcs = (
-        get_numbers,  # => 3 tuple: m0, m1, report
-        create_membership_csv, # => memberlisting.csv
-        show4web, # => list of strings: members only
-        report_applicants, # => list of strings
-        show_applicants_cmd, # => file.txt
-        show_cmd, # => file.txt
-        former_members, # => listing of strings
+        get_numbers,  # => 3 tuple: m0, m1, report #0
+        create_membership_csv, # => memberlisting.csv #1
+        show4web, # => list of strings: members only #2
+        report_applicants, # => list of strings #3
+        show_applicants_cmd, # => file.txt #4
+        show_cmd, # => file.txt #5
+        former_members, # => listing of strings #6
         )
-    funcs[5]()
+    listing = former_members()
+    for line in listing:
+        print(line)
+    
 
 #   for line in show_cmd(): pass #print(line)
 #   show_applicants_cmd()
