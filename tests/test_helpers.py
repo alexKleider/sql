@@ -122,6 +122,39 @@ class Test_Show_Dict(unittest.TestCase):
     def tearDown(self):
         self.data = {}
 
+class Test_dump2csv_file(unittest.TestCase):
+
+    d_name = "d_name.csv"
+    l_name = "l_name.csv"
+
+    d = [
+            dict(first = 'Alex',
+                second = 'June',
+                third = 'Kelly',
+                ),
+            dict(first = 'Kleider',
+                second = 'Cavin Rd',
+                third = 'Glenora',
+                ),
+        ]
+    l = [
+            ['Alex', 'June', 'Kelly',],
+            ['Kleider', 'Cavin Rd', 'Glenora',],
+        ]
+
+    def test_dup2csv_file(self):
+        helpers.dump2csv_file(self.d, file_name=self.d_name)
+        helpers.dump2csv_file(self.l, file_name=self.l_name,
+                keys=['first', 'second', 'third'])
+        with open(self.d_name, 'r') as d_file:
+            d_content = d_file.read()
+        with open(self.l_name, 'r') as l_file:
+            l_content = l_file.read()
+        self.assertEqual(d_content, l_content)
+        os.remove(self.d_name)
+        os.remove(self.l_name)
+
+
 if __name__ == '__main__':
     unittest.main()
 

@@ -8,6 +8,12 @@ of providing an asterix for members not yet in good standing.
 (i.e. first year of membership)
 
 Also former_members() is provided.
+
+Goal still to be achieved:
+    Have each function send output to a human readable file
+    (such as 4web.txt, applicants.txt, etc)
+    and
+    option to create a CSV file of the data.
 """
 
 import csv

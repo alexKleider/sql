@@ -672,20 +672,27 @@ def get_fieldnames(csv_file: "name of csv file", report=True
         return dict_reader.fieldnames
 
 
-def dump2csv_file(list_of_dicts, file_name="new_csv.csv"):
+def dump2csv_file(listing, keys=None,
+                         file_name="new_csv.csv"):
     """
-
+    <listing> can be a list of iterables or a list of dicts
+    in which case no need for the <keys> parameter.
     """
-    if not len(list_of_dicts) > 0:
+    if not len(listing) > 0:
         print("Nothing to store (code/helpers.dump2csv_file).")
         return
-    else:
-        keys = [key for key in list_of_dicts[0].keys()]
     with open(file_name, 'w', newline='') as outf:
-        writer = csv.DictWriter(outf, fieldnames=keys)
-        writer.writeheader()
-        for d in list_of_dicts:
-            writer.writerow(d)
+        if isinstance(listing[0], dict):
+            keys = [key for key in listing[0].keys()]
+            writer = csv.DictWriter(outf, fieldnames=keys)
+            writer.writeheader()
+            for d in listing:
+                writer.writerow(d)
+        else:   # not dealing with a list of dicts!
+            writer = csv.writer(outf)
+            writer.writerow(keys)
+            for iterable in listing:
+                writer.writerow(iterable)
 
 
 def store(collector, filename):
