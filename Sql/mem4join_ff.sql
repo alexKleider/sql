@@ -9,6 +9,8 @@ SELECT
     PS.statusID, PS.begin
 --   ^ [9]         ^ [10]
 --    St.key, P.first, P.last
+    , P.personID
+--  added personID which may ==> a bug!!
 FROM
     People AS P
 JOIN

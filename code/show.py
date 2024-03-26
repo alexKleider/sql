@@ -31,6 +31,8 @@ file4attrition = "former_members.txt"
 
 def get_listing_2f(query_file):
     """
+    # Discovered that there's a problem with the member listing!
+    # ..so only use this for applicants!
     Returns query result.  "_2f": two format fields.
     Query is content of <query_file> formatted (2 locations)
     with today's <helper.eightdigitdate>
@@ -45,6 +47,18 @@ def get_listing_2f(query_file):
 
 def member_listing():
     return get_listing_2f(query_files["member"])
+
+def get_join_date(personID):
+    """
+    Provides date of joining the club (when became new member)
+    for people who have sinced become member in good standing.
+    """
+    res = routines.fetch("""SELECT begin FROM Person_Status
+        WHERE personID = {}
+        AND statusID = 11;""".format(personID),
+                        from_file=False)
+    if res:
+        return(res[0][0])
 
 def get_numbers(listing, verbose=False):
     """
@@ -117,6 +131,11 @@ COMMITTEE.
         if status == 11:
             prefix = '*'
         elif status == 15:
+            personID = item[-1]
+            # adjust date prn
+            jd = get_join_date(personID)
+            if jd: 
+                item = item[:10] + (jd,) + item[11:]
             prefix = ' '
         else:
             _ = input(f"Status: {status}")

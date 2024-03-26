@@ -283,7 +283,9 @@ def query2update_applicant_table(personID, mapped_changes,
     yn = input("Proceed with the preceding query? (y/n) :")
     return query
 
-def check_applicant_update():
+def update_applicant_date_cmd(report=None):
+    routines.add2report(report,
+            "Enterning update_applicant_date_cmd...")
     report = []
     chosen_applicant = choose_applicant(report)
     personID = chosen_applicant["personID"]
@@ -298,7 +300,7 @@ def check_applicant_update():
     if yn and yn[0] in "yY":
         for line in report:
             print(line)
-
+    
 
 def change_status_cmd(report=None):
     """
