@@ -230,7 +230,8 @@ def choose_applicant(report=None):
     # use menu function to choose (and return) applicant
     applicant = textual.menu(mapping, report=report,
             headers=["Current Applicants", "Pick an applicant"])
-    print("Applicant chosen: {personID:>3d} {last}, {first}"
+    if applicant:
+        print("Applicant chosen: {personID:>3d} {last}, {first}"
             .format(**applicant))
     return applicant
 
@@ -279,8 +280,6 @@ def query2update_applicant_table(personID, mapped_changes,
     entries = ', '.join([f"{key} = {value}" for key, value in
             mapped_changes.items()])
     query = query.format(entries)
-    print("Generated query is:\n" + query)
-    yn = input("Proceed with the preceding query? (y/n) :")
     return query
 
 def update_applicant_date_cmd(report=None):
@@ -288,12 +287,22 @@ def update_applicant_date_cmd(report=None):
             "Enterning update_applicant_date_cmd...")
     report = []
     chosen_applicant = choose_applicant(report)
+    if not chosen_applicant:
+        print("Choosing an applicant was aborted.")
+        return
     personID = chosen_applicant["personID"]
     changes = get_key_val2change(chosen_applicant, report)
     if changes:
-        print(
-            query2update_applicant_table(personID,
-                changes, report))
+        query = query2update_applicant_table(personID,
+                changes, report)
+        if textual.yes_no(query,
+                title="Execute query?"):
+            routines.fetch(query, from_file=False,
+                            commit=True)
+            print("Following query has been executed:")
+            print(query)
+        else:
+            print("aborting query execution")
     else:
         print('User "CANCEL"ed.')
     yn = input("Show report? y/n: ")
@@ -347,6 +356,6 @@ def test_add_new_applicant_cmd():
         print(line)
 
 if __name__ == "__main__":
-    check_applicant_update()
+    update_applicant_date_cmd()
 #   test_add_new_applicant_cmd()
 

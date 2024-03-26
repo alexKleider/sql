@@ -51,7 +51,8 @@ sg.popup("Hello universe...I'm a 1-line GUI program!")
 # popup_scrolled
 # popup_timed
 # popup_yes_no
-if sg.popup_yes_no("Yes?", no_titlebar=True)=="Yes":
+if sg.popup_yes_no("OK to proceed?",
+        no_titlebar=True)=="Yes":
     print("Yes")
 else:
     print("No")

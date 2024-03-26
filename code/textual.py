@@ -17,6 +17,10 @@ except ImportError: import routines
 try: from code import helpers
 except ImportError: import helpers
 
+def yes_no(text, title=None):
+    return sg.popup_yes_no(text,
+            title=title) == "Yes"
+#               no_titlebar=True)=="Yes"
 
 def valid_values(ev, allow_blanks=False):
     """
