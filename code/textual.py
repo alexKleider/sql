@@ -17,10 +17,10 @@ except ImportError: import routines
 try: from code import helpers
 except ImportError: import helpers
 
-def yes_no(text, title=None):
+def yes_no(text, title="Run query?"):
     return sg.popup_yes_no(text,
             title=title) == "Yes"
-#               no_titlebar=True)=="Yes"
+
 
 def valid_values(ev, allow_blanks=False):
     """
@@ -404,12 +404,62 @@ def test_people_choices():
 #   print('\n'.join(report))
 
 
-def choose(choices, header="CHOOSE ONE",
+def pick(query, format_string,
+                header="CHOOSE ONE",
+                subheader="Choices are...",
+                report=None):
+    """
+    Pick a record from a list of choices dictated by
+    the format_string.
+    """
+    routines.add2report(report,
+            "Entering code.textual.pick")
+    mappings = routines.query2dicts(query)
+    if not mappings:
+        routines.add2report(report,
+                "No records provided ==> exit")
+        return
+    options = [format_string.format(**rec)
+            for rec in mappings]
+    listing = zip(range(len(options)), options)
+    for_display = [f"{item[0]:>2}: {item[1]}"
+                for item in listing]
+    layout=[[sg.Text(subheader,size=(50,1),
+#           font='Lucida',justification='left'
+            )],
+            [sg.Listbox(values=for_display,
+                select_mode='extended',
+                key='CHOICE', size=(50,len(mappings)))],
+            [sg.Button('SELECT',
+#               font=('Times New Roman',12)
+                ),
+            sg.Button('CANCEL',
+#                   font=('Times New Roman',12)
+                    )
+            ]]
+    win =sg.Window(header,layout)
+    e, v = win.read()
+    win.close()
+    if not v["CHOICE"]:
+        return
+    chosen_item = v['CHOICE'][0].strip().split()[0][:-1]
+    if (e != "SELECT") or not v['CHOICE']:
+        routines.add2report(report, "pick returning None")
+        return
+    else:
+        routines.add2report(report,
+          "window in code.textual.choose returning..." +
+          f"\n{repr(v['CHOICE'])}")
+        return mappings[int(chosen_item)]
+
+
+def choose(records, header="CHOOSE ONE",
                     subheader="Pick a person",
                     report= None):
     """
-    <choices> are a list of dicts; the first 3 fields are
-    presented for consideration.
+    <records> are a list of dicts each representing an
+    entry from the People table. Fields personID, first
+    and last are presented for consideration.
     Returns one of the dicts
     or something that'll evaluate to False
     Adds to <report> (a list of strings) if provided.
@@ -417,18 +467,18 @@ def choose(choices, header="CHOOSE ONE",
     #set the theme for the screen/window
     routines.add2report(report,
             "Entering code.textual.choose")
-    if not choices:
+    if not records:
         routines.add2report(report,
-                "No choices provided ==> exit")
+                "No records provided ==> exit")
         return
 #   sg.theme('SandyBeach')
     options = ["{personID:>3} {first} {last}".format(**rec)
-            for rec in choices]
+            for rec in records]
     layout=[[sg.Text(subheader,size=(30,1),
 #           font='Lucida',justification='left'
             )],
             [sg.Listbox(values=options, select_mode='extended',
-                key='CHOICE', size=(30,len(choices)))],
+                key='CHOICE', size=(30,len(records)))],
             [sg.Button('SELECT',
 #               font=('Times New Roman',12)
                 ),
@@ -447,7 +497,7 @@ def choose(choices, header="CHOOSE ONE",
         routines.add2report(report,
           "window in code.textual.choose returning..." +
           f"\n{repr(v['CHOICE'])}")
-        for rec in choices:
+        for rec in records:
             if rec['personID'] == int(personID):
                 return rec
 
@@ -754,7 +804,23 @@ def test_a_show_stati():
     print("Window has been closed.")
 
 
+def test_pick():
+    report=["Report:", ]
+    print("====Returned by <pick>====")
+    print(pick("""SELECT P.personID, P.last, P.first, P.suffix,
+            Ps.statusID, PS.begin, PS.end 
+        FROM Person_Status AS PS
+        JOIN People AS P
+        WHERE P.personID = PS.personID
+        AND P.personID > 220;""",
+        ("{personID:>3d} {last}, {first} {suffix}" +
+        " {statusID} {begin} {end}"),report=report))
+    print("=====Report follows======")
+    for line in report:
+        print(line)
+
 if __name__ == "__main__":
+    test_pick()
 #   show_fonts()
 #   test_a_show_stati()
 #   test_get_fields4()
@@ -769,5 +835,5 @@ if __name__ == "__main__":
 #   test_create_dem_file()
 #   main1()
 #   test_menu()
-    test_cora()
+#   test_cora()
 

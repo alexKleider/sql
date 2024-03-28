@@ -183,6 +183,15 @@ def query2dict_listing(query, keys,
         ret.append(d)
     return ret
 
+def query2dicts(query, from_file=False):
+    """
+    Returns a (possibly empty) list of dicts.
+    """
+    if from_file:
+        query = import_query(query)
+    return query2dict_listing(query,
+            keys_from_query(query))
+
 
 def display(instance, exclude=None):
     """

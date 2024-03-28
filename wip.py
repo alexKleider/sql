@@ -29,8 +29,23 @@ def test_params():
     params(two=2, one=1, kw1="KW1", kw2="KW2")
 
 
+def yes_no(text, title="Run query?"):
+    return sg.popup_yes_no(text,
+            title=title) == "Yes"
+
+
 if __name__ == "__main__":
     pass
+
+
+#   text1 = "to be or not to be"
+#   title1 = "Go ahead?"
+#   if yes_no(text1, title=title1):
+#       print("going ahead")
+#   else:
+#       print("aborting")
+
+
 #   test_params()
 #   _ = input("W)ork i)n P)rogress...  Any key to continue")
 

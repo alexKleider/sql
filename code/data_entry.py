@@ -285,10 +285,11 @@ def query2update_applicant_table(personID, mapped_changes,
 def update_applicant_date_cmd(report=None):
     routines.add2report(report,
             "Enterning update_applicant_date_cmd...")
-    report = []
     chosen_applicant = choose_applicant(report)
     if not chosen_applicant:
-        print("Choosing an applicant was aborted.")
+        line2add = "Choosing an applicant was aborted."
+        print(line2add)
+        routines.add2report(report, line2add)
         return
     personID = chosen_applicant["personID"]
     changes = get_key_val2change(chosen_applicant, report)
@@ -299,12 +300,29 @@ def update_applicant_date_cmd(report=None):
                 title="Execute query?"):
             routines.fetch(query, from_file=False,
                             commit=True)
-            print("Following query has been executed:")
-            print(query)
+            lines2add = [
+                "Following query NOT executed:",].append(
+#               "Following query has been executed:",].append(
+                        query)
+            routines.add2report(report, lines2add)
+            print(lines2add)
         else:
-            print("aborting query execution")
+            line2add = "aborting query execution"
+            print(line2add)
+            routines.add2report(report,
+                    line2add)
     else:
-        print('User "CANCEL"ed.')
+        line2add = 'User "CANCEL"ed.'
+        print(line2add)
+        routines.add2report(report, line2add)
+    
+    # here's where we can change the Person_Status Table:
+    person = "{personID:>3d}: {last}, {first}{suffix}".format(
+            **chosen_applicant)
+    choice = textual.choose(choices,
+            subheader=f"{person}: pick an entry..",
+            report=report)
+
     yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
         for line in report:

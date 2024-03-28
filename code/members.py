@@ -15,6 +15,8 @@ except ImportError: import club
 """
 Under old system we had a "member" (no trailing 's') module.
 This will replace it for the current system.
+Functions here are referenced in code.content 
+and used by code/commands.prepare_mailing_cmd.
 """
 
 
