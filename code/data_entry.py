@@ -58,7 +58,7 @@ def add2tables(data, report=None):
     if yn and yn[0] in 'Yy':
         res = routines.fetch(people_insert_query,
                 from_file=False,
-                commit=True)
+                commit=True, verbose=True)
         print("...successfull addition to People table.")
         # Need to retrieve newly assigned personID...
         res = routines.fetch_d_query("Sql/id_from_names_fd.sql",
@@ -132,12 +132,14 @@ def file2app_data(file_content, report=None):
                 "Sql/id_from_names_fd.sql", data=d)
 #       _ = input(f"fetch_d_query on {d} returning {res}")
         ret[sponsor] = res[0][0]
-    if isinstance(report, list):
-#       report.append(
-#           f"file2app_data() called on\n{file_content}")
-        if (not (len(data) == len(keys))):
-            report.append("Lengths don't match.")
-        report.append(f"file2app_data returning:\n{ret}")
+    routines.add2report(report,
+        f"file2app_data() called on\n{file_content}")
+    if (not (len(data) == len(keys))):
+        routines.add2report(report,
+            "Lengths don't match.",also_print=True)
+    routines.add2report(report, 
+            f"file2app_data returning:\n{ret}",
+            also_print=True)
     return ret  # returns dict of new applicant data from file
 
 
@@ -205,13 +207,15 @@ def choose_applicant(report=None):
     OR None if no choice made (possibly no applicants.)
     """
     routines.add2report(report,
-            "Entering 'choose_applicant' function...")
+            "Entering 'choose_applicant' function...",
+            also_print=True)
     # first query current applicants...
     res = routines.query2dict_listing(app_query,
         routines.keys_from_query(app_query), from_file=False)
     n_res = len(res)
     routines.add2report(report,
-        f"...found {n_res} applicants from which to choose...")
+        f"...found {n_res} applicants from which to choose...",
+        also_print=True)
     if n_res == 0: return  # return None if no applicants
     # set up mapping for the menu function
     mapping = {}
@@ -245,13 +249,15 @@ def get_key_val2change(mapping, report=None):
     if not mapping: # { choose_applicant
         return        # { might return None
     routines.add2report(report,
-        "Entering 'get_key_val2change' function...")
+        "Entering 'get_key_val2change' function...",
+        also_print=True)
     ret = textual.change_or_add_values(mapping,
         report=report,
         headers=["Applicant Data", "Change or add an item..."])
     if not ret:
         routines.add2report(report,
-            "...'get_key_val2change' returning None.")
+            "...'get_key_val2change' returning None.",
+            also_print=True)
         return
 #   helpers.print_key_value_pairs(mapping)
 #   helpers.print_key_value_pairs(ret)
@@ -262,11 +268,13 @@ def get_key_val2change(mapping, report=None):
             changes[key] = ret[key]
     if changes:
         routines.add2report(report,
-            "...'get_key_val2change' returning changes.")
+            "...'get_key_val2change' returning changes.",
+            also_print=True)
         return changes
     else:
         routines.add2report(report,
-            "...'get_key_val2change' made no changes")
+            "...'get_key_val2change' made no changes",
+            also_print=True)
 
 
 def query2update_applicant_table(personID, mapped_changes,
@@ -274,54 +282,114 @@ def query2update_applicant_table(personID, mapped_changes,
     """
     Returns a query to update the Applicant table.
     """
+    # Could be a re-application...
+    entries = routines.query2dict_listing(
+            f"""SELECT * FROM Applicants
+            WHERE personID = {personID};""",
+            routines.keys_from_schema("Applicants"))
+    if len(entries) > 1:
+        routines.add2report(report,
+            "More than one entry for this applicant!",
+            also_print=True)
+    app_rcvd = entries[-1]["app_rcvd"]
+    # ...so pick the most recent entry
     query = f"""UPDATE Applicants SET
             {{}}
-            WHERE personID = {personID};"""
+            WHERE personID = {personID}
+            AND app_rcvd = {app_rcvd}
+            ;"""
     entries = ', '.join([f"{key} = {value}" for key, value in
             mapped_changes.items()])
     query = query.format(entries)
     return query
 
 def update_applicant_date_cmd(report=None):
+    """
+    Choice of applicants,
+    Current entries for applicant chosen with option to change,
+    confirm and execute changes to Applicant table
+    confirm and execute update to Person_Status table
+    confirm and execute new entry to Person_Status table
+    """
     routines.add2report(report,
-            "Enterning update_applicant_date_cmd...")
+            "Enterning update_applicant_date_cmd...",
+            also_print=True)
     chosen_applicant = choose_applicant(report)
     if not chosen_applicant:
-        line2add = "Choosing an applicant was aborted."
-        print(line2add)
-        routines.add2report(report, line2add)
+        routines.add2report(report,
+            "Choosing an applicant was aborted.",
+            also_print=True)
         return
     personID = chosen_applicant["personID"]
     changes = get_key_val2change(chosen_applicant, report)
     if changes:
+        dates = [change for change in changes.values()]
+        new_date = dates[0]
         query = query2update_applicant_table(personID,
                 changes, report)
         if textual.yes_no(query,
                 title="Execute query?"):
-            routines.fetch(query, from_file=False,
-                            commit=True)
+#   execution of query commented out during development
+#           routines.fetch(query, from_file=False,
+#                           commit=True)
             lines2add = [
                 "Following query NOT executed:",].append(
 #               "Following query has been executed:",].append(
                         query)
-            routines.add2report(report, lines2add)
-            print(lines2add)
-        else:
-            line2add = "aborting query execution"
-            print(line2add)
             routines.add2report(report,
-                    line2add)
+                    lines2add, also_print=True)
+        else:
+            routines.add2report(report,
+                    "Aborting applicant table update.",
+                    also_print=True)
+            return
     else:
-        line2add = 'User "CANCEL"ed.'
-        print(line2add)
-        routines.add2report(report, line2add)
+        routines.add2report(report,
+                'No applicant changes to be made.',
+                also_print=True)
+        return
     
     # here's where we can change the Person_Status Table:
     person = "{personID:>3d}: {last}, {first}{suffix}".format(
             **chosen_applicant)
-    choice = textual.choose(choices,
-            subheader=f"{person}: pick an entry..",
-            report=report)
+#   _ = input(chosen_applicant)
+    picked = textual.pick(
+        f"""SELECT P.personID, P.last, P.first, P.suffix,
+            Ps.statusID, PS.begin, PS.end 
+        FROM Person_Status AS PS
+        JOIN People AS P
+        WHERE P.personID = PS.personID
+        AND P.personID = {chosen_applicant['personID']};""",
+        ("{personID:>3d} {last}, {first} {suffix}" +
+        " {statusID} {begin} {end}"),report=report)
+    print("applicant_update_cmd ends with picked returning:")
+    ret = """
+    applicant_update_cmd ends with picked returning:
+{'personID': 221, 'last': 'Pelsinger', 'first': 'Daniel', 'suffix': '', 'statusID': 4, 'begin': '20230301', 'end': ''}
+"""
+    picked["new_date"] = new_date
+    update_query = """UPDATE Person_Status SET 
+        end = "{new_date}" WHERE personID = {personID}
+        AND statusID = {statusID}
+        AND end = "";""".format(**picked)
+    if textual.yes_no(update_query,
+            title="Execute query?"):
+        pass
+#   execution of query commented out during development
+#       routines.fetch(update_query, from_file=False,
+#                       commit=True, verbose=True)
+    picked["statusID"] = int(picked["statusID"]) + 1
+    insert_query = """INSERT INTO Person_Status
+        (personID, statusID, begin)
+        VALUES
+        ({personID}, {statusID}, "{new_date}");
+        """.format(**picked)
+    if textual.yes_no(insert_query,
+            title="Execute query?"):
+        pass
+#   execution of query commented out during development
+#       routines.fetch(insert_query, from_file=False,
+#                       commit=True, verbose=True)
 
     yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
@@ -335,16 +403,19 @@ def change_status_cmd(report=None):
     if report is NoneType:
         report = []
     routines.add2report(report, 
-            "Entering code/data_entry/change_status_cmd...")
+            "Entering code/data_entry/change_status_cmd...",
+            also_print=True)
     data = textual.selectP_record(report=report)
     if not data:
         routines.add2report(report,
             "code/data_entry/selectP_record " +
-            "failed to return a record")
+            "failed to return a record",
+            also_print=True)
         return
     else:
         routines.add2report(report,
-            "<data> now contains a People table entry")
+            "<data> now contains a People table entry",
+            also_print=True)
     personID = data['personID']
     fields = ('personID', 'statusID', 'begin', 'end', )[1:]
     e,v = textual.get_mode(data, fields)
@@ -356,7 +427,8 @@ def change_status_cmd(report=None):
         report.append(line)
         print(line)
     routines.add2report(report,
-        "...finished code/data_entry/change_status.cmd.")
+        "...finished code/data_entry/change_status.cmd.",
+        also_print=True)
     return report
 
 

@@ -60,7 +60,7 @@ def assure_only1response(listing):
         sys.exit()
 
 
-def add2report(report, line):
+def add2report(report, line, also_print=False):
     """
     This should be incorporated into code.helpers
     Supports many routines which have a named 'report' param.
@@ -68,8 +68,11 @@ def add2report(report, line):
     if isinstance(report, list):
         if isinstance(line, str):
             report.append(line)
+            if also_print: print(line)
         elif isinstance(line, list):
             report.extend(line)
+            if also_print:
+                for l in line: print(l)
 
 
 def fetch(sql_source, db=db_file_name, params=None, data=None,
@@ -111,6 +114,7 @@ def fetch(sql_source, db=db_file_name, params=None, data=None,
         if verbose:
             _ = input("Committed!")
     closeDB(db, cur)
+    _ = input(f"routines.fetch returning {ret}")
     return ret
 
 

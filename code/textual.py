@@ -413,11 +413,12 @@ def pick(query, format_string,
     the format_string.
     """
     routines.add2report(report,
-            "Entering code.textual.pick")
+        "Entering code.textual.pick", also_print=True)
     mappings = routines.query2dicts(query)
     if not mappings:
         routines.add2report(report,
-                "No records provided ==> exit")
+                "No records provided ==> exit",
+                also_print=True)
         return
     options = [format_string.format(**rec)
             for rec in mappings]
@@ -444,12 +445,13 @@ def pick(query, format_string,
         return
     chosen_item = v['CHOICE'][0].strip().split()[0][:-1]
     if (e != "SELECT") or not v['CHOICE']:
-        routines.add2report(report, "pick returning None")
+        routines.add2report(report,
+            "pick returning None", also_print=True)
         return
     else:
         routines.add2report(report,
-          "window in code.textual.choose returning..." +
-          f"\n{repr(v['CHOICE'])}")
+          "window in code.textual.pick returning..." +
+          f"\n{repr(v['CHOICE'])}", also_print=True)
         return mappings[int(chosen_item)]
 
 
