@@ -24,9 +24,9 @@ query_files = dict(  # require formatting x2 with today' date
         applicant=      "Sql/app4join_ff.sql",
         member=         "Sql/mem4join_ff.sql",
                )       #  ^^   SQL files used ^^    #
-file4web = "4web.txt"
-file4app_report = "applicants.txt"
-file4attrition = "former_members.txt"
+file4web = f"4web{helpers.eightdigitdate}.txt"
+file4app_report = f"applicants{helpers.eightdigitdate}.txt"
+file4attrition = f"former_members{helpers.eightdigitdate}.txt"
 
 
 def get_listing_2f(query_file):
@@ -170,6 +170,7 @@ def report_applicants(listing):
     report.append("=" * len(report[-1]))
     previousID = 0
     for item in listing:
+        item = list(item)
         statusID = item[-2]
         if statusID != previousID:
             previousID = statusID

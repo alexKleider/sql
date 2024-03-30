@@ -18,6 +18,7 @@ import PySimpleGUI as sg
 from code import helpers
 from code import routines
 from code import textual
+from code import show
 
 def params(one, two, kw1="kw1", kw2='kw2'):
     print(f"one: {one}")
@@ -33,8 +34,11 @@ def yes_no(text, title="Run query?"):
     return sg.popup_yes_no(text,
             title=title) == "Yes"
 
+def ck():
+    pass
 
 if __name__ == "__main__":
+    ck()
     pass
 
 

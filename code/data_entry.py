@@ -331,7 +331,7 @@ def update_applicant_date_cmd(report=None):
                 title="Execute query?"):
 #   execution of query commented out during development
 #           routines.fetch(query, from_file=False,
-#                           commit=True)
+#                           commit=True, verbose=True)
             lines2add = [
                 "Following query NOT executed:",].append(
 #               "Following query has been executed:",].append(

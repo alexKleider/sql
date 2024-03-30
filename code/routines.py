@@ -114,7 +114,8 @@ def fetch(sql_source, db=db_file_name, params=None, data=None,
         if verbose:
             _ = input("Committed!")
     closeDB(db, cur)
-    _ = input(f"routines.fetch returning {ret}")
+    if verbose:
+        print(f"routines.fetch returning {ret}")
     return ret
 
 
@@ -925,6 +926,7 @@ def assign_applicants2welcome(holder):
         listing.append(mapping)
         byID[entry[0]] = mapping
     holder.working_data = byID
+    print("Now need to update applicant's status from 2 > 3.")
 
 
 def assign_welcome2full_membership(holder):

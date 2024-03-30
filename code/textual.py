@@ -18,7 +18,11 @@ try: from code import helpers
 except ImportError: import helpers
 
 def yes_no(text, title="Run query?"):
+#   l = len(text) - len(title)
+#   if len(text) > l: l=len(text)
+#   title = title + ' '*l
     return sg.popup_yes_no(text,
+#           line_width = l,
             title=title) == "Yes"
 
 

@@ -14,6 +14,7 @@ from code import commands
 from code import data_entry
 from code import ck_data
 from code import show
+from code import textual
 
 hierarchy = {
     "Reports":{  # Text files created
@@ -98,12 +99,13 @@ def main_menu(report=None):
 
 
 if __name__ == "__main__":
-    print(f"Running {helpers.get_os_release()}")
+#   print(f"Running {helpers.get_os_release()}")
     print()
     while True:
         report = []
-        yn = input("Continue? (y/n) ")
-        if yn and yn[0] in 'yY':
+        if textual.yes_no(
+                f"Running {helpers.get_os_release()}",
+                title="Continue?"):
             res = main_menu(report=report)
             if res:
                 for func in hierarchy[res[0]][res[1]]:
