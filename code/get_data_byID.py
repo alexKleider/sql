@@ -2,8 +2,11 @@
 
 # File: code/get_data_byID.py
 
-import dates
-import helpers
+try: from code import dates
+except ImportError: import dates
+
+try: from code import helpers
+except ImportError: import helpers
 
 def get_data_byID(ID):
     return dates.get_demographic_dict(personID)

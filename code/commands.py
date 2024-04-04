@@ -47,12 +47,12 @@ except ImportError: import send_emails
 def get_command():
     while True:
         choice = input("""   MAIN MENU
-Choose one of the following:
+Choose one of the following:  (* means don't use!)
   0. Quit (or just return)      1. Show for web site
   2. Show applicants            3. Show names as table
-  4. Report                     5. Send/review (json) emails
+  4. Report                     5. Send/review (json) emails*
   6. No email                   7. Get (non member) stati
-  8. Update Status              9. Find ID by name
+  8. Update Status*(under dev)  9. Find ID by name
  10. Display Fees by person    11. Update demographics
  12. Data Entry (Dates)        13. Prepare Mailing
  14. Show Applicant Data       15. Add Meeting Date
@@ -548,10 +548,18 @@ ORDER BY P.last, P.first, P.suffix
 # see "redacted" file
 
 def show_names():
-    return helpers.tabulate(
+    """
+    Requested by Angie or perhaps I wanted her to have names
+    as they appear in the Club data base so her data could be
+    consistent.
+    """
+    table = helpers.tabulate(
         for_angie(include_blanks=False),
         max_width=102, separator='  ')
-
+    with open("names4angie.txt", 'w') as stream:
+        for entry in table:
+            stream.write(entry + '\n')
+        print(f"Table of names sent to {stream.name}.")
 
 def report_cmd(report=None):
     routines.add2report(report,
@@ -647,11 +655,16 @@ def leadership_cmd(report=None):
 
 def get_non_member_stati():
     """
+    Returns a list of dicts.
+    Anyone who has a status other than that of member.
+    This includes past members, officers, applicants (current
+    or expired,) ...
     """
     keys = ("ID, first, last, suffix, begin, status, end"
             ).split(', ')
     query = routines.import_query(
             "Sql/nonmember_stati_f.sql").format(
+                    helpers.eightdigitdate,
                     helpers.eightdigitdate)
     ret = routines.query2dict_listing(query, keys)
 #   for key, value in ret:
@@ -659,11 +672,15 @@ def get_non_member_stati():
     return ret
 
 
-def get_non_member_stati_cmd(tocsv=True):  # get_non_member_stati.sql
+def get_non_member_stati_cmd():  # get_non_member_stati.sql
     """
+    Option to send to a csv file.
     Returns a header followed by a listing of all
     people with a status OTHER THAN 'm':
     Use for presentation only.
+    What's returned is used by the update_status_cmd
+    which is still a work in progress and will likely be 
+    rewritten completely.
     """
     res = get_non_member_stati()
     n = len(res)
@@ -678,19 +695,18 @@ def get_non_member_stati_cmd(tocsv=True):  # get_non_member_stati.sql
         ret.append(('{ID:>3}{first:>10} {last:<15}{suffix:<3} '
                     + '{begin} {status} {end}')
                                 .format(**item))
-    if tocsv:
-        csv_file = input(
-            "Name of csv file (return if not needed): ")
-        if csv_file:
-            keys = (
-                "ID, first, last, suffix, begin, status, end"
-                    ).split(', ')
-            with open(csv_file, 'w', newline='') as outf:
-                writer = csv.DictWriter(outf, fieldnames=keys)
-                writer.writeheader()
-                for item in res:
-                    writer.writerow(item)
-            print(f"Data written to '{csv_file}'.")
+    csv_file = "non_member_stati.csv"
+    yn = input(f"Send results to {csv_file} y/n: ")
+    if yn and yn[0] in 'yY':
+        keys = (
+            "ID, first, last, suffix, begin, status, end"
+                ).split(', ')
+        with open(csv_file, 'w', newline='') as outf:
+            writer = csv.DictWriter(outf, fieldnames=keys)
+            writer.writeheader()
+            for item in res:
+                writer.writerow(item)
+        print(f"Data written to '{csv_file}'.")
     return ret
 
 
@@ -951,7 +967,12 @@ def prepare_mailing_cmd():
 #           ret.extend(func(holder, dic))
             func(holder, dic)
     # send holder.emails to a json file
-    helpers.dump2json_file(holder.emails, holder.email_json)
+    if holder.emails:
+        helpers.dump2json_file(holder.emails,
+                holder.email_json)
+        print(f"Emails sent to {holder.email_json}")
+    else:
+        print("No emails to send.")
     # Delete mailing dir if no letters are filed:
     if os.path.isdir(holder.mail_dir) and not len(
             os.listdir(holder.mail_dir)):

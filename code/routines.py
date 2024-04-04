@@ -6,6 +6,9 @@
 Contains some 'helper' code to support SQL(ite3)
 relational data base management.
 
+Contains the "funcs" typified by std_mailing_funcs:
+    it's here than "extra[n]" field might be added for such things
+    as billing statement or the like.
 """
 
 import os
@@ -901,6 +904,19 @@ def assign_applicant_fee_pending(holder):
         "sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd, " +
         "meeting1, meeting2, meeting3, approved, " +
         "dues_paid, notified, begin, end").split(', ')
+    listing = []
+    byID = {}
+    for entry in res:
+        mapping = dict(zip(keys, entry))
+        listing.append(mapping)
+        byID[entry[0]] = mapping
+    holder.working_data = byID
+
+def assign_just_me(holder):
+    query = """SELECT * FROM People WHERE
+            first = "Alex" AND last = "Kleider";"""
+    res = fetch(query, from_file=False)
+    keys = keys_from_schema("People")
     listing = []
     byID = {}
     for entry in res:

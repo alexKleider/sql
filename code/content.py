@@ -98,8 +98,6 @@ more Blah blah
 
 etc
 
-First extra content is
-{extra}
 
 May have as many 'extra's as required as long as each one
 has a corresponding entry in the record dict (typically arranged
@@ -567,6 +565,17 @@ attribute of an instance of utils.Club for mailing purposes.
 """
 
 content_types = dict(  # which_letter
+    for_testing={
+        "subject": "This is a test.",
+        "from": authors["ak"],
+        "body": letter_bodies["for_testing"],
+        "post_scripts": (
+            post_scripts['forgive_duplicate'],
+            ),
+        "holder_funcs": (routines.assign_just_me, ),
+        "funcs": (members.std_mailing_func, ),
+        "e_and_or_p": "usps",
+        },
     first_notice={
         "subject": "Bolinas R&B Club fees coming due",
         "from": authors["membership"],
@@ -731,17 +740,6 @@ content_types = dict(  # which_letter
         "funcs": [members.std_mailing_func, ],
         "test": members.is_angie,
         "e_and_or_p": "usps",
-        },
-    for_testing={
-        "subject": "This is a test.",
-        "from": authors["ak"],
-        "body": letter_bodies["for_testing"],
-        "post_scripts": (
-            post_scripts['forgive_duplicate'],
-            ),
-        "funcs": [members.testing_func, ],
-        "test": members.is_member,
-        "e_and_or_p": "one_only",
         },
     bad_address={
         "subject": "Address correction requested.",
@@ -927,27 +925,15 @@ ctypes = sorted([key for key in content_types.keys()])
 
 printers = dict(
     # tuples in the case of envelope windows.
-    X6505_e9=dict(  # Smaller envelope.  #9: 3-7/8 x 8-7/8"
-        # e1: envelope with distances (in mm) from top to
-        # top of top window       21
-        # bottom of top window    43
-        # top of lower window     59
-        # bottom of lower window  84
-        indent=5,
-        top=4,  # blank lines at top  1 ..2
-        frm=(4, 25),  # return window 3..6
-        date=5,  # lines between windows 7..11
-        to=(5, 30),  # recipient window 12..16
-        re=3,  # lines below bottom window
-        ),
-    X6505_e10=dict(  # Larger envelope. #10: 4-1/8 x 9-1/2"
+    # Smaller envelope.  #9: 3-7/8 x 8-7/8"
+    HL8260W_e10=dict(  # large envelopes, Bolinas Data Closet
         indent=4,
-        top=3,  # blank lines at top  1 ..2
-        frm=(5, 25),  # return window 3..6
-        date=5,  # lines between windows 7..11
-        to=(6, 30),  # recipient window 12..16
-        re=4,  # lines below bottom window
-        ),
+        top=4,  # blank lines at top
+        frm=(4, 35),  # return window
+        date=5,  # between windows
+        to=(5, 29),  # recipient window
+        re=4,  # below windows => fold
+        ), # 3+4+5+5+4 = 21
     HL2170_e10=dict(  # large envelopes, Cavin Rd usb printer
         indent=3,
         top=1,  # blank lines at top
@@ -1082,7 +1068,7 @@ def contents():
 def main():
     print("content.py has no syntax errors")
     which = content_types["for_testing"]
-    lpr = printers["X6505_e1"]
+    lpr = printers["HL8260W_e10"]
     letter = prepare_letter_template(which, lpr)
     email = prepare_email_template(which)
     rec = dict(
@@ -1125,22 +1111,23 @@ Membership"""
 
 
 if __name__ == "__main__":
-    def ck_assign_printer():
-        class Holder(object):
-            def __init__(self):
-                noval = ''
-        holder = Holder()
-        assign_printer(holder)
-        print(holder.printer)
-        print(printers[holder.printer])
+#   def ck_assign_printer():
+#       class Holder(object):
+#           def __init__(self):
+#               noval = ''
+#       holder = Holder()
+#       assign_printer(holder)
+#       print(holder.printer)
+#       print(printers[holder.printer])
 
-    ck_assign_printer()
-    # main()
+#   ck_assign_printer()
+    main()
 #   print('\n'.join(contents()))
 #   print("content.py compiles OK")
 else:
-    def print(*args, **kwargs):
-        pass
+    pass
+#   def print(*args, **kwargs):
+#       pass
 
 
 

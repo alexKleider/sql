@@ -330,11 +330,11 @@ def update_applicant_date_cmd(report=None):
         if textual.yes_no(query,
                 title="Execute query?"):
 #   execution of query commented out during development
-#           routines.fetch(query, from_file=False,
-#                           commit=True, verbose=True)
+            routines.fetch(query, from_file=False,
+                            commit=True, verbose=True)
             lines2add = [
-                "Following query NOT executed:",].append(
-#               "Following query has been executed:",].append(
+#               "Following query NOT executed:",].append(
+                "Following query has been executed:",].append(
                         query)
             routines.add2report(report,
                     lines2add, also_print=True)
@@ -353,6 +353,7 @@ def update_applicant_date_cmd(report=None):
     person = "{personID:>3d}: {last}, {first}{suffix}".format(
             **chosen_applicant)
 #   _ = input(chosen_applicant)
+    # first pick the entry to update:
     picked = textual.pick(
         f"""SELECT P.personID, P.last, P.first, P.suffix,
             Ps.statusID, PS.begin, PS.end 
@@ -361,36 +362,42 @@ def update_applicant_date_cmd(report=None):
         WHERE P.personID = PS.personID
         AND P.personID = {chosen_applicant['personID']};""",
         ("{personID:>3d} {last}, {first} {suffix}" +
-        " {statusID} {begin} {end}"),report=report)
-    print("applicant_update_cmd ends with picked returning:")
-    ret = """
-    applicant_update_cmd ends with picked returning:
-{'personID': 221, 'last': 'Pelsinger', 'first': 'Daniel', 'suffix': '', 'statusID': 4, 'begin': '20230301', 'end': ''}
-"""
+        " {statusID} {begin} {end}"),
+        header="Choose Status Entry to Update",report=report)
+    routines.add2report(report,
+        ("applicant_update_cmd 1st status change picked:",
+        repr(picked)), also_print=True)
     picked["new_date"] = new_date
     update_query = """UPDATE Person_Status SET 
         end = "{new_date}" WHERE personID = {personID}
         AND statusID = {statusID}
         AND end = "";""".format(**picked)
+    routines.add2report(report,
+        (f"1st (update) query:", repr(update_query)),
+        also_print=True)
     if textual.yes_no(update_query,
             title="Execute query?"):
-        pass
 #   execution of query commented out during development
-#       routines.fetch(update_query, from_file=False,
-#                       commit=True, verbose=True)
+        routines.fetch(update_query, from_file=False,
+                        commit=True, verbose=True)
+        pass
+    # next set up for new status entry:
     picked["statusID"] = int(picked["statusID"]) + 1
+    # ^ we are assuming that new statusID incriments by 1^
     insert_query = """INSERT INTO Person_Status
         (personID, statusID, begin)
         VALUES
         ({personID}, {statusID}, "{new_date}");
         """.format(**picked)
+    routines.add2report(report,
+        (f"2nd (insert) query:", insert_query),
+        also_print=True)
     if textual.yes_no(insert_query,
             title="Execute query?"):
-        pass
 #   execution of query commented out during development
-#       routines.fetch(insert_query, from_file=False,
-#                       commit=True, verbose=True)
-
+        routines.fetch(insert_query, from_file=False,
+                        commit=True, verbose=True)
+        pass
     yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
         for line in report:

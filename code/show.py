@@ -206,7 +206,7 @@ def report_applicants(listing):
             if meeting: meetings.append(meeting)
         meeting_line += ', '.join(meetings)
         entry.append(sponsor_line)
-        entry.append(f"    Applied: {app_data[5]}")
+        entry.append(f"    Applied:  {app_data[5]}")
         if meetings: entry.append(meeting_line)
         if app_data[6]: entry.append(f"    Approved: {app_data[6]}")
         report.extend(entry)
@@ -233,7 +233,7 @@ def show_applicants_cmd(report=None):
 
 def show_cmd(report=None):
     routines.add2report(report,
-            "Entering code.show.show_cmd")
+            "Entering code.show.show_cmd", also_print=True)
     member_part = show4web(get_listing_2f(
         query_files["member"]))
     applicant_part = report_applicants(get_listing_2f(
@@ -244,9 +244,8 @@ def show_cmd(report=None):
         with open(file4web, 'w') as outf:
             outf.write("\n".join(ret))
         line2add = f"Data sent to {file4web}."
+        routines.add2report(report, line2add, also_print=True)
         ret.append(line2add)
-        report.append(line2add)
-        print(ret[-1])
     routines.add2report(report,
         "...leaving code/show/show_cmd")
     return ret
