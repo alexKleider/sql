@@ -38,10 +38,15 @@ def add2tables(data, report=None):
     People: demographics
     Person_Status: 1. no fee, 2. fee paid, (3. acknowledged (a0))
     Applicants: sponsor1ID, sponsor2ID, app_rcvd, fee_rcvd
-    ## Missing is an entry into the Receipts table
+    Yet to add: (to be done in add2tables!!!)
+        a. if ap_fee paid- Enter into Receipts
+        c. Send welcoming email
+        b. End status 2 and begin status 3
     """
-    # data for People table is standard demographics
-    #   ... already collected but need assigned personID
+    routines.add2report(report, "Entering add2tables...",
+            also_print=True)
+    # <data> is all that's needed for a People table entry
+    # Only after that's done can we find out the personID
     # data for Person_Status table:
     all_keys = [key for key in data.keys()]
     key_params = ', '.join(all_keys[:10])
@@ -59,23 +64,29 @@ def add2tables(data, report=None):
         res = routines.fetch(people_insert_query,
                 from_file=False,
                 commit=True, verbose=True)
-        print("...successfull addition to People table.")
+        routines.add2report(
+                "...successfull addition to People table.",
+                report=report, also_print=True)
         # Need to retrieve newly assigned personID...
         res = routines.fetch_d_query("Sql/id_from_names_fd.sql",
                 data)
         data['personID'] = res[0][0]
         print(f"New personID is {data['personID']}")
     else: 
-        _ = input("Aborting data entry! rtn to continue: ")
+        routines.add2report(report, "...borting add2tables!",
+                            also_print=True)
         return
 
     # Set data needed and then make the Person_Status entry...
     if data["fee_rcvd"]:
+        fee_rcvd = True
+        #### WORK HERE ####
         ## good place to make entry into Receipts table ##
         # .. use data['personID']
         data['statusID'] = 2
         data['begin'] = data['fee_rcvd']
     else:
+        fee_rcvd = False
         data['statusID'] = 1  # Will have to add an end date
                         # and make another status entry
                         # when fee is paid.
@@ -85,14 +96,13 @@ def add2tables(data, report=None):
     # Finally create entry in Applicants table...
     _ = routines.fetch_d_query(
             "Sql/applicant_entry_fd.sql", data, commit=True)
-    if report and isinstance(report, list):
-        report.extend((
+    routines.add2report(report, [
             "{first} {last} {suffix} added as new applicant."
                 .format(**data),
             "Tables updated: People, Person_Status & Applicants.",
             "Still need to mail welcome letter.",
             "Also: need to make an entry into Receipts table prn",
-            ))
+            ], also_print=True)
 
 
 def file2app_data(file_content, report=None):
@@ -148,56 +158,28 @@ def add_new_applicant_cmd(report=None):
     Provides ability to enter one new applicant into the db:
     Creats appropriage entries in "People", "Person_Status"
     and "Applicant" tables. 
+    Yet to add: (to be done in add2tables!!!)
+        a. if ap_fee paid- Enter into Receipts
+        c. Send welcoming email
+        b. End status 2 and begin status 3
     Returns a report (in the form of a list of lines.)
-    Two input methods:
-    1. from a specially formatted file    or
-    2. item by item entry as prompted from the command line.
-        - the latter is under development: code/textual.py
     """
-    ret = ["Entering add_new_applicant_cmd...",]
-    print(ret[0])
-    ret.append(
-        "  == so far data entry from file implemented  ==")
-    # 1st choose method of input- only by file implemented 4 now
-    # and collect the data...
-    while True:  # get data (/w option to file ==> db) OR abort
-        answer = input(
-                "CLInput or from file? (c,C,f,F,q)uit): ")
-        if answer and answer[0] in "qQ":
-            # option to abort without adding data
-            ret.append("Aborting addition of new applicant(s)!")
-            return ret
-        if answer[0] in "fF":
-            fname = input("File name: ")
-            ret.append(f"Getting data from {fname}...")
-            stream = []
-            try:
-                with open(fname, 'r') as inf:
-                    for line in helpers.useful_lines(inf):
-                        stream.append(line)
-            except FileNotFoundError:
-                ret.append("File not found, try again.")
-                print(ret[-1])
-                continue
-            # get the data taken from application and transcribed
-            # into a text file one line per data item:
-            data = file2app_data(stream, report=ret)
-            break
-        elif answer[0] in "cC":
-            data = textual.get_demographics(report=ret)
-            if data:
-                break
+    if not report: report=[]
+    routines.add2report(report,
+                        "Entering add_new_applicant_cmd...",
+                        also_print=True)
+    data = textual.get_demographics(report=ret)
+    if not data: 
+        routines.add2report(report,
+                        "...add_new_applicant aborted",
+                        also_print=True)
+        return
     routines.add_sponsorIDs(data)
-    print(f"\nSo far following has been collected:\n{data}")
-    yn = input("OK to make data base entries? (y/n) ")
-    if yn and yn[0] in "yY":
-        add2tables(data, report=ret)  # adds to three tables:
+    add2tables(data, report=report)  # adds to three tables:
             #1. People
             #2. Person_Status
             #3. Applicants
-    if report and isinstance(report, list):
-        report.extend(ret)
-    return ret
+    return report
 
 
 def choose_applicant(report=None):

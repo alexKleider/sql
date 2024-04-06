@@ -7,6 +7,7 @@ Top level rewrite using GUI
 Goal is to replace main.py
 """
 
+import sys
 import PySimpleGUI as sg
 from code import helpers
 from code import routines
@@ -101,27 +102,27 @@ def main_menu(report=None):
 if __name__ == "__main__":
 #   print(f"Running {helpers.get_os_release()}")
     print()
+    if not textual.yes_no(
+            f"Running {helpers.get_os_release()}",
+            title="Continue?"):
+        sys.exit()
     while True:
         report = []
-        if textual.yes_no(
-                f"Running {helpers.get_os_release()}",
-                title="Continue?"):
-            res = main_menu(report=report)
-            if res:
-                for func in hierarchy[res[0]][res[1]]:
-                   func(report)
-            else:
-                print("No choice made.")
-            yn = input("Print report (y/n) or file name: ")
-            if yn:  # yn is either Y)es, N)o or a file name
-                if yn[0] in 'yY':
-                    for line in report:
-                        print(line)
-                elif yn[0] in 'nN':
-                    continue
-                else:
-                    with open(yn, 'w') as outf:
-                        for line in report:
-                            outf.write(line+'\n')
+        res = main_menu(report=report)
+        if res:
+            for func in hierarchy[res[0]][res[1]]:
+               func(report)
         else:
+            print("No choice made.")
             break
+        yn = input("Print report (y/n) or file name: ")
+        if yn:  # yn is either Y)es, N)o or a file name
+            if yn[0] in 'yY':
+                for line in report:
+                    print(line)
+            elif yn[0] in 'nN':
+                continue
+            else:
+                with open(yn, 'w') as outf:
+                    for line in report:
+                        outf.write(line+'\n')
