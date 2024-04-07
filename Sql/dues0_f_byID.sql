@@ -9,5 +9,6 @@ JOIN Person_Status as PS
 ON D.personID = PS.personID
 WHERE PS.statusID in (8, 11, 15)
 AND (PS.end = '' OR PS.end > {})
+AND (PS.begin = '' OR PS.begin < {})
 AND D.personID = {{}}
 ;

@@ -9,47 +9,113 @@ window types:
     choose from a listing of options/strings
                             functions
         use code/textual/menu()
-
-# Code being developed here eventually to be
-# moved into code/textual.py
+Currently working on setting up the Dues table
+for the upcoming year: delete non members and
+add dues to all members.
 """
 
 import PySimpleGUI as sg
+from code import club
 from code import helpers
 from code import routines
 from code import textual
 from code import show
 
-def params(one, two, kw1="kw1", kw2='kw2'):
-    print(f"one: {one}")
-    print(f"two: {two}")
-    print(f"kw1: {kw1}")
-    print(f"kw2: {kw2}")
+today = helpers.eightdigitdate
+dues = club.yearly_dues
 
-def test_params():
-    params(two=2, one=1, kw1="KW1", kw2="KW2")
+def update_dues_table(report=None):
+    """
+    Prepare Dues Table for upcoming Club year.
 
+    """
+    # create a set of memberIDs:
+    query = routines.import_query("Sql/memIDs_f.sql")
+    members = routines.fetch(query.format(today, today),
+                            from_file=False)
+    memberIDs = {entry[0] for entry in members}
+#   print("memberIDs: " + repr(memberIDs))
+    # set of inducties still owing:
+    appIDs_owing = routines.fetch("Sql/appIDs_owing.sql")
+    appIDs_owing = {item[0] for item in appIDs_owing}
+#   print("appIDs_owing: " + repr(appIDs_owing))
+    # now get a set of those who should be in the Dues table
+    dues_paying = memberIDs | appIDs_owing
+    #set of IDs currently in Dues table
+    duesIDs = {entry[0] for entry in 
+            routines.fetch(
+            "SELECT personID, dues_owed FROM Dues;",
+            from_file=False)}
+    # delete non dues_paying peopleIDs from Dues Table:
+    entries2delete = duesIDs - dues_paying
+#   print("duesIDs: " + repr(duesIDs))
+#   print("dues_paying: " + repr(dues_paying))
+    n = 0
+    for ID in entries2delete:
+        query = f"DELETE FROM Dues WHERE personID = {ID};"
+        yn = input(f"{query} OK?")
+        if yn and yn[0] in "yY":
+            routines.fetch(query,
+                from_file=False, commit=True)
+        n += 1
+    # update set of IDs currently in Dues table
+    old_duesIDs = duesIDs
+    duesIDs = {entry[0] for entry in 
+            routines.fetch(
+            "SELECT personID, dues_owed FROM Dues;",
+            from_file=False)}
+    if not n: assert old_duesIDs == duesIDs
+    for ID in dues_paying:
+        # club.yearly_dues ==> Dues table
+        if ID in duesIDs: # UPDATE Dues table
+            query = f"""UPDATE Dues 
+                    SET dues_owed = dues_owed + {dues}
+                    WHERE personID = {ID};"""
+#           print(query)
+#           yn = input("Is the above query ok? (y/n) ")
+            routines.fetch(query, from_file=False, commit=True)
+        else: # New entry: INSERT INTO Dues table
+            query = f"""INSERT INTO Dues
+                    (personID, dues_owed)
+                    VALUES ({ID}, {dues});"""
+#           print(query)
+#           yn = input("Is the above query ok? (y/n) ")
+            routines.fetch(query, from_file=False, commit=True)
 
-def yes_no(text, title="Run query?"):
-    return sg.popup_yes_no(text,
-            title=title) == "Yes"
+# The following are for the future: to prepare for the
+# 2025 ==> 2026 billing cycle....
+# As of 2024-04-06 amounts owed are already entered.
 
-def ck():
+def update_kayak_slots_table(report=None):
+    """
+    <slot_cost> already filled out
+    """
     pass
+
+def update_dock_privileges_table(report=None):
+    """
+    <cost> already filled out
+    """
+    pass
+
+def update_moorings_table(report=None):
+    """
+    <owing> already filled out
+    """
+    pass
+
+def ck_members_f():
+    query = routines.import_query("Sql/members_f.sql")
+    query = query.format(helpers.eightdigitdate,
+                        helpers.eightdigitdate)
+    print(query)
+    res = routines.fetch(query, from_file=False)
+    unwanted = sorted(
+        {item[0] for item in res if int(item[0]) > 216})
+    print(unwanted)
 
 if __name__ == "__main__":
-    ck()
-    pass
-
-
-#   text1 = "to be or not to be"
-#   title1 = "Go ahead?"
-#   if yes_no(text1, title=title1):
-#       print("going ahead")
-#   else:
-#       print("aborting")
-
-
-#   test_params()
-#   _ = input("W)ork i)n P)rogress...  Any key to continue")
+    ck_members_f()
+#   report = []
+#   update_dues_table(report)
 

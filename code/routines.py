@@ -584,11 +584,14 @@ def ret_statement(personID, incl0=True):
     entry = False
     for key in source_files.keys():
         query = import_query(source_files[key])
-        query = query.format(helpers.eightdigitdate)
+        query = query.format(helpers.eightdigitdate,
+                             helpers.eightdigitdate)
         query = query.format(personID)
         res = fetch(query, from_file=False)
 #       if personID == 171:   # 2Delete 2lines
 #           _ = input(res)
+        print(query)
+        print(repr(res))
         if res:
             amnt = res[0][0]
             if len(res)>1:
@@ -709,7 +712,8 @@ def assign_owing(holder):
     """
     byID = dict()
     query = import_query("Sql/members_f.sql"
-                        ).format(helpers.eightdigitdate)
+                        ).format(helpers.eightdigitdate,
+                                 helpers.eightdigitdate)
     for tup in fetch(query,
             from_file=False):
         personID = tup[0]

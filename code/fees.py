@@ -3,10 +3,13 @@
 # File: code/fees.py
 
 """
-Provides data from Dues,
+Collects data from Dues,
             Dock_Privileges,
             Kayak_Slots and
             Moorings tables.
+This is distinct from populating the fees in preparation
+for the next billing cycle.  That is a work in progress.
+wip.py
 """
 
 import csv
