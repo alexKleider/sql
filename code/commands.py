@@ -970,7 +970,11 @@ def prepare_mailing_cmd():
     if holder.emails:
         helpers.dump2json_file(holder.emails,
                 holder.email_json)
-        print(f"Emails sent to {holder.email_json}")
+        n = len(holder.emails)
+        efile = holder.email_json
+        print(f"{n} emails sent to {efile}.")
+        print(f"Emails ({len(holder.emails)} in " +
+            f"number) sent to {holder.email_json}")
     else:
         print("No emails to send.")
     # Delete mailing dir if no letters are filed:

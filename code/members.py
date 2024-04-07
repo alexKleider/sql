@@ -113,7 +113,9 @@ def file_letter(holder, data):
             else line for line in letter]
     letter = '\n'.join(letter)  # LETTER HERE
     helpers.send2file(letter, 
-            os.path.join(holder.mail_dir, filename))
+            os.path.join(holder.mail_dir, filename)
+#           ,silent=True
+            )
 
 def get_email(personID):
     query = f"""SELECT email from People
@@ -183,7 +185,7 @@ def append_email(holder, data):
         email['Bcc'] = holder.which['bcc']
     if holder.direct2json_file:
         helpers.add2json_file(email, holder.email_json,
-                verbose=True)
+                verbose=False)
     else:
         holder.emails.append(email)
 

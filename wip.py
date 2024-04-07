@@ -105,14 +105,27 @@ def update_moorings_table(report=None):
     pass
 
 def ck_members_f():
-    query = routines.import_query("Sql/members_f.sql")
+    query = "Sql/members_f.sql"  # personID is [0]
+    print(query)
+    query = routines.import_query(query)
     query = query.format(helpers.eightdigitdate,
                         helpers.eightdigitdate)
-    print(query)
+#   print(query)
     res = routines.fetch(query, from_file=False)
-    unwanted = sorted(
-        {item[0] for item in res if int(item[0]) > 216})
-    print(unwanted)
+    print(f"Number of members: {len(res)}")
+    s1 = {item[0] for item in res}
+
+    query = "Sql/mem4join_ff.sql" # personID is [-1]
+    print(query)
+    query = routines.import_query(query)
+    query = query.format(helpers.eightdigitdate,
+                        helpers.eightdigitdate)
+#   print(query)
+    res = routines.fetch(query, from_file=False)
+    s2 = {item[-1] for item in res}
+    print(f"Number of members: {len(res)}")
+
+    print(s2 - s1)
 
 if __name__ == "__main__":
     ck_members_f()

@@ -588,10 +588,6 @@ def ret_statement(personID, incl0=True):
                              helpers.eightdigitdate)
         query = query.format(personID)
         res = fetch(query, from_file=False)
-#       if personID == 171:   # 2Delete 2lines
-#           _ = input(res)
-        print(query)
-        print(repr(res))
         if res:
             amnt = res[0][0]
             if len(res)>1:
