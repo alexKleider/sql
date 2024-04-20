@@ -4,12 +4,14 @@
 
 """
 This module is specific to the Bolinas Rod and Boat Club.
-Data is maintained in an SQL data base in a "Secret" directory
-which (along with some other reference files) is not part of
-the GIT repo but is backed up on the Club's Google Drive.
+Data is maintained in an SQL data base in the "Secret"
+directory which (along with some other reference files) is
+not part of the GIT repo but is backed up on the Club's
+Google Drive. (rodandboatclub@gmail.com)
 The code base is a git repository.
 It provides the <Holder> class which serves largely to keep
-track of global values.  Only one instance at a time.
+track of Club related global values.
+Allow only one instance at a time.
 """
 
 import os.path as ospath
@@ -35,7 +37,10 @@ mooring_file = ospath.join(ROOT, "Secret/mooring_list.txt")
 
 
 class Holder(object):
-
+    """
+    A place to maintain globals pertaining to the Club.
+    (The Bolinas Rod and Boat Club)
+    """
     n_instances = 0
     cc_sponsors = False
     db_file_name = db_file_name
@@ -43,10 +48,13 @@ class Holder(object):
     email_json = EMAIL_JSON
     contacts_spot = CONTACTS_FILE
     direct2json_file = False  # receipts_cmd sets it to True
+    #  For when add one at a time instead of
+    #  storing and then dumping all at once.
     include0 = True  # include 0 balances
             # set to False if want only still owed amounts
     #  ?? Next 2 to be redacted ??
-    emails = []  # list of dicts
+    emails = []  # List of dicts is redundant since
+                 # we're using direct2json attribute.
     entries = 0  # a counter for number of receipts entered
 
     @classmethod
@@ -69,11 +77,14 @@ class Holder(object):
         del self
 
 def set_include0_false(holder):
+    """
+    This should be made into a method!
+    """
     holder.include0 = False
 
 
-## Wouldn't need the followng ..keys tuples
-## if/when use sqlAlchemy
+## No longer need the followng ..keys tuples
+## since use relational data base (SQLite3.)
 peopleDB_keys = (
     "first",         # 0
     "last",          # 1

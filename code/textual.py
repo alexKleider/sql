@@ -7,9 +7,24 @@ Using pysimplegui @
 https://www.pysimplegui.org/en/latest/#github-statistics
 (See also https://textual.textualize.io/getting_started/
 as a possible alternative.)
+
+Might consider using a context manager as at
+https://iamshobhitagarwal.medium.com/context-manager-in-python-df486d8cfed2
+class CustomContext:
+    def __enter__(self):
+        # Setup code
+        return self
+
+    def __exit__(self, exec_type, exec_value, traceback):
+        pass
+        # Teardown code
+
+    with CustomContext() as custom:
+        # Code inside this block
+    # Teardown code is automatically executed
+
 """
 
-import asyncio
 import PySimpleGUI as sg
 
 try: from code import routines

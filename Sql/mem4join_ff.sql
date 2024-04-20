@@ -1,8 +1,7 @@
 /* Sql/mem4join_ff.sql */
 -- !! Requires formatting !!  (eightdigitdate x2)
 -- retrieves member demographics _with_ trailing statusID
--- to distinguish 'member in good standing' vs 1st year.
--- results in 100 members
+-- includes retiring members
 -- personID is last item
 SELECT
     first, last, suffix, phone, address,
@@ -19,7 +18,7 @@ JOIN
 ON
     P.personID = PS.personID
 WHERE( 
-    PS.statusID IN (11, 15)  -- New & Current Member
+    PS.statusID IN (11, 15, 17)  -- New & retiring included
     AND ((PS.begin = '') OR (PS.begin <= {}))   -- today
     AND((PS.end = '') OR (PS.end > {}))   -- today
     )

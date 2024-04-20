@@ -27,6 +27,15 @@ class Test_keys_from_schema(unittest.TestCase):
                 routines.keys_from_schema("People",
                     brackets=(begin,end)))
 
+class Test_keys_from_query(unittest.TestCase):
+
+    def test_asterix(self):
+        query = "SELECT * FROM People;"
+        keys = routines.keys_from_query(query)
+        self.assertEqual(keys, routines.keys_from_schema(
+                                "People"))
+
+
 
 class Test_Assignations(unittest.TestCase):
         

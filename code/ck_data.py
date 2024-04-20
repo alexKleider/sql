@@ -4,7 +4,7 @@
 
 """
 Provides ck_data.consistency_report (for menu.py.)
-Module for routines that check for data consistency, specifically:
+Module to check for data consistency, specifically:
     google data "labels"/contacts match sql Person_Status table
         applicant == statiID 1..10
         dropped
@@ -155,13 +155,23 @@ mooring_query = """SELECT P.personID, P.first, P.last, P.suffix
             FROM people as P
             JOIN Moorings as M
             WHERE P.personID = M.personID ;"""
-members4dues = """SELECT P.personID
+members4dues = """SELECT P.personID  -- must get rid
+            FROM people as P         -- of retirees!
+            JOIN Person_Status as PS
+            WHERE PS.personID = P.personID
+                AND (PS.statusID in (11, 15)
+                    AND (PS.end = '' OR PS.end > {})
+                    AND (PS.begin = '' OR PS.begin < {}))
+            ORDER BY P.personID
+            ;""".format(helpers.eightdigitdate,
+                        helpers.eightdigitdate) 
+retirees =  """SELECT P.personID
             FROM people as P
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
-                AND PS.statusID in (11, 15)
-                AND (PS.end = '' OR PS.end > {})
-                AND (PS.begin = '' OR PS.begin < {})
+                AND (PS.statusID = 17   -- retiring
+                    AND (PS.end = '' OR PS.end > {})
+                    AND (PS.begin = '' OR PS.begin < {}))
             ORDER BY P.personID
             ;""".format(helpers.eightdigitdate,
                         helpers.eightdigitdate) 
@@ -462,8 +472,11 @@ def ck_appl_vs_status_tables():
 
 def ck_members_vs_dues(report=None):
     if not report: report = []
-    res1 = routines.fetch(members4dues, from_file=False)
-    s1 = set([item[0] for item in res1])
+    resa = routines.fetch(members4dues, from_file=False)
+    resb = routines.fetch(retirees, from_file=False)
+    sa = set([item[0] for item in resa])
+    sb = set([item[0] for item in resb])
+    s1 = sa - sb
     res2 = routines.fetch(dues_listing, from_file=False)
     s2 = set([item[0] for item in res2])
     if s1 != s2:

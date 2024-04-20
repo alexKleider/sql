@@ -20,10 +20,6 @@ import csv
 try: import helpers, routines
 except ImportError: from code import helpers, routines
 
-query_files = dict(  # require formatting x2 with today' date
-        applicant=      "Sql/app4join_ff.sql",
-        member=         "Sql/mem4join_ff.sql",
-               )       #  ^^   SQL files used ^^    #
 file4web = f"4web{helpers.eightdigitdate}.txt"
 file4app_report = f"applicants{helpers.eightdigitdate}.txt"
 file4attrition = f"former_members{helpers.eightdigitdate}.txt"
@@ -31,22 +27,14 @@ file4attrition = f"former_members{helpers.eightdigitdate}.txt"
 
 def get_listing_2f(query_file):
     """
-    # Discovered that there's a problem with the member listing!
-    # ..so only use this for applicants!
-    Returns query result.  "_2f": two format fields.
-    Query is content of <query_file> formatted (2 locations)
-    with today's <helper.eightdigitdate>
+    Returns the result of a query that needs today's
+    <helper.eightdigitdate> formatted twice.
     """
     date = helpers.eightdigitdate
-#   print(date)
     query = routines.import_query(query_file)
     query = query.format(date, date)
-    #print(query)
-    listing = routines.fetch(query, from_file=False)
-    return listing
+    return routines.fetch(query, from_file=False)
 
-def member_listing():
-    return get_listing_2f(query_files["member"])
 
 def get_join_date(personID):
     """
@@ -72,7 +60,7 @@ def get_numbers(listing, verbose=False):
         status = item[9]
         if status == 11:
             m0 += 1
-        elif status == 15:
+        elif status in {15, 17}:
             m1 += 1
         else:
             _ = input(f"{repr(item)}")
@@ -85,6 +73,8 @@ def get_numbers(listing, verbose=False):
             f"of whom {m1} are 'members in good standing' while",
             f"{m0} (indicated by an (*) asterix) are still",
              "within their first year of membership.",
+             "Members indicated by a (^) caret have announced",
+             "their intent to retire from the club.",
             )
     if verbose:
         for line in report:
@@ -130,16 +120,18 @@ COMMITTEE.
         status = item[9]
         if status == 11:
             prefix = '*'
+        elif status == 17:
+            prefix = '^'
         elif status == 15:
-            personID = item[-1]
-            # adjust date prn
-            jd = get_join_date(personID)
-            if jd: 
-                item = item[:10] + (jd,) + item[11:]
             prefix = ' '
         else:
             _ = input(f"Status: {status}")
-            assert False, 'Status must be 11 or 15!'
+            assert False, 'Status must be 11, 15 or 17!'
+        personID = item[-1]
+        # adjust date prn
+        jd = get_join_date(personID)
+        if jd: 
+            item = item[:10] + (jd,) + item[11:]
         entry = str(prefix) + """{0} {1} {2} [{3}] [{8}]
 \t{4}, {5}, {6} {7}""".format(*item)
         if item[10]:
@@ -215,7 +207,7 @@ def report_applicants(listing):
 def show_applicants_cmd(report=None):
     routines.add2report(report,
         "Entering code.show.show_applicants_cmd")
-    listing = get_listing_2f(query_files["applicant"])
+    listing = get_listing_2f("Sql/app4join_ff.sql")
     ret = report_applicants(listing)
     ret.append(
             f"\nReport generated {helpers.date}.")
@@ -234,10 +226,10 @@ def show_applicants_cmd(report=None):
 def show_cmd(report=None):
     routines.add2report(report,
             "Entering code.show.show_cmd", also_print=True)
-    member_part = show4web(get_listing_2f(
-        query_files["member"]))
-    applicant_part = report_applicants(get_listing_2f(
-        query_files["applicant"]))
+    member_part = show4web(
+            get_listing_2f("Sql/mem4join_ff.sql"))
+    applicant_part = report_applicants(
+            get_listing_2f("Sql/app4join_ff.sql"))
     ret = member_part + applicant_part
     ans = input(f"Send data to {file4web}? (y/n) ")
     if ans and ans[0] in 'yY':

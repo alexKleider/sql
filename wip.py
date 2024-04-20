@@ -14,6 +14,7 @@ for the upcoming year: delete non members and
 add dues to all members.
 """
 
+import csv
 import PySimpleGUI as sg
 from code import club
 from code import helpers
@@ -127,8 +128,48 @@ def ck_members_f():
 
     print(s2 - s1)
 
+
+def for_Angie():
+    """
+    Creates a csv file of members exclusive
+    of those who have announced retirement.
+    """
+    today = helpers.eightdigitdate
+    big_list = routines.query2dict_listing(f"""
+        SELECT P.personID, P.last, P.first, P.suffix
+        FROM People as P
+        JOIN Person_Status as PS
+        WHERE P.personID = PS.personID
+        AND ( 
+            PS.statusID IN (11, 15)  -- New & Current Member
+            AND ((PS.begin = '') OR (PS.begin <= {today}))
+            AND((PS.end = '') OR (PS.end > {today}))
+            )
+        ORDER BY P.last, P.first""")
+    little_list = routines.query2dict_listing(f"""
+        SELECT P.personID, P.last, P.first, P.suffix
+        FROM People as P
+        JOIN Person_Status as PS
+        WHERE P.personID = PS.personID
+        AND ( 
+            PS.statusID = 17  -- exclude retirees
+            AND ((PS.begin = '') OR (PS.begin <= {today}))
+            AND((PS.end = '') OR (PS.end > {today}))
+            )
+        ORDER BY P.last, P.first""")
+    final_list = [item for item in big_list
+                        if not item in little_list]
+#   helpers.save_db(big_list, "4Angie.csv")
+#   helpers.save_db(little_list, "4Angie.csv")
+    helpers.save_db(final_list, "4Angie.csv")
+
 if __name__ == "__main__":
-    ck_members_f()
+    pass
+    for_Angie()
+#   table = "People"
+#   fname = "members.csv"
+#   routines.table2csv(table, fname)
+#   ck_members_f()
 #   report = []
 #   update_dues_table(report)
 

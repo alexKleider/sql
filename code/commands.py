@@ -57,7 +57,7 @@ Choose one of the following:  (* means don't use!)
  12. Data Entry (Dates)        13. Prepare Mailing
  14. Show Applicant Data       15. Add Meeting Date
  16. Display Fees by category  17. Welcome New Member
- 18. Receipts                  19. Enter payments
+ 18. Receipts (=> csv)         19. Enter payments (use #12)
  20. Create member csv file    21. Create applicant csv file
  22. Occupied moorings csv     23. All moorings csv
  24. Still owing csv           25. Membership < 1 year
@@ -506,6 +506,10 @@ def create_applicant_csv_cmd():
     ret.append(f"Sending applicant CSV file to {csv_file_name}.")
     return ret
 
+def member_csv4angie():
+    """
+    """
+    pass
 
 def for_angie(include_blanks=True):
     """
@@ -1179,7 +1183,7 @@ def welcome_new_member_cmd():
 def receipts_cmd():
     """
     Create a csv file showing all receipts.
-    Default file name is "Secret/receipts.csv"
+    Default file name is "Secret/receipts-yyyymmdd.csv"
     Presentation is in chronologic order
     unless user chooses presentation by name.
     """
@@ -1189,9 +1193,10 @@ def receipts_cmd():
         name.append(names[0])
         return ''.join(name)
 
+    today = helpers.eightdigitdate
     ret = ['Running receipts_cmd...', ]
     print(ret[0])
-    file_name = "Secret/receipts.csv"
+    file_name = f"Secret/receipts-{today}.csv"
     list_of_dicts = []
     fields = ("personID date_received dues dock kayak "
             + "mooring acknowledged ap_fee")

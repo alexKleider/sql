@@ -2,6 +2,19 @@
 
 # File: code/listings.py
 
+"""
+As of Fri 19 Apr 2024 05:45:28 PM PDT
+There's nothing of importance here.
+Keeping this file as a possible location for code
+that provides data listings.
+Currently such code is spread out all over the code base.
+This might be a place to separate the presentation from 
+the code that gathers the data.
+
+Current content should probably be incorporated into ck_data
+or not except perhaps to check that membership doesn't exceed
+200.
+"""
 
 try: from code import helpers
 except ImportError: import helpers

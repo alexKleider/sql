@@ -459,13 +459,17 @@ def keys_removed(a_dict, iterable_of_keys):
     return ret
 
 
-def save_db(new_db, outfile, key_list, report=None):
+def save_db(new_db, outfile, key_list=None, report=None):
     """
     Saves data in <new_db> (a list of dicts) onto a csv file
     <outfile> with the keys specified by <key_list>.
     If <report> is specified, it must be a list of strings to 
     which progress report is appended.
+    If new_db is an empty list, does nothing
     """
+    if not new_db: return
+    if not key_list:
+        key_list = new_db[0].keys()
     with open(outfile, 'w', newline='') as file_obj:
         writer = csv.DictWriter(file_obj,
                                 fieldnames=key_list,

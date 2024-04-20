@@ -10,7 +10,7 @@ JOIN
 ON
     P.personID = PS.personID
 WHERE
-(PS.statusID = 11 OR PS.statusID = 15)
+(PS.statusID in (11, 15))
 AND (PS.begin = '' OR PS.begin <= {})
 AND (PS.end = '' OR PS.end > {})
 ORDER BY

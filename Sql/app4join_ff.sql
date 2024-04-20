@@ -1,5 +1,5 @@
 /* Sql/app4join_ff.sql */
--- used by code/show.py: query_files
+-- used by code/show.py to collect applicants
 -- JOINs People, Stati, Person_Status, Applicants
 -- !! Requires formatting !!  (eightdigitdate x2)
 -- retrieves applicant demographics _with_ trailing

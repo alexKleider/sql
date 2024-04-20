@@ -159,13 +159,40 @@ def keys_from_schema(table, brackets=(0,0)):
     # item[1] is the column/key.
 
 
+def looseSQLcomments(sql):
+    b = sql.find("/*")
+    while b > -1:
+        e = sql.find("*/")
+        if not e > b:
+            print("!!!Unmatched /*..*/ in looseSQLcomments!!!")
+            assert False
+        sql = sql[:b] + sql[e+2:]
+        b =sql.find("/*")
+    lines = sql.split(sep="\n")
+    ret = []
+    for line in lines:
+        i = line.find("--")
+        if i > -1:
+            line = line[:i]
+        if line:
+            ret.append(line)
+    sql = "\n".join(ret)
+    return sql
+    
+
 def keys_from_query(query):
     """
     Returns a listing of keys requested in the query
+    Able to deal with "SELECT * FROM .." queries.
     """
+    query = looseSQLcomments(query)
     nselect = query.find("SELECT")
     nfrom = query.find("FROM")
     keystring = query[nselect+6:nfrom]
+    if keystring.strip() == "*":
+        words = query.split()
+        table = words[3].strip(';')
+        return keys_from_schema(table)
     nowhitespace = ''
     for ch in keystring:
         if ch.split():
@@ -175,7 +202,19 @@ def keys_from_query(query):
     return [key[-1] for key in splitkeys]
 
 
-def query2dict_listing(query, keys,
+def dicts_from_query(query, keys=None):
+    """
+    Yields dicts.
+    """
+    if not keys:
+        keys = keys_from_query(query)
+    res = fetch(query, from_file=False)
+    for entry in res:
+        d = dict(zip(keys, entry))
+        yield d
+
+
+def query2dict_listing(query, keys=False,
                        from_file=False):
     """
     Returns query result as a (could be empty!) list of dicts
@@ -185,11 +224,14 @@ def query2dict_listing(query, keys,
     or keys_from_query.
     """
     ret = []
+    if not keys:
+        keys = keys_from_query(query)
     res = fetch(query, from_file=from_file)
     for entry in res:
         d = dict(zip(keys, entry))
         ret.append(d)
     return ret
+
 
 def query2dicts(query, from_file=False):
     """
@@ -199,6 +241,24 @@ def query2dicts(query, from_file=False):
         query = import_query(query)
     return query2dict_listing(query,
             keys_from_query(query))
+
+
+def table2csv(table, fname):
+    keys = keys_from_schema(table)
+    query = f"SELECT * FROM {table};"
+    with open(fname, 'w', newline='') as stream:
+        dictwriter = csv.DictWriter(stream, keys)
+        dictwriter.writeheader()
+        for mapping in dicts_from_query(query, keys):
+            dictwriter.writerow(mapping)
+
+def query2csv(query, fname):
+    keys = keys_from_query(query)
+    with open(fname, 'w', newline='') as stream:
+        dictwriter = csv.DictWriter(stream, keys)
+        dictwriter.writeheader()
+        for mapping in dicts_from_query(query, keys):
+            dictwriter.writerow(mapping)
 
 
 def display(instance, exclude=None):
@@ -702,7 +762,7 @@ def add_sponsors2holder_data(holder):
 
 def assign_owing(holder):
     """
-    Assigns holder.working_data dict:
+    Assigns and returns holder.working_data dict:
     Retrieve personID for each person who owes
     putting their relevant data into a dict keyed by ID.
     """
@@ -729,6 +789,7 @@ def assign_owing(holder):
                 data[key] = data2add[key]
             byID[personID] = data
     holder.working_data = byID
+    return byID
 
 
 def assign_inductees4payment(holder):
