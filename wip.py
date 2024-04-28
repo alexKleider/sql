@@ -21,6 +21,7 @@ from code import helpers
 from code import routines
 from code import textual
 from code import show
+from code import data_entry
 
 today = helpers.eightdigitdate
 dues = club.yearly_dues
@@ -163,9 +164,19 @@ def for_Angie():
 #   helpers.save_db(little_list, "4Angie.csv")
     helpers.save_db(final_list, "4Angie.csv")
 
-if __name__ == "__main__":
+def check_change_mapping():
+    mapping = {"First": "Alex", "Last": "Kleider",
+            "b_day": "",}
+    mapping = textual.change_mapping(mapping)
+    print("The following is being returned:")
+    print(repr(mapping))
     pass
-    for_Angie()
+
+if __name__ == "__main__":
+#   check_change_mapping()
+    pass
+    data_entry.change_status_cmd()
+#   for_Angie()
 #   table = "People"
 #   fname = "members.csv"
 #   routines.table2csv(table, fname)

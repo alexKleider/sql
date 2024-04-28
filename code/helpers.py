@@ -21,6 +21,7 @@ import datetime
 import functools
 import collections
 from pathlib import Path
+from code import routines
 
 nowasint = int(time.time())
 date_template = "%b %d, %Y"
@@ -459,6 +460,21 @@ def keys_removed(a_dict, iterable_of_keys):
     return ret
 
 
+def add2report(report, line, also_print=False):
+    """
+    This exact same code exists in code.routines from
+    where it should be removed.
+    Supports many routines which have a named 'report' param.
+    """
+    if isinstance(report, list):
+        if isinstance(line, str):
+            report.append(line)
+            if also_print: print(line)
+        elif isinstance(line, list):
+            report.extend(line)
+            if also_print:
+                for l in line: print(l)
+
 def save_db(new_db, outfile, key_list=None, report=None):
     """
     Saves data in <new_db> (a list of dicts) onto a csv file
@@ -483,9 +499,8 @@ def save_db(new_db, outfile, key_list=None, report=None):
 #               print(line)
             writer.writerow(record)
         alert = f"Data being sent to {file_obj.name}."
-        if isinstance(report, list):
-            report.append(alert)
-        print(alert)
+        add2report(report, alert,
+                also_print=True)
 
 
 def check_sets(s1, s2,

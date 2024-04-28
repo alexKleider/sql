@@ -110,8 +110,10 @@ def show_stati():
 def get_fields(fields, header="Enter values for each key"):
     """
     Prompts user to supply values for each field.
-    Returns a dict of entered (possibly empty) strings
-    keyed by <fields>.  Returns None if user aborts.
+    Returns None if user aborts, otherwise...
+    Returns a dict keyed by <fields>,
+    values are the entered (possibly empty) strings
+    # Has been tested.
     """
     layout = [[sg.Text(header)],]
     layout.extend([
@@ -128,6 +130,29 @@ def get_fields(fields, header="Enter values for each key"):
     if event in (None, "Cancel"):
         return
     return the_dict
+
+
+def change_mapping(mapping,
+            headers=["Correct or Enter new value(s)",
+                    "Choose from...",]):
+    """
+    Prompts user to change/enter mapping values.
+    Returns the modified dict or None if user aborts.
+    """
+    layout = [[sg.Text(headers[0])],]
+    layout.extend([
+        [sg.Text(key), 
+            sg.Input(expand_x=True, key=key, default_text=value)]
+        for key, value in mapping.items()
+            ])
+    layout.append([sg.Button('OK'), sg.Button('Cancel')])
+
+    window = sg.Window(headers[1], layout,)
+    event, new_dict = window.read()
+    window.close()
+    if event in (None, "Cancel"):
+        return
+    return new_dict
 
 def change_or_add_values(mapping, report=None,
             headers=["Correct or Enter new value(s)",
@@ -198,11 +223,18 @@ def get_fields4(p_data, fields):
     return ret
 
 
-def get_mode(person_data, fields):
-    ID = person_data['personID']
+def get_stati(personID):
+    """
+    ## Was called def get_mode(
+    collects Person_Status table entries for person IDed.
+    """
+    ps_fields = routines.keys_from_schema("Person_Status")
     res = routines.fetch(f"""SELECT * FROM Person_Status
-            WHERE personID = {ID}; """, from_file=False)
+            WHERE personID = {personID}; """, from_file=False)
 #   _ = input(repr(res))  #!# <res> is NOT USED!!!
+
+
+def get_mode(person_data, fields):
     layout = [
         [sg.Text(
         "Member: {first} {last} {suffix}"
@@ -217,39 +249,40 @@ def get_mode(person_data, fields):
             ]
     win = sg.Window('Action desired', layout)
     e, v = win.read()
+    fields2add = v['-FIELDS-']
     win.close()
     if e != 'SAVE':
         print(f"Decided to {e}")
         return
     else:
-        values = get_fields4(person_data, fields)
-        if not values:
+        mapping = get_fields(fields2add)
+        if not mapping:
             print("Aborting code.textual.get_mode")
             return
-        else:
-            values = ', '.join(values)
-        keys = ', '.join(v['-FIELDS-'])
-        if v['-INSERT-']:
-            query = f"""INSERT INTO Person_Status {keys}
-                        VALUES {values}
-                        ; """
-            print("insert query...")
-            print(query)
-        elif v['-UPDATE-']:
-            kv = zip(keys,values)
-            listofstrings = [f"{key} = {value}" for 
-                    key, value in kv]
-            entries = ', '.join(listofstrings) 
-            query = f"""UPDATE Person_Status SET
-            for key, value in
-            ;"""
-            fields2update = v['-FIELDS-']
-            print(f"fields2update: {repr(fields2update)}")
-        else:
-            assert False, "Impossible option in textual.get_mode"
+    values = ', '.join(mapping.values())
+    keys = ', '.join(mapping.keys())
+    if v['-INSERT-']:
+        query = f"""INSERT INTO Person_Status ({keys})
+                    VALUES ({values})
+                    ; """
+        print("insert query...")
+        print(query)
+    elif v['-UPDATE-']:
+        kv = zip(keys,values)
+        listofstrings = [f"{key} = {value}" for 
+                key, value in kv]
+        entries = ', '.join(listofstrings) 
+        old_values = 'old values'
+        query = f"""UPDATE Person_Status SET
+        {entries}
+        WHERE {old_values}
+        ;"""
+        fields2update = v['-FIELDS-']
+        print(f"fields2update: {repr(fields2update)}")
+    else:
+        assert False, "Impossible option in textual.get_mode"
+    return e, v
 #       print(f"fields chosen: {repr(v['-FIELDS-'])}")
-        if ret:
-            return e, v
 
 
 note = """
@@ -395,7 +428,7 @@ def people_choices(header_prompt=None, report=None):
     query_lines.append(additional_lines)
     query = ' '.join(query_lines)
     query = query+"ORDER BY last, first"+';'
-    _ = input(f"query is {repr(query)}")
+#   _ = input(f"query is {repr(query)}")
 #   ret = routines.fetch(query, from_file=False)
     ret = routines.query2dict_listing(query, keys,
             from_file=False)
@@ -510,22 +543,26 @@ def choose(records, header="CHOOSE ONE",
     win =sg.Window(header,layout)
     e, v = win.read()
     win.close()
-    personID = v['CHOICE'][0].strip().split()[0]
     if (e != "SELECT") or not v['CHOICE']:
         routines.add2report(report, "Returning None")
         return
     else:
-        routines.add2report(report,
-          "window in code.textual.choose returning..." +
-          f"\n{repr(v['CHOICE'])}")
-        for rec in records:
-            if rec['personID'] == int(personID):
-                return rec
+        personID = v['CHOICE'][0].strip().split()[0]
+    routines.add2report(report,
+      "window in code.textual.choose returning..." +
+      f"\n{repr(v['CHOICE'])}")
+    for rec in records:
+        if rec['personID'] == int(personID):
+            return rec
 
 
 def selectP_record(header_prompt="Provide hints:",
                     subheader="make a choice",
                     report=None):
+    """
+    Prompts 1st for hints and then to select.
+    Returns a person record or None.
+    """
     routines.add2report(report,
             "Entering code.textual.selectP_record")
     choices = people_choices(header_prompt=header_prompt,
@@ -540,7 +577,7 @@ def selectP_record(header_prompt="Provide hints:",
                 "(1st 3 key value pairs):..")
             for key, value in data.items():
                 routines.add2report(report, f"{key}: {value}")
-                if key == 'suffix': break
+#               if key == 'suffix': break  # no idea why!
             return data
         else:
             routines.add2report(report,
@@ -778,8 +815,8 @@ def test_selectP_record():
         print("selectP_record returning the following...")
         for key, value in res.items():
             print(f"key: {repr(key)}, value:{repr(value)}")
-    _ = input("\nReport follows...")
-    print('\n'.join(report))
+#   _ = input("\nReport follows...")
+#   print('\n'.join(report))
 
 
 person_data = {'personID': 97,
@@ -791,13 +828,12 @@ person_data = {'personID': 97,
 def test_get_mode():
     fields = ('statusID', 'begin', 'end', )
     e,v = get_mode(person_data, fields)
-    rep = ["textual.get_mode(data,fields) returning ...",]
-    rep.append(f"e: {repr(e)}")
-    rep.append(f"v: {repr(v)}")
+    print("textual.get_mode(data,fields) returning ...")
+    print(f"e: {repr(e)}")
+    print(f"v: {repr(v)}")
     for key, value in v.items():
         rep.append(f"{key}: {value}")
-#   for line in rep:
-#       print(line)
+
 
 def test_get_fields4():
     fields = ['statusID', 'begin', ]
@@ -841,12 +877,12 @@ def test_pick():
         print(line)
 
 if __name__ == "__main__":
-    test_pick()
+#   test_pick()
 #   show_fonts()
 #   test_a_show_stati()
 #   test_get_fields4()
 #   test_get_fields()
-#   test_get_mode()
+    test_get_mode()
 #   test_selectP_record()
 #   test_people_choices()
 #   test_choose()

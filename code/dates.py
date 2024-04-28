@@ -255,7 +255,7 @@ def confirm_receipts_query(data, report=None):
     If confirmed: creates a receipts entry and returns True,
     else returns None.
     If report is a list, enteries are made.
-    Used by add_receipt_entry
+    Used by add_receipt_entries
     """
     expected_keys = ("personID", "date_received", "dues",
             "dock", "kayak", "mooring", "acknowledged", )
@@ -342,7 +342,7 @@ def get_demographic_dict(personID):
     return helpers.make_dict(key_listing, res[0])
 
     
-def add_receipt_entry(holder, report=None):
+def add_receipt_entries(holder, report=None):
     """
     Deal with a payment:
     <report> can be an existing array of strings for reporting.
@@ -374,17 +374,11 @@ def add_receipt_entry(holder, report=None):
         #0# payor?
         while True:
             print("Choose a payor...")
-            res = routines.id_by_name()
-            print(f"The ID choice(s) is/are {res}")
-            try:
-                payorID = int(input(
-                "Enter ID [0 to abort, " +
-                "non int to begin over]: "))
-            except ValueError:
-                print("Must enter an integer, 0 to abort...")
-                continue
-            if payorID == 0:
-                return
+            payorID = routines.pick_id()
+            if not payorID:
+                yn = input("Try again or quit (q)?: ")
+                if yn and yn[0] in "qQ": return
+                else: continue
             data = get_demographic_dict(payorID)
             if not data:
                 print(f"'{payorID}' is an invalid payorID")
@@ -392,10 +386,12 @@ def add_receipt_entry(holder, report=None):
             else:
                 break
     ### ===  present current statement here as check yet to do !!!
+        ### Check that there is something owed
+        ### Could be entry of applicant fee!!
         #2# now look up all that is owed by this person
+        data = routines.add_statement_data(data)
         data['before_statement'] = routines.get_statement(
-                routines.get_data4statement(payorID), 
-                include_header=False)
+                data, include_header=False)
         print("What's owed:")
         print(data['before_statement'])
         print("...FYI...")
@@ -455,7 +451,7 @@ def add_receipt_entry(holder, report=None):
             print(ret[-1])
         if isinstance(report, list):
             report.extend(rep)
-    return data
+#   return data   # no idea why this line is here
 
 
 def set_default_dates(holder):
@@ -476,7 +472,7 @@ def receipts_cmd():
     added to any that might already be there.
     Provides user with the option to set up default
     values for <date_received> and <acknowledged>.
-    We then repeatedly call add_receipt_entry which
+    We then repeatedly call add_receipt_entries which
     1. requests an entry (personID) and
     2. data is collected
       If verified:
@@ -485,10 +481,10 @@ def receipts_cmd():
      iii. mailing created: email or letter.
     It's up to the user to then send the emails
     and deal with the letters.
-    <add_receipt_entry> needs holder as a param and also
+    <add_receipt_entries> needs holder as a param and also
     takes an optional param which, if provided,
     must be a list to which progress notes are added.
-    Uses add_receipt_entry
+    Uses add_receipt_entries
     """
     ret = ["Entering receipts_cmd()", ]
     holder = club.Holder()
@@ -503,7 +499,7 @@ def receipts_cmd():
     ret.extend(commands.assign_templates(holder))
     set_default_dates(holder)
     while True:
-        res = add_receipt_entry(holder, ret)
+        res = add_receipt_entries(holder, ret)
         if res == None:
             ret.append("End of receipt entry.")
             print(ret[-1])

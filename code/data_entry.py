@@ -64,9 +64,9 @@ def add2tables(data, report=None):
         res = routines.fetch(people_insert_query,
                 from_file=False,
                 commit=True, verbose=True)
-        routines.add2report(
+        routines.add2report(report, 
                 "...successfull addition to People table.",
-                report=report, also_print=True)
+                also_print=True)
         # Need to retrieve newly assigned personID...
         res = routines.fetch_d_query("Sql/id_from_names_fd.sql",
                 data)
@@ -168,7 +168,7 @@ def add_new_applicant_cmd(report=None):
     routines.add2report(report,
                         "Entering add_new_applicant_cmd...",
                         also_print=True)
-    data = textual.get_demographics(report=ret)
+    data = textual.get_demographics(report=report)
     if not data: 
         routines.add2report(report,
                         "...add_new_applicant aborted",
@@ -389,11 +389,12 @@ def update_applicant_date_cmd(report=None):
 def change_status_cmd(report=None):
     """
     """
-    if report is NoneType:
+    if not report:
         report = []
     routines.add2report(report, 
             "Entering code/data_entry/change_status_cmd...",
             also_print=True)
+    # 1st pick a person record ==> data:
     data = textual.selectP_record(report=report)
     if not data:
         routines.add2report(report,
@@ -404,17 +405,20 @@ def change_status_cmd(report=None):
     else:
         routines.add2report(report,
             "<data> now contains a People table entry",
-            also_print=True)
+#           also_print=True)
+            also_print=False)
+    # Get the person's ID:
     personID = data['personID']
-    fields = ('personID', 'statusID', 'begin', 'end', )[1:]
-    e,v = textual.get_mode(data, fields)
-    rep = ["textual.get_mode(data,fields) returning ...",]
-    rep.append(f"e:{repr(e)}")
-    for key, value in v:
-        rep.append(f"{key}: {value}")
-    for line in rep:
-        report.append(line)
-        print(line)
+    # Collect person's entries in the Person_Status table
+    stati = routines.dicts_from_query(
+        f"""SELECT * FROM Person_Status WHERE
+        personID = {personID};""")
+    if not stati:
+        routines.add2report(report,
+            "... aborting change_status.cmd")
+        return
+    for mapping in stati:
+        print(repr(mapping))
     routines.add2report(report,
         "...finished code/data_entry/change_status.cmd.",
         also_print=True)

@@ -5,10 +5,9 @@
 """
 Contains some 'helper' code to support SQL(ite3)
 relational data base management.
-
-Contains the "funcs" typified by std_mailing_funcs:
-    it's here than "extra[n]" field might be added for such things
-    as billing statement or the like.
+Also contains the "funcs" typified by std_mailing_funcs:
+- it's here than "extra[n]" field(s) might be added for
+such things as billing statement or the like.
 """
 
 import os
@@ -65,8 +64,8 @@ def assure_only1response(listing):
 
 def add2report(report, line, also_print=False):
     """
-    This should be incorporated into code.helpers
-    Supports many routines which have a named 'report' param.
+    This has been copied into code.helpers and should
+    be removed from this code base (code.routines).
     """
     if isinstance(report, list):
         if isinstance(line, str):
@@ -258,6 +257,7 @@ def query2csv(query, fname):
         dictwriter = csv.DictWriter(stream, keys)
         dictwriter.writeheader()
         for mapping in dicts_from_query(query, keys):
+#           _ = input(repr(mapping))
             dictwriter.writerow(mapping)
 
 
@@ -431,7 +431,7 @@ def get_name(personID):
 def id_by_name():
     """
     Returns a listing of strings: '{Id} {first} {last} {suffix}'
-    from the 'People' table (together with IDs.)
+    from the 'People' table.
     Prompts for first letter(s) of first &/or last name(s).
     If both are blank, none will be returned!
     """
@@ -442,9 +442,9 @@ def id_by_name():
     ;
     """
     print("Looking for people:")
-    print("Narrow the search, use * to eliminate a blank...")
-    first = input("First name (partial or blank): ")
-    last = input("Last name (partial or blank): ")
+    print("Narrow the search...")
+    first = input("  First name (partial or blank): ")
+    last = input( "   Last name (partial or blank): ")
     if first and last:
         query = query.format("first LIKE ? AND last LIKE ? ")
     elif first:
@@ -467,6 +467,25 @@ def id_by_name():
 #   _ = input(ret)
     return ret
 
+def pick_id():
+    """
+    """
+    listing = id_by_name()
+    if not listing:
+        print("No matches")
+        return
+    print("Pick an ID from the following (0 to abort):")
+    choices = []
+    for entry in listing:
+        choices.append(entry.split()[0])
+        print("    " + f"{entry}")
+    while True:
+        choice = input("Which ID do you want? ")
+        if choice == "0":
+            print("Aborting!")
+            return
+        if choice in choices:
+            return int(choice)
 
 def get_commands(sql_file):
     """
@@ -625,9 +644,11 @@ def compound_dict_from_query(listings, fields,
 
 def ret_statement(personID, incl0=True):
     """
-    Returns a (possibly empty) dict.
+    Returns a (possibly empty) dict.  **
     Key/value pairs are account (dues, dock, etc)
     and amount owing (including where value is 0.)
+    ** Returns none if there is no statement 
+    i.e. if not a member!
     """
     source_files = {
             # the following files all check for membership.
@@ -655,10 +676,13 @@ def ret_statement(personID, incl0=True):
             ret[key] = amnt
             total += amnt
             entry = True
-    if entry: ret['total'] = total
-    return ret  # a dict possibly with only one (total) entry.
+    if entry:
+        ret['total'] = total
+        return ret  # a dict possibly with only one (total) entry.
+    else:  # No statement
+        return
 
-def get_data4statement(personID):
+def get_data4statement(personID):  ## 2B REDACTED
     """
     Returns a dict keyed by the following:
     personID, first, last, suffix,
@@ -686,9 +710,25 @@ def get_data4statement(personID):
         data[key] = data2add[key]
     return data
 
+
+def add_statement_data(person_data):  ## 2 replace get_data4s
+    """
+    Returns ** a _new_ dict (helpers.Class Rec) with keys
+    and values of person_data AND 
+    dues_owed and if applicable: dock, kayak, mooring.
+    ** Returns none if no new data is added.
+    """
+    ret = helpers.Rec(person_data)
+    data2add = ret_statement(person_data['personID'])
+    if data2add:
+        for key in data2add.keys():
+            ret[key] = data2add[key]
+        return ret
+
+
 def get_statement(data, include_header=True):
     """
-    <data> is a dict returned by get_data4statement.
+    <data> is a dict returned by add_statement_data.
     Returns a multiline string: a statement of what's owed
     as reflected in the .
         "Currently owing" (dues, dock, kayak, mooring),
@@ -713,13 +753,12 @@ def get_statement(data, include_header=True):
 def get_owing(holder):
     """
     Assigns holder.working_data dict:
-    Retrieve personID for each person who owes
+    Retrieve personID for each member who owes
     putting their relevant data into holder.working_data:
     a dict keyed by ID.
     """
     byID = dict()  # to be assigned to holder.working_data
     res = fetch('Sql/dues0')
-    pass
 
 
 def assign_mannually(holder):
@@ -1104,9 +1143,18 @@ def exercise_add_sponsorIDs():
     print(f"new data: {repr(data)}")
 
 def test_id_by_name():
+    """
+    pick_id is a refinement on id_by_name
+    """
     while True:
         # exit using ^D
-        _ = input(repr(id_by_name()))
+        print()
+        choice = pick_id()
+        if choice:
+            print(f"You chose #{choice}")
+        else:
+            print("No ID returned")
+
 
 if __name__ == '__main__':
 #   print(get_sponsors(110))

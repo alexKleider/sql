@@ -101,11 +101,11 @@ def main_menu(report=None):
 
 if __name__ == "__main__":
 #   print(f"Running {helpers.get_os_release()}")
-    print()
-    if not textual.yes_no(
-            f"Running {helpers.get_os_release()}",
-            title="Continue?"):
-        sys.exit()
+#   print()
+#   if not textual.yes_no(
+#           f"Running {helpers.get_os_release()}",
+#           title="Continue?"):
+#       sys.exit()
     while True:
         report = []
         res = main_menu(report=report)

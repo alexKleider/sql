@@ -1180,7 +1180,8 @@ def welcome_new_member_cmd():
             [str(candidate) for candidate in candidates]))
     return ret
 
-def receipts_cmd():
+
+def old_receipts_cmd():  # to be redacted
     """
     Create a csv file showing all receipts.
     Default file name is "Secret/receipts-yyyymmdd.csv"
@@ -1194,7 +1195,7 @@ def receipts_cmd():
         return ''.join(name)
 
     today = helpers.eightdigitdate
-    ret = ['Running receipts_cmd...', ]
+    ret = ['Running commands.old_receipts_cmd...', ]
     print(ret[0])
     file_name = f"Secret/receipts-{today}.csv"
     list_of_dicts = []
@@ -1227,6 +1228,33 @@ def receipts_cmd():
         list_of_dicts.sort(key=s)
     helpers.save_db(list_of_dicts, file_name, data.keys(),
                 report=res)
+
+
+def receipts_cmd():
+    """
+    Create a csv file showing all receipts.
+    Default file name is "Secret/receipts-yyyymmdd.csv"
+    Presentation is in chronologic order
+    unless user chooses presentation by name.
+    """
+    report = ["Running commands.receipts_cmd.", ]
+    today = helpers.eightdigitdate
+    since_date = input(
+            "Only include receipts since (yyyymmdd): ")
+    query = routines.import_query("Sql/receipts_f.sql")
+    query = query.format(since_date)
+    dicts = routines.query2dicts(query)
+    total = 0
+    for mapping in dicts:
+        subtotal = (mapping['ap_fee'] + mapping['dues'] +
+                mapping['dock'] + mapping['kayak'] +
+                mapping['mooring'] )
+        total += subtotal
+    print(f"Total collected = ${total}")
+    file_name = f"receipts-{today}.csv"
+#   print(f"Sending data to {file_name}.")
+    helpers.save_db(dicts, file_name, report=report)
+    return report
 
 
 def show_stati_cmd():
