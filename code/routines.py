@@ -16,8 +16,8 @@ import shutil
 import sqlite3
 try: from code import club
 except ImportError: import club
-try: from code import helpers
-except ImportError: import helpers
+try: import helpers
+except ImportError: from code import helpers
 
 db_file_name = club.db_file_name
 
@@ -310,6 +310,10 @@ def connect_and_set_data(command, db=db_file_name):
     cur = con.cursor()
     cur.execute(command)
     con.commit()
+
+
+def member_listing():
+    pass
 
 
 def get_ids_by_name(first, last, db=db_file_name):

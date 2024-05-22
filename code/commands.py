@@ -442,13 +442,6 @@ def display_fees_by_person_cmd():
     return ret
 
 
-
-def member_demo_dict(listing):
-    """
-    makes a dict from each listing as presented by member_listing
-    """
-    pass
-
 def create_member_csv_cmd():
     csv_file_name = input("Name of member csv file to create: ")
     ret = [f"You've chosen to create '{csv_file_name}'.", ]
@@ -566,7 +559,7 @@ def show_names():
         print(f"Table of names sent to {stream.name}.")
 
 def report_cmd(report=None):
-    routines.add2report(report,
+    helpers.add2report(report,
         "Entering code.commands.report_cmd...")
     outfile = f"report{helpers.eightdigitdate}.txt"
     n = len(show.member_listing())
@@ -578,20 +571,21 @@ def report_cmd(report=None):
 #   ret.append('')
     ret.append('Club membership currently stands at {}.'
                   .format(n))
-    ret.extend(show.show_applicants_cmd())
+    ret.extend(show.show_applicants_cmd()[:-1])
+    # loose the date prepared line       ^^^^^
     try:
         with open(club.ADDENDUM2REPORT_FILE, 'r') as fobj:
             addendum = fobj.read(); addendum=addendum.strip()
             if addendum:
                 line = ('Appending addendum as found in file: {}'
                         .format(fobj.name))
-                print(line); routines.add2report(report,line)
+                print(line); helpers.add2report(report,line)
                 ret.append("")
                 ret.append(addendum)
             else:
                 line = ("No addendum found in file: {}"
                         .format(fobj.name))
-                print(line); routines.add2report(report,line)
+                print(line); helpers.add2report(report,line)
     except FileNotFoundError:
         print('No addendum (file: {}) found.'
                 .format(club.ADDENDUM2REPORT_FILE))
@@ -619,7 +613,7 @@ def leadership_cmd(report=None):
     """
     Creates "leadership.txt": a listing of current leadership.
     """
-    routines.add2report(report,
+    helpers.add2report(report,
         "Entering code.commands.leadership_cmd...")
     outfile = "leadership.txt"
     ret = []
@@ -756,14 +750,14 @@ def no_email_cmd(report=None):
     line2add = (
      "Member ID, Names and Demographics of {} without email"
      .format(n)  )
-    routines.add2report(report, line2add)
-    routines.add2report(report, 
+    helpers.add2report(report, line2add)
+    helpers.add2report(report, 
             "=" * len(line2add))
     csv_file = input(f"Change default '{default_file_name}' " +
                         "or [Enter] to continue: ")
     if not csv_file:
         csv_file = default_file_name
-    routines.add2report(report,
+    helpers.add2report(report,
             f"...sending data to '{csv_file}'...")
     fieldnames = ["personID", "first", "last",
         "address", "town", "state", "postal_code"]
@@ -782,8 +776,8 @@ def no_email_cmd(report=None):
     for line in res:
         entry = "{:>3}: {} {}: {}, {}, {} {}".format(*line)
         ret.append(entry)
-        routines.add2report(report, entry)
-    routines.add2report(report,
+        helpers.add2report(report, entry)
+    helpers.add2report(report,
             "...end of members without email listing.")
     return ret
 

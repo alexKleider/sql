@@ -9,7 +9,11 @@ from code import routines
 from code import dates
 from code import commands
 
+def func():
+    l = ["hello", "bye", "so long", ]
+    s = set(l)
+    print(f"{s}")
 
 if __name__ == "__main__":
-    pass
+    func()
 

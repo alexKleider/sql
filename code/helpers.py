@@ -21,7 +21,6 @@ import datetime
 import functools
 import collections
 from pathlib import Path
-from code import routines
 
 nowasint = int(time.time())
 date_template = "%b %d, %Y"

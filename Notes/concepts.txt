@@ -271,3 +271,11 @@ an integer which is one greater than the largest value of that
 column over all other rows in the table, or 1 if the table is
 empty. Or, if the largest existing integer key is in use then
 an unused key value is chosen at random.
+
+Correlated SubQuery
+===================
+SELECT .....
+..........
+WHERE ---- NOT IN (
+    SELECT .......  -- the coorelated SubQuery
+    );

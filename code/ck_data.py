@@ -12,7 +12,7 @@ Module to check for data consistency, specifically:
         GaveUpMembership
         inactive
         Kayak
-        LIST == members (stati 11 & 15)
+        LIST == members (stati 11, 15 & 17)
         Moorings
         Officers == statiID 20..25:  z[123456]* 
         Outer Basin Moorers
@@ -79,7 +79,7 @@ queries = dict( # indexed by google contacts LABELs.
             FROM people as P
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
-                AND PS.statusID in (11, 15)
+                AND PS.statusID in (11, 15, 17)
                 AND NOT P.email = ''
                 AND (PS.end = '' OR PS.end > {})
                 AND (PS.begin = '' OR PS.begin < {})
@@ -185,21 +185,29 @@ def get_gmail_record(g_rec):
     <g_rec> is a record from the gmail contacts file.
     NB: google calls them 'Labels', referred to here as 'groups'.
     "g_" prefix refers to google contact data.
+    Returns None if g_rec is without lables
     """
     g_email = g_rec["E-mail 1 - Value"]
-    group_membership = (
+    group_membership = (  # a list
         g_rec["Group Membership"].split(" ::: "))
     if (group_membership and
             group_membership[-1] == '* myContacts'):
         group_membership = group_membership[:-1]
-    ret = dict(
-        first = g_rec["Given Name"],
-        last = g_rec["Family Name"],
-        suffix = g_rec["Name Suffix"],
-        g_email=g_email,
-        groups=set(group_membership),
-        )
-    return ret
+#       print("In get_gmail_record, group_membership: " +
+#           f"{group_membership}")
+        groups=set(group_membership)
+#       print(f"In get_gmail_record, groups: {groups}")
+        if "Retired" in groups:
+            groups = (groups - {"Retired"}) | {"LIST"}
+            print(f"{g_email}, {groups}")
+        ret = dict(
+            first = g_rec["Given Name"],
+            last = g_rec["Family Name"],
+            suffix = g_rec["Name Suffix"],
+            g_email=g_email,
+            groups=groups,
+            )
+        return ret
 
 def yield_contacts():
     """
@@ -215,13 +223,16 @@ def yield_contacts():
             ret = get_gmail_record(g_rec)
 #           _ = input("{last}, {first}: {groups}"
 #                               .format(**ret))
-            yield ret
+            if ret: yield ret
 
 def members_and_applicants_filter(g_dict):
-        if ({"LIST", "applicant", "inactive"} &
-                g_dict['groups']):
-            return True
-    
+    set2include = {"LIST", "applicant", "inactive"}
+#   if g_dict["email"] == "kmdibblee@gmail.com":
+#   print(f"{g_dict['groups']}")  # ({'Kayak', 'LIST'},)
+#   print(f"{set2include}")
+    if set2include & g_dict['groups']:
+        return True
+
 
 def gather_contacts_data(filter_func=None):
     """
@@ -254,7 +265,7 @@ def gather_contacts_data(filter_func=None):
     return ret
 
 # stati2include possibilities:
-applicants_and_members = (3,4,5,6,7,8,9,10,11,14,15,16,17)
+applicants_and_members = (3,4,5,6,7,8,9,10,11,14,15,16)
 
 # restriction possibilities:
 not_email_restriction = " AND NOT email = '' "
@@ -377,7 +388,8 @@ def ck_m_vs_g_data():
                 stati2include=applicants_and_members,
                 restriction = not_email_restriction)
     # check that names and emails match:
-    if not g_data['name_w_gmail'] == m_data['name_w_email']:
+    if g_data['name_w_gmail'] != m_data['name_w_email']:
+        print(report[-1])
         report.extend(['',
             "Gmail and People table emails don't match!..."])
         report.extend(helpers.check_sets(
@@ -398,6 +410,8 @@ def ck_m_vs_g_data():
     compare(g_data, 'applicant', 'applicant_stati', report)
     # Members/LIST:
     compare(g_data, 'LIST', 'member_stati', report)
+    # Members/Retired:
+    compare(g_data, 'Retired', 'retired_stati', report)
     # Committee
     compare(g_data, 'Committee', 'comittee_stati', report)
     # DockUsers
@@ -445,7 +459,7 @@ def ck_appl_vs_status_tables():
     if res_app != res_status:
         report.extend(helpers.check_sets(
                 set(res_app), set(res_status)))
-    queries = (
+    query_pairs = (
                 ('Sql/a0-.sql', 'Sql/s0-.sql', ),
                 ('Sql/a0.sql', 'Sql/s0.sql', ),
                 ('Sql/a1.sql', 'Sql/s1.sql', ),
@@ -454,17 +468,22 @@ def ck_appl_vs_status_tables():
                 ('Sql/ad.sql', 'Sql/sd.sql', ),
             )
     ok = True
-    for n in range(len(queries)):
-        res_a = routines.fetch(queries[n][0])
-        res_s = routines.fetch(queries[n][1])
+    for a_query, s_query in query_pairs:
+#   for n in range(len(queries)):
+        res_a = routines.fetch(a_query)
+        res_s = routines.fetch(s_query)
         if res_a != res_s:
             ok = False
             report.append(
                 "Applicant and Person_Status table missmatch!")
+            print(f"res_a: {res_a}")
+            res_a = [' '.join(str(item)) for item in res_a]
+            print(f"res_s: {res_s}")
+            res_s = [' '.join(str(item)) for item in res_s]
             report.extend(helpers.check_sets(
                 set(res_a), set(res_s),
                 header_in1st_not2nd=
-                f"in {queries[n][0]}, not {queries[n][1]}"))
+                f"in {a_query}, not {s_query}"))
 #   if not ok:
 #       report.append("Problems")
     report.append("... App/Stati consistency check done.")

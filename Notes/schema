@@ -1,6 +1,7 @@
--- Must redo this file each
--- time schema changes.
--- serves as input for erd.py.
+-- Used to serve as input for erd.py
+-- but is no longer needed since
+-- erd.py now queries the db directly and
+-- generates ERD.txt.
 
 CREATE TABLE People (
 personID INTEGER PRIMARY KEY,

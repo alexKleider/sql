@@ -125,4 +125,5 @@ if __name__ == "__main__":
             else:
                 with open(yn, 'w') as outf:
                     for line in report:
+                        print(f"line: {line}")
                         outf.write(line+'\n')

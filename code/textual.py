@@ -27,10 +27,8 @@ class CustomContext:
 
 import PySimpleGUI as sg
 
-try: from code import routines
-except ImportError: import routines
-try: from code import helpers
-except ImportError: import helpers
+import routines
+import helpers
 
 def yes_no(text, title="Run query?"):
 #   l = len(text) - len(title)
@@ -161,7 +159,7 @@ def change_or_add_values(mapping, report=None,
     Prompts user to change/add mapping values.
     Returns the modified dict or None if user aborts.
     """
-    routines.add2report(report,
+    helpers.add2report(report,
         "Entering code/textual.change_or_add_values...")
     layout = [[sg.Text(headers[0])],]
     layout.extend([
@@ -176,10 +174,10 @@ def change_or_add_values(mapping, report=None,
     event, new_dict = window.read()
     window.close()
     if event in (None, "Cancel"):
-        routines.add2report(report,
+        helpers.add2report(report,
             "...change_or_add_values cancelled.")
         return
-    routines.add2report(report,
+    helpers.add2report(report,
         "...change_or_add_values returning a new dict.")
     return new_dict
 
@@ -300,7 +298,7 @@ def get_demographics(applicant=True, report=None):
     Returns a dict or None (if user aborts.)
     Client is code/data_entry.py
     """
-    routines.add2report(report,
+    helpers.add2report(report,
             "Entering code/textual/get_demographics...")
     fields = routines.keys_from_schema("People", brackets=(1,0))
     if applicant==True:
@@ -318,7 +316,7 @@ def get_demographics(applicant=True, report=None):
     event, values = window.read()
     window.close()
     if event in (None, 'Cancel'):
-        routines.add2report(report,
+        helpers.add2report(report,
                 "... gui/get_demographics returning None.")
         return
     elif event == 'OK':
@@ -326,7 +324,7 @@ def get_demographics(applicant=True, report=None):
         entry = ["... gui/get_demographics returning:"]
         for key, value in data.items():
             entry.append(f"\t{key}: {value}")
-        routines.add2report(report, entry)
+        helpers.add2report(report, entry)
         return data
     else:
         assert False, f"!Unexpected event: {repr(event)}!"
@@ -375,7 +373,7 @@ def people_choices(header_prompt=None, report=None):
     1st step in providing 
     code/routines/pick_People_record functionality!
     """
-    routines.add2report(report,
+    helpers.add2report(report,
             "Entering code/textual/people_choices...")
     keys = routines.keys_from_schema("People")
     fields = keys[1:4]
@@ -406,9 +404,9 @@ def people_choices(header_prompt=None, report=None):
         assert False, f"Unexpected event: {repr(event)}"
     window.close()
     # report prn (expect to redact this section...
-    routines.add2report(report, "First window returning:")
+    helpers.add2report(report, "First window returning:")
     for key, value in data.items():
-        routines.add2report(report,
+        helpers.add2report(report,
                 f"key: {key}   value: {value}")
     # use hints to get candidates:
     query_lines = [
@@ -433,10 +431,10 @@ def people_choices(header_prompt=None, report=None):
     ret = routines.query2dict_listing(query, keys,
             from_file=False)
 #   _ = input(f"{repr(ret)}")
-    routines.add2report(report, "query returning:")
+    helpers.add2report(report, "query returning:")
     for item in ret:
-        routines.add2report(report, repr(item))
-    routines.add2report(report,
+        helpers.add2report(report, repr(item))
+    helpers.add2report(report,
         "...leaving code/textual.people_choices()")
     return ret
 
@@ -461,14 +459,17 @@ def pick(query, format_string,
                 subheader="Choices are...",
                 report=None):
     """
-    Pick a record from a list of choices dictated by
+    Uses <query> to collect a list of dicts and presents
+    user with a list of choices dictated by
     the format_string.
+    Returns chosen dict or None (if none available or
+    user aborts/cancels.)
     """
-    routines.add2report(report,
-        "Entering code.textual.pick", also_print=True)
+    helpers.add2report(report,
+        "Entering code.textual.pick", also_print=False)
     mappings = routines.query2dicts(query)
     if not mappings:
-        routines.add2report(report,
+        helpers.add2report(report,
                 "No records provided ==> exit",
                 also_print=True)
         return
@@ -497,13 +498,17 @@ def pick(query, format_string,
         return
     chosen_item = v['CHOICE'][0].strip().split()[0][:-1]
     if (e != "SELECT") or not v['CHOICE']:
-        routines.add2report(report,
+        helpers.add2report(report,
             "pick returning None", also_print=True)
         return
     else:
-        routines.add2report(report,
-          "window in code.textual.pick returning..." +
-          f"\n{repr(v['CHOICE'])}", also_print=True)
+        helpers.add2report(report,
+            ["code.textual.pick:",
+            "  line chosen...",
+            f"    {repr(v['CHOICE'])}",
+            "  record returned:",
+            f"    {repr(mappings[int(chosen_item)])}"],
+            also_print=False)
         return mappings[int(chosen_item)]
 
 
@@ -519,10 +524,10 @@ def choose(records, header="CHOOSE ONE",
     Adds to <report> (a list of strings) if provided.
     """
     #set the theme for the screen/window
-    routines.add2report(report,
+    helpers.add2report(report,
             "Entering code.textual.choose")
     if not records:
-        routines.add2report(report,
+        helpers.add2report(report,
                 "No records provided ==> exit")
         return
 #   sg.theme('SandyBeach')
@@ -544,11 +549,11 @@ def choose(records, header="CHOOSE ONE",
     e, v = win.read()
     win.close()
     if (e != "SELECT") or not v['CHOICE']:
-        routines.add2report(report, "Returning None")
+        helpers.add2report(report, "Returning None")
         return
     else:
         personID = v['CHOICE'][0].strip().split()[0]
-    routines.add2report(report,
+    helpers.add2report(report,
       "window in code.textual.choose returning..." +
       f"\n{repr(v['CHOICE'])}")
     for rec in records:
@@ -563,7 +568,7 @@ def selectP_record(header_prompt="Provide hints:",
     Prompts 1st for hints and then to select.
     Returns a person record or None.
     """
-    routines.add2report(report,
+    helpers.add2report(report,
             "Entering code.textual.selectP_record")
     choices = people_choices(header_prompt=header_prompt,
                             report=report)
@@ -572,19 +577,19 @@ def selectP_record(header_prompt="Provide hints:",
                 header=subheader,
                 report=report)
         if data:
-            routines.add2report(report,
+            helpers.add2report(report,
                 "code/textual.selectP_record returning " +
                 "(1st 3 key value pairs):..")
             for key, value in data.items():
-                routines.add2report(report, f"{key}: {value}")
+                helpers.add2report(report, f"{key}: {value}")
 #               if key == 'suffix': break  # no idea why!
             return data
         else:
-            routines.add2report(report,
+            helpers.add2report(report,
             "code/textual.selectP_record 2nd stage failure.")
             return
     else:
-        routines.add2report(report,
+        helpers.add2report(report,
             "code/textual.selectP_record 1st stage failure.")
 
 
@@ -767,7 +772,7 @@ def menu(options, headers=["Main Menu", "Make a Choice"],
     <report> if provided must be an iterable to which strings
     representing progress (or lack there of) are appended.
     """
-    routines.add2report(report, "Entering code/textual.menu...")
+    helpers.add2report(report, "Entering code/textual.menu...")
     keys = [key for key in options.keys()]
     layout = [
         [sg.Text(headers[1], size=(30,1),)],
@@ -779,13 +784,13 @@ def menu(options, headers=["Main Menu", "Make a Choice"],
     e, v = win.read()
     win.close()
     if e == 'CANCEL' or not v or not v["CHOICE"]:
-        routines.add2report(report,
+        helpers.add2report(report,
             f"Cancelled or no choice made; aborting {headers[0]}")
         if report: print(report[-1])
         return
 #   _ = input(repr(v))
     ret = options[v['CHOICE'][0]]
-    routines.add2report(report,
+    helpers.add2report(report,
         f"...code/textual.menu() returning {repr(ret)}")
     return ret
 
@@ -869,20 +874,27 @@ def test_pick():
         FROM Person_Status AS PS
         JOIN People AS P
         WHERE P.personID = PS.personID
-        AND P.personID > 220;""",
+        AND P.personID > 225;""",
         ("{personID:>3d} {last}, {first} {suffix}" +
         " {statusID} {begin} {end}"),report=report))
     print("=====Report follows======")
     for line in report:
         print(line)
 
+def ck_yes_no():
+    if yes_no("query 2 run"):
+        print("returned true")
+    else:
+        print("returned false")
+
 if __name__ == "__main__":
-#   test_pick()
+#   ck_yes_no()
+    test_pick()
 #   show_fonts()
 #   test_a_show_stati()
 #   test_get_fields4()
 #   test_get_fields()
-    test_get_mode()
+#   test_get_mode()
 #   test_selectP_record()
 #   test_people_choices()
 #   test_choose()

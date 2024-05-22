@@ -36,6 +36,13 @@ def get_listing_2f(query_file):
     return routines.fetch(query, from_file=False)
 
 
+def member_listing():
+    edd = helpers.eightdigitdate
+    query = routines.import_query("Sql/mem4join_ff.sql")
+    return routines.fetch(query.format(edd, edd),
+            from_file=False)
+
+
 def get_join_date(personID):
     """
     Provides date of joining the club (when became new member)
@@ -205,7 +212,7 @@ def report_applicants(listing):
     return report
 
 def show_applicants_cmd(report=None):
-    routines.add2report(report,
+    helpers.add2report(report,
         "Entering code.show.show_applicants_cmd")
     listing = get_listing_2f("Sql/app4join_ff.sql")
     ret = report_applicants(listing)
@@ -217,14 +224,14 @@ def show_applicants_cmd(report=None):
         with open(file4app_report, 'w') as outf:
             outf.write('\n'.join(ret))
         line = f"Applicant listing sent to {file4app_report}." 
-        routines.add2report(report, line)
+        helpers.add2report(report, line)
         print(line)
-    routines.add2report(report,
+    helpers.add2report(report,
         "...leaving code/show/show_applicants_cmd")
     return ret
 
 def show_cmd(report=None):
-    routines.add2report(report,
+    helpers.add2report(report,
             "Entering code.show.show_cmd", also_print=True)
     member_part = show4web(
             get_listing_2f("Sql/mem4join_ff.sql"))
@@ -236,9 +243,9 @@ def show_cmd(report=None):
         with open(file4web, 'w') as outf:
             outf.write("\n".join(ret))
         line2add = f"Data sent to {file4web}."
-        routines.add2report(report, line2add, also_print=True)
+        helpers.add2report(report, line2add, also_print=True)
         ret.append(line2add)
-    routines.add2report(report,
+    helpers.add2report(report,
         "...leaving code/show/show_cmd")
     return ret
 
