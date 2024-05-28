@@ -23,6 +23,10 @@ class CustomContext:
         # Code inside this block
     # Teardown code is automatically executed
 
+TO DO:
+    <change_mapping> and <change_or_add_values> are essentially
+    the same thing with the exception that the latter includes
+    reporting. Rename latter to former.
 """
 
 import PySimpleGUI as sg
@@ -44,6 +48,8 @@ def valid_values(ev, allow_blanks=False):
     <ev> is what's returned by sg's window.read()
     Returns a dict if values are valid, 
     Returns a string if not.
+    Only one client in this module: <get_fields4> which
+    is planned for deprication in favour of <get_fields>.
     """
     event, the_dict = ev
     if event in (None, "Cancel"):
@@ -67,6 +73,7 @@ def show_fonts():
 
 def f2run():
     _ = input("Running function f2run")
+
     
 def a_show_stati(f2run):
     """
@@ -186,10 +193,10 @@ def test_cora():
                 last="Kleider",
                 date1 ="",
                 )
-    ret = change_or_add_values(mapping).items()
+    ret = change_or_add_values(mapping)
     if ret == None: print("Returned None")
     else:
-        for key, value in ret:
+        for key, value in ret.items():
             print(f"{key}: {value}")
 
     
@@ -223,7 +230,7 @@ def get_fields4(p_data, fields):
 
 def get_stati(personID):
     """
-    ## Was called def get_mode(
+    ## Was called get_mode(
     collects Person_Status table entries for person IDed.
     """
     ps_fields = routines.keys_from_schema("Person_Status")
@@ -231,12 +238,19 @@ def get_stati(personID):
             WHERE personID = {personID}; """, from_file=False)
 #   _ = input(repr(res))  #!# <res> is NOT USED!!!
 
-
-def get_mode(person_data, fields):
+def edit_person_status(
+#def get_mode(
+        person_data, fields,
+        fstring="Member: {personID:>3} {first} {last} {suffix}"):
+    """
+    # Under development: totally inappropriate name changed!
+    <person_data> is a dict.
+    User given opportunity to select fields and whether to
+    INSERT a new record or UPDATE an existing one.
+    Returns a query string or None.
+    """
     layout = [
-        [sg.Text(
-        "Member: {first} {last} {suffix}"
-                        .format(**person_data))],
+        [sg.Text(fstring.format(**person_data))],
         [sg.Radio("INSERT", "RADIO", key='-INSERT-'),
         sg.Radio("UPDATE", "RADIO", key='-UPDATE-')],
         [sg.Text('Choose Fields',justification='left')],
@@ -257,15 +271,21 @@ def get_mode(person_data, fields):
         if not mapping:
             print("Aborting code.textual.get_mode")
             return
-    values = ', '.join(mapping.values())
     keys = ', '.join(mapping.keys())
+    values = ', '.join(mapping.values())
     if v['-INSERT-']:
+        keys = 'personID, ' + keys
+        values = f'{person_data["personID"]}, ' + values
+        # easy: just create query for a new entry...
         query = f"""INSERT INTO Person_Status ({keys})
                     VALUES ({values})
                     ; """
-        print("insert query...")
-        print(query)
+        return query
     elif v['-UPDATE-']:
+        # Must 1st find out which entry to update...
+        query = f"""SELECT * FROM Person_Status
+        WHERE personID = {person_data[personID]};"""
+        return query
         kv = zip(keys,values)
         listofstrings = [f"{key} = {value}" for 
                 key, value in kv]
@@ -277,10 +297,9 @@ def get_mode(person_data, fields):
         ;"""
         fields2update = v['-FIELDS-']
         print(f"fields2update: {repr(fields2update)}")
+        return query
     else:
         assert False, "Impossible option in textual.get_mode"
-    return e, v
-#       print(f"fields chosen: {repr(v['-FIELDS-'])}")
 
 
 note = """
@@ -522,6 +541,9 @@ def choose(records, header="CHOOSE ONE",
     Returns one of the dicts
     or something that'll evaluate to False
     Adds to <report> (a list of strings) if provided.
+    Used by <selectP_record> but should probably be redacted
+    in favour of <pick> and <selectP_record> should be
+    adjusted accordingly.
     """
     #set the theme for the screen/window
     helpers.add2report(report,
@@ -812,32 +834,37 @@ def test_menu():
 
 def test_selectP_record():
     report = []
-    res = selectP_record(header_prompt="Provide hints",
-            subheader="make a choice", report=report)
-    if not res:
-        print(f"selectP_record returned {repr(res)}")
-    else:
-        print("selectP_record returning the following...")
-        for key, value in res.items():
-            print(f"key: {repr(key)}, value:{repr(value)}")
+    while True:
+        res = selectP_record(header_prompt="Provide hints",
+                subheader="make a choice", report=report)
+        if not res:
+            print(f"selectP_record returned {repr(res)}")
+        else:
+            print("selectP_record returning the following...")
+            for key, value in res.items():
+                print(f"key: {repr(key)}, value:{repr(value)}")
+        yn = input("Again?? (y/n): ")
+        if not (yn and yn[0] in "yY"):
+            break
 #   _ = input("\nReport follows...")
 #   print('\n'.join(report))
 
 
-person_data = {'personID': 97,
-                'first': 'Alex',
-                'last': 'Kleider',
-                'suffix': '',
-                }
-
-def test_get_mode():
+def test_edit_person_status():
+    person_data = {'personID': 97,
+                      'first': 'Alex',
+                       'last': 'Kleider',
+                     'suffix': '',
+                    }
     fields = ('statusID', 'begin', 'end', )
-    e,v = get_mode(person_data, fields)
-    print("textual.get_mode(data,fields) returning ...")
-    print(f"e: {repr(e)}")
-    print(f"v: {repr(v)}")
-    for key, value in v.items():
-        rep.append(f"{key}: {value}")
+    query = edit_person_status(person_data, fields,
+        fstring="Member: {personID:>3} {first} {last} {suffix}")
+    if not query:
+        print("test_get_mode ==> invalid")
+        return
+    else:
+        print("test_get_mode ==>")
+        print(query)
 
 
 def test_get_fields4():
@@ -882,19 +909,24 @@ def test_pick():
         print(line)
 
 def ck_yes_no():
-    if yes_no("query 2 run"):
-        print("returned true")
-    else:
-        print("returned false")
+    while True:
+        if yes_no("query 2 run"):
+            print("returned true")
+        else:
+            print("returned false")
+        yn = input("Again?? (y/n): ")
+        if not (yn and yn[0] in "yY"):
+            break
+
 
 if __name__ == "__main__":
 #   ck_yes_no()
-    test_pick()
+#   test_pick()
 #   show_fonts()
 #   test_a_show_stati()
 #   test_get_fields4()
 #   test_get_fields()
-#   test_get_mode()
+    test_edit_person_status()
 #   test_selectP_record()
 #   test_people_choices()
 #   test_choose()
