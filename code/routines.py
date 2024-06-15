@@ -473,6 +473,7 @@ def id_by_name():
 
 def pick_id():
     """
+    Returns a chosen personID or None.
     """
     listing = id_by_name()
     if not listing:
@@ -484,12 +485,18 @@ def pick_id():
         choices.append(entry.split()[0])
         print("    " + f"{entry}")
     while True:
-        choice = input("Which ID do you want? ")
+        choice = input("Which ID do you want? (0 to abort): ")
         if choice == "0":
             print("Aborting!")
             return
         if choice in choices:
             return int(choice)
+        else:
+            print("You made a non-listed choice!")
+            yn = input("Continue with '{choice}'? (yn): ")
+            if yn and yn[0] in "yY":
+                return int(choice)
+
 
 def get_commands(sql_file):
     """

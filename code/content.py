@@ -201,7 +201,6 @@ of the month.
 
 This mailing is going out to all members so everyone can know
 where they stand whether already paid up or not.
-
 (If you've any reason to believe that our accounting might be
 in error, please let it be known[1].)
 

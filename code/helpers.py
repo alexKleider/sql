@@ -372,9 +372,9 @@ class Rec(dict):
     by reference!!)
     """
     def __init__(self, rec):
-#       self = {key:value for (key,value) in rec.items()}
-        for key, value in rec.items():
-            self[key] = value
+#       self = dict(rec)  # this should work but doesn't!!
+        for key, value in rec.items():   #} use this method in 
+            self[key] = value            #} place of what's above
 
     def __call__(self, fstr):
         return fstr.format(**self)
@@ -1346,9 +1346,7 @@ def choose_and_run(proto_menu,
                 func for func in proto_menu.values()
                 ][choice-1](report=report)
 
-
-
-if __name__ == "__main__":
+def main():
     print(timestamp)
 #   choose_and_run(proto_menu)
 #   test_present_listing4approval()
@@ -1360,9 +1358,18 @@ f"today: {today}; month: {month}; this_year: {this_year}; date: {date}")
     print("Module helpers compiles without error.")
 #   main()
 #   test_show_json_data()
-    sys.exit()
-else:
-    pass
-#   def print(*args, **kwargs):
-#       pass
+
+def test_Rec():
+    d1 = {'1': "Alex", '2': "June", '3': "Tanya", '4': "Kelly", }
+    d2 = Rec(d1)
+    print(d2)
+    d2['5'] = "Isabella"
+    print(d1)
+    print(d2)
+    print(d1 is d2)
+    print(d2("Wife's name is {'2'}."))
+
+if __name__ == "__main__":
+#   main()
+    test_Rec()
 

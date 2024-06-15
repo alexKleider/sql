@@ -31,8 +31,12 @@ TO DO:
 
 import PySimpleGUI as sg
 
-import routines
-import helpers
+try:
+    import routines
+    import helpers
+except ImportError:
+    from code import routines
+    from code import helpers
 
 def yes_no(text, title="Run query?"):
 #   l = len(text) - len(title)
