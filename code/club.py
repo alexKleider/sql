@@ -22,6 +22,9 @@ ROOT = ospath.split(ospath.dirname(ospath.realpath(__file__)))[0]
 DB = ospath.join(ROOT, "Secret/club.db")
 db_file_name = ospath.join(ROOT, "Secret/club.db")
 temp_db = ospath.join(ROOT, "Secret/temp.db")   # "/home/alex/Git/Sql/Secret/club.db"
+bu_while_testing = ospath.join(ROOT, "Secret/temp.db")
+# above file stores a copy of the db prior to running tests and
+# then is used to restore the db (after which it is deleted.)
 ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 MAIL_DIR = ospath.join(ROOT, 'Secret/MailDir')
 EMAIL_JSON = ospath.join(ROOT, 'Secret/emails.json')
@@ -120,7 +123,9 @@ date_keys = applicantDB_keys[6:10]
 sponsor_keys = applicantDB_keys[2:4]
 
 yearly_dues = 200
-
+n_months = {1:6, 2:5, 3:4, 4:3, 5:2, 6:1,
+        7:12, 8:11, 9:10, 10:9, 11:8, 12:7}
+# n_months: index by month of # of months remaining in Club year.
 
 def t1():
     print('Running code/club...')

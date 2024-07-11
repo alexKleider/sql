@@ -5,8 +5,17 @@ A place to prototype new code.
 """
 
 from code import helpers
+from code import club
 #from code import routines
 #from code import dates
+
+yearly = club.yearly_dues
+n_months = club.n_months
+def prorate(month, yearly, n_months):
+    assert isinstance(month, int)
+    assert month > 0
+    assert month <= 12
+    return round(yearly * n_months[month] / 12)
 
 class RecV1(dict):
     """
@@ -41,5 +50,7 @@ def func2():
 
 
 if __name__ == "__main__":
-    func2()
+    for month in range(1, 13):
+        print(f"{month:>2}: {prorate(month, yearly, n_months)}")
+#   func2()
 

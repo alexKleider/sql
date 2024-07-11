@@ -10,6 +10,8 @@ Collects data from Dues,
 This is distinct from populating the fees in preparation
 for the next billing cycle.  That is a work in progress.
 wip.py
+As of Sat 06 Jul 2024 adding creation of csv files:
+re moorings: Sql/mooring-csv.sql
 """
 
 import csv
@@ -163,7 +165,9 @@ def owing_csv_cmd():
             report.append(message)
             print(message)
     return report
-    
+
+def mooring_csv_cmd():
+    pass
 
 
 if __name__ == '__main__':

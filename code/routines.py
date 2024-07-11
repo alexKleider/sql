@@ -218,9 +218,10 @@ def query2dict_listing(query, keys=False,
     """
     Returns query result as a (could be empty!) list of dicts
     (which can be dumped into a json file.)
-    Fails if len(keys)!=length of tupples returned by the query.
-    <keys> parameter typically supplied by keys_from_schema()
-    or keys_from_query.
+    A listing of <keys> can be supplied; defaults to a call
+    to keys_from_query. A call to keys_from_query is another
+    way the user can generate the listing.
+    Fails if len(keys)!=length of tupples
     """
     ret = []
     if not keys:
@@ -596,8 +597,9 @@ def pick_People_record(header_prompt=None, report=None):
         try:
             ID = int(ID)
         except ValueError:
-            report.append(
-                "..non integer entered; restarting..")
+            helpers.add2report(report, 
+                "..non integer entered; restarting..",
+                also_print=True)
             print(report[-1])
             continue
         else:
@@ -846,7 +848,8 @@ def assign_inductees4payment(holder):
     """
     Assigns holder.working_data dict keyed by ID pertaining
     to those recently inducted and yet to be notified.
-    REFACTOR to use add_sponsor_cc2data
+    REFACTOR to use add_sponsor_cc2data ??already done??
+    Used with members.inductee_payment
     """
     byID = dict()
     res = fetch('Sql/inducted.sql')

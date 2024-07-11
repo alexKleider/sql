@@ -2,8 +2,10 @@
 -- !! Requires formatting !!
 --    ..but only once!
 -- retrieves personID for each member 
--- AND inductees who haven't yet paid their dues.
--- RESULTS IN DUPLICATES!!!!
+-- AND any inductees who haven't yet paid their dues.
+-- Should NOT RESULTS IN DUPLICATES!!!! assuming
+-- the Person_Status file is properly maintained...
+-- i.e. no-one can have duplicate current status 8, 11 or 15!
 
 SELECT
     P.personID, P.first, P.last, P.suffix

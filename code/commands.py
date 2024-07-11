@@ -174,6 +174,10 @@ def still_owing_cmd():
     res = routines.fetch(query, from_file=False)
     for entry in res:
         data = routines.ret_statement(entry[0])
+#       print(entry)
+#       print(data)
+        if data == None:
+            print(f"{entry} has no entries!")
         if data['total'] <= 0:
             continue
         data['ID'] = entry[0]

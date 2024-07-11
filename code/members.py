@@ -302,17 +302,22 @@ def send_statement(holder, data):
     return ['Notice sent by code.members.send_statement.', ]
 
 
+def prorate(month, yearly, n_months):
+    assert isinstance(month, int)
+    assert month > 0
+    assert month <= 12
+    return round(yearly * n_months[month] / 12)
+
 def inductee_payment(holder, data):
     ###### MUST ADD A 'current_dues' entry to data ########
     ret = [(
         'Requesting inductee payment for {first} {last}...'
         .format(**data)), ]
-    if helpers.month > 6 or helpers.month ==1:
-        data["current_dues"] = club.yearly_dues
-    else:
-        data["current_dues"] = club.yearly_dues/2
+    data["current_dues"] = prorate(helpers.month,
+                                club.yearly_dues,
+                                club.n_months)
     q_mailing(holder, data)
-    pass
+
 
 # REDACT ??
 def send_letter(holder, data):

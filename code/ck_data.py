@@ -410,8 +410,8 @@ def ck_m_vs_g_data():
     compare(g_data, 'applicant', 'applicant_stati', report)
     # Members/LIST:
     compare(g_data, 'LIST', 'member_stati', report)
-    # Members/Retired:
-    compare(g_data, 'Retired', 'retired_stati', report)
+#   # Members/Retired:
+#   compare(g_data, 'Retired', 'retired_stati', report)
     # Committee
     compare(g_data, 'Committee', 'comittee_stati', report)
     # DockUsers
@@ -503,8 +503,14 @@ def ck_members_vs_dues(report=None):
             "Member listing and Dues table missmatch:")
         report.append(
             f"In members not dues: {repr(sorted(s1-s2))}")
+        for pID in s1 - s2:
+            report.append(
+                f"{routines.get_rec_by_ID(pID).values()}")
         report.append(
             f"In dues not members: {repr(sorted(s2-s1))}")
+        for pID in s2 - s1:
+            report.append(
+                f"{routines.get_rec_by_ID(pID).values()}")
     else:
         report.append(
             "Member listing and Dues table correspond.")

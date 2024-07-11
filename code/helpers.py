@@ -129,12 +129,14 @@ def test_present_listing4approval():
 def check_dir_exists(directory, create=True):
     """
     Check for a file called <directory>:
+    If it already exists: 
+        If it is not a directory: report and abort!
+        If it exists and is a directory:
+            report what's in it & offer to abort.
+        Report as to its contents: empty or not.
     if it doesn't exist:
         if <create>: create it,
         else: offer to create it.
-    If it already exists: 
-        Report if it is not a directory & offer to abort.
-        Report as to its contents: empty or not.
     Report results and ask if to continue.
     """
     if os.path.exists(directory):
