@@ -461,20 +461,20 @@ def keys_removed(a_dict, iterable_of_keys):
     return ret
 
 
-def add2report(report, line, also_print=False):
+def add2report(report, line_or_list, also_print=False):
     """
     This exact same code exists in code.routines from
     where it should be removed.
     Supports many routines which have a named 'report' param.
     """
     if isinstance(report, list):
-        if isinstance(line, str):
-            report.append(line)
-            if also_print: print(line)
-        elif isinstance(line, list):
-            report.extend(line)
+        if isinstance(line_or_list, str):
+            report.append(line_or_list)
+            if also_print: print(line_or_list)
+        elif isinstance(line_or_list, list):
+            report.extend(line_or_list)
             if also_print:
-                for l in line: print(l)
+                for l in line_or_list: print(l)
 
 def save_db(new_db, outfile, key_list=None, report=None):
     """

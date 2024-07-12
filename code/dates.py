@@ -390,6 +390,9 @@ def add_receipt_entries(holder, report=None):
         ### Could be entry of applicant fee!!
         #2# now look up all that is owed by this person
         data = routines.add_statement_data(data)
+        if not data:
+            print(f"No statement data available for {payorID}")
+            continue
         data['before_statement'] = routines.get_statement(
                 data, include_header=False)
         print("What's owed:")
@@ -447,10 +450,9 @@ def add_receipt_entries(holder, report=None):
             rep.extend(file_acknowledgement(holder, data))
             holder.entries += 1
         else:
-            rep.extend("Receipt entry aborted.")
-            print(ret[-1])
-        if isinstance(report, list):
-            report.extend(rep)
+            rep.append("Receipt entry aborted.")
+            print(rep[-1])
+        helpers.add2report(report, rep)
 #   return data   # no idea why this line is here
 
 
