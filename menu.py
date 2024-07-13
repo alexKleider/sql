@@ -92,8 +92,8 @@ def main_menu(report=None):
 #           f"e: {repr(e)}, v: {repr(v)}")
     if e == 'CANCEL' or not v or not v["CHOICE"]:
         routines.add2report(report,
-            "Cancelled or no choice made; aborting sub menu")
-        if report: print(report[-1])
+            "Cancelled or no choice made; aborting sub menu",
+            also_print=True)
         return
     skey = v['CHOICE'][0]  # skey: sub-hierarchy key
     return f"{hkey}", f"{skey}"
@@ -111,6 +111,9 @@ if __name__ == "__main__":
         res = main_menu(report=report)
         if res:
             for func in hierarchy[res[0]][res[1]]:
+               routines.add2report(report,
+                    f"executing {func.__name__}",
+                    also_print=True)
                func(report)
         else:
             print("No choice made.")
@@ -120,10 +123,7 @@ if __name__ == "__main__":
             if yn[0] in 'yY':
                 for line in report:
                     print(line)
-            elif yn[0] in 'nN':
-                continue
             else:
                 with open(yn, 'w') as outf:
                     for line in report:
-                        print(f"line: {line}")
                         outf.write(line+'\n')

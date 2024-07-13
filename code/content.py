@@ -409,7 +409,7 @@ With considerable regret it is my duty to inform you of the
 following:
 It's been more than six months since your membership application
 has been received and during that time you've failed to attend
-the required six Club meetings. This causes your application to
+the required three Club meetings. This causes your application to
 expire.
 If you still wish to be a member of the Bolinas Rod and Boat Club
 the application process must begin again and I suggest you work

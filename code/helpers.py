@@ -466,6 +466,7 @@ def add2report(report, line_or_list, also_print=False):
     This exact same code exists in code.routines from
     where it should be removed.
     Supports many routines which have a named 'report' param.
+    NOTE: must be lists, NOT tuples!!
     """
     if isinstance(report, list):
         if isinstance(line_or_list, str):
@@ -475,6 +476,8 @@ def add2report(report, line_or_list, also_print=False):
             report.extend(line_or_list)
             if also_print:
                 for l in line_or_list: print(l)
+        else:
+            assert False
 
 def save_db(new_db, outfile, key_list=None, report=None):
     """
