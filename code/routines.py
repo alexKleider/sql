@@ -1183,4 +1183,7 @@ if __name__ == '__main__':
 #   exercise_pick_People_record()
 #   exercise_keys_from_schema()
 #   exercise_add_sponsorIDs()
-    test_id_by_name()
+#   test_id_by_name()
+    report = []
+    db2csv(report)
+
