@@ -166,8 +166,9 @@ def still_owing_cmd():
     output_file_name = "Secret/owing.csv"
     collector = []
     ret = ["Still owing csv being generated...", ]
-    with open("Sql/memberIDs_f.sql", 'r') as stream:
-        query = stream.read().format(helpers.eightdigitdate)
+    with open("Sql/memberIDs_ff.sql", 'r') as stream:
+        query = stream.read().format(helpers.eightdigitdate,
+                                    helpers.eightdigitdate)
         # query orders by name...
     ret.append("query: ......")
     ret.extend(query.split('\n'))

@@ -1,6 +1,6 @@
-/* Sql/memberIDs_f.sql */
--- !! Requires formatting !!
---    ..but only once!
+/* Sql/memberIDs_ff.sql */
+-- !! Requires formatting !! (x2!!)
+-- Only one client found: code/commands.py still_owing_cmd()
 -- retrieves personID for each member 
 -- AND any inductees who haven't yet paid their dues.
 -- Should NOT RESULTS IN DUPLICATES!!!! assuming
@@ -21,6 +21,7 @@ ON
     St.statusID = PS.statusID
 WHERE St.statusID in (8, 11, 15)
 AND ((PS.end = '') or (PS.end > {}))
+AND (PS.begin <= {})
 -- must format: use code.helpers.eightdigitdate
 ORDER BY
     P.last, P.first, P.suffix
