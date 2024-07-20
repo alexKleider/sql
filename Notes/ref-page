@@ -6,7 +6,8 @@
         INSERT INTO Table (...) VALUES (...);
         UPDATE Table SET ..=.., .... WHERE ....
         DELETE FROM Table WHERE ..=..  --use SELECT first to be sure!
-
+        SELECT ... FROM table1 [UNION|INTERSECT|EXCEPT]
+            SELECT ... FROM table2 [UNION|INTERSECT|EXCEPT] ...  ;
 
         ALTER TABLE: see Sql/newApp.sql
 

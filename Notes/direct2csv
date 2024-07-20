@@ -1,0 +1,18 @@
+
+.headers on
+.mode csv  -- alternatively: .mode column, .mode list
+.output dues_owing.csv  -- until .output with no param
+OR
+.once dues_owing.csv
+select P.personID, P.last, P.first, P.suffix,
+    D.dues_owed from People as P join Dues as D
+    where P.personID = D.personID
+    and D.dues_owed > 0
+    order by P.last;
+.output  -- no need if used .once vs .output
+
+also possible to specify:
+.separator "|"
+
+also consider putting these commands into an .sqliterc file in
+home directory.

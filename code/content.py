@@ -241,12 +241,15 @@ terminated if dues are not paid by September 1st.
     # Send in early August:
     penultimate_warning="""
 As we enter the month of August it means you've already enjoyed
-two months of Club membership and/or one of its benefits for free
+a month of Club membership and/or one of its benefits for free
 but this could end soon if you don't take action!
 
 Club records indicate that your dues (+/or other fees) have
 as yet not been paid.  Please be aware that according to
-Club bylaws, membership lapses if fees are not paid by Sept 1st.
+Club bylaws, membership lapses if dues are not paid by Sept 1st.
+Note that the date is Sept 1st, not the 15th as is sometimes
+incorrectly quoted.
+
 (If you've any reason to believe that our accounting might be in
 error, please let us know[1].)
 

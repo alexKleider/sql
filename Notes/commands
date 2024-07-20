@@ -26,6 +26,7 @@
     sqlite3> .output  % no parameter redirect back to stdout
     sqlite3> .once FILENAME  % redirect to FILENAME only next cmd
     sqlite3> .read FILENAME  % reads and execute query in FILENAME
+also: see direct2csv file
 
 COMMENTS
 ========
@@ -157,3 +158,71 @@ Queries can contain >1 clauses
 each beginning with a key word:
 
 
+JOIN
+====
+INNER JOIN = JOIN
+    INNER JOIN is the default when you use the word JOIN.
+OUTER JOIN can be LEFT or RIGHT and "OUTER" is optional.
+    i.e. LEFT JOIN & LEFT OUTER JOIN are synonyms.
+CROSS JOIN.
+
+OR
+
+    For an INNER JOIN, the syntax is:
+
+    SELECT ...
+    FROM TableA
+    [INNER] JOIN TableB
+
+    (In other words, the INNER keyword is optional--results are the same with or without it.)
+
+The first table in a JOIN is called the LEFT TABLE and the second table in a JOIN is called the RIGHT JOIN.
+
+
+https://www.sqlservertutorial.org/sql-server-joins/
+SQL server supports 5 types of JOINS. They are:
+
+    INNER JOIN (also referred to as JOIN)
+    LEFT OUTER JOIN (also referred to as LEFT JOIN)
+    RIGHT OUTER JOIN (also referred to as RIGHT JOIN)
+    FULL OUTER JOIN (also referred to as FULL JOIN)
+    CROSS JOIN
+
+1)  INNER JOIN
+An INNER JOIN is a JOIN between two tables where the JOIN result
+set consists of rows from the left table which match rows from
+the right table (i.e. returns the common rows from both tables).
+
+2) LEFT OUTER JOIN (or LEFT JOIN)
+A LEFT OUTER JOIN between 2 tables is a JOIN where the resultset
+consists of all rows from the left table including unique rows
+(which do not match any row in the right table) and matching rows
+(common rows of both tables) but include only matching rows from
+the right table. The non-matching rows of the right table are
+represented by NULL values.
+
+3) RIGHT OUTER JOIN (or RIGHT JOIN)
+A RIGHT OUTER JOIN between 2 tables is a JOIN where the resultset
+consists of all rows from the right table including unique rows
+(which do not match any row in the left table) and matching rows
+(common rows of both tables) but includes only matching rows from
+the left table. The non-matching rows of the left table are
+represented by NULL values. So, it is the exact reverse of a
+LEFT JOIN.
+
+4)  FULL OUTER JOIN (or FULL JOIN)
+A FULL OUTER JOIN between 2 tables is a JOIN where the resultset
+consists of the entire set of rows from both the left and right
+table. Rows of the left table which do not have matching
+counterpart in the right are represented by NULL and rows of
+right table which do have matching counterpart in the left are
+represented by NULL.
+
+5) CROSS JOIN
+A CROSS JOIN is a different kind of join which does not require
+any relation between the participating tables and operates without
+having to join the tables on a common column. The purpose of a
+CROSS JOIN is not to combine intersecting data or unique data or
+entire set of data from both tables but rather to combine the
+datasets of the participating tables exhaustively generating the
+complete list of possible combinations.

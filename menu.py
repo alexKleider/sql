@@ -56,6 +56,7 @@ hierarchy = {
 def main_menu(report=None):
     """
     Returns a list of functions (usually a list of only one.)
+    Provides choices based on what's in <hierarchy>.
     """
     routines.add2report(report,
             "Begin main_menu...")
@@ -73,8 +74,8 @@ def main_menu(report=None):
 #           f"e: {repr(e)}, v: {repr(v)}")
     if e == 'CANCEL' or not v or not v["CHOICE"]:
         routines.add2report(report,
-            "Cancelled or no choice made; aborting main menu")
-        if report: print(report[-1])
+            "Cancelled or no choice made; aborting main menu",
+            also_print=True)
         return
     hkey = v['CHOICE'][0]  # hkey: hierarchy key
     
@@ -118,12 +119,13 @@ if __name__ == "__main__":
         else:
             print("No choice made.")
             break
-        yn = input("Print report (y/n) or file name: ")
-        if yn:  # yn is either Y)es, N)o or a file name
-            if yn[0] in 'yY':
+    yn = input("Print report (y/n) or file name: ")
+    if yn:  # yn is either Y)es, N)o or a file name
+        if yn[0] in 'yY':
+            for line in report:
+                print(line)
+        elif not yn[0] in 'nN':
+            with open(yn, 'w') as outf:
                 for line in report:
-                    print(line)
-            else:
-                with open(yn, 'w') as outf:
-                    for line in report:
-                        outf.write(line+'\n')
+                    outf.write(line+'\n')
+

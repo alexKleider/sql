@@ -158,46 +158,23 @@ def under1yr_cmd():
             writer.writerow(entry)
     return ret
 
-
 def still_owing_cmd():
     """
-    Note: suffix is appended to last if it exists.
+    Creates a csv file of what is still owed including
+    dues and (dock_usage, kayak_storage & mooring) fees.
     """
-    output_file_name = "Secret/owing.csv"
-    collector = []
     ret = ["Still owing csv being generated...", ]
-    with open("Sql/memberIDs_ff.sql", 'r') as stream:
-        query = stream.read().format(helpers.eightdigitdate,
-                                    helpers.eightdigitdate)
-        # query orders by name...
-    ret.append("query: ......")
-    ret.extend(query.split('\n'))
-    res = routines.fetch(query, from_file=False)
-    for entry in res:
-        data = routines.ret_statement(entry[0])
-#       print(entry)
-#       print(data)
-        if data == None:
-            print(f"{entry} has no entries!")
-        if data['total'] <= 0:
-            continue
-        data['ID'] = entry[0]
-        data['first'] = entry[1]
-        data['last'] = entry[2] + entry[3]
-        collector.append(data)
+    f_name = "Secret/owing.csv"
+    print(f"Default output file is {f_name}...")
+    csv_name = input(
+        "Enter a different name or leave blank for default: ")
+    if not csv_name: csv_name = f_name
     fieldnames = (
         "ID, first, last, total, dues, dock, kayak, mooring"
                                                 .split(', '))
-    print(f"Default output file is {output_file_name}")
-    csv_name = input(
-        "Enter a different name or leave blank for defauld: ")
-    if not csv_name: csv_name = output_file_name
-    with open(csv_name, 'w', newline='') as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
-        writer.writeheader()
-        for data in collector:
-            writer.writerow(data)
-    ret.append("data writen to {csv_name}")
+    helpers.dump2csv_file(routines.fetch("Sql/owing.sql"),
+            keys=fieldnames, file_name=csv_name)
+    ret.append(f"...data dumped to {csv_name}.")
     return ret
 
 
