@@ -158,7 +158,7 @@ def under1yr_cmd():
             writer.writerow(entry)
     return ret
 
-def still_owing_cmd():
+def still_owing_cmd(report=None):
     """
     Creates a csv file of what is still owed including
     dues and (dock_usage, kayak_storage & mooring) fees.
@@ -170,12 +170,14 @@ def still_owing_cmd():
         "Enter a different name or leave blank for default: ")
     if not csv_name: csv_name = f_name
     fieldnames = (
-        "ID, first, last, total, dues, dock, kayak, mooring"
+        "ID, first, last, suffix, dues, dock, kayak, mooring"
                                                 .split(', '))
     helpers.dump2csv_file(routines.fetch("Sql/owing.sql"),
             keys=fieldnames, file_name=csv_name)
     ret.append(f"...data dumped to {csv_name}.")
-    return ret
+    if report:
+        report = ret
+    return report
 
 
 def occupied_moorings_cmd():

@@ -814,32 +814,26 @@ def add_sponsors2holder_data(holder):
 
 def assign_owing(holder):
     """
-    Assigns and returns holder.working_data dict:
-    Retrieve personID for each person who owes
-    putting their relevant data into a dict keyed by ID.
     """
+    query_file = "Sql/statements.sql"
+    keys = ("ID", "last", "first", "suffix",
+        "email", "address", "town", "state",
+        "postal_code", "country",
+        "dues", "dock", "kayak", "mooring",)
+    dicts = query2dict_listing(query_file,
+            keys=keys, from_file=True)
     byID = dict()
-    query = import_query("Sql/members_f.sql"
-                        ).format(helpers.eightdigitdate,
-                                 helpers.eightdigitdate)
-    for tup in fetch(query,
-            from_file=False):
-        personID = tup[0]
-        data  = {'first': tup[1],
-                 'last': tup[2],
-                 'suffix': tup[3],
-                 'email': tup[4],
-                 'address': tup[5],
-                 'town': tup[6],
-                 'state': tup[7],
-                 'postal_code': tup[8],
-                 'country': tup[9],
-                }
-        data2add = ret_statement(personID)
-        if data2add:
-            for key in data2add.keys():
-                data[key] = data2add[key]
-            byID[personID] = data
+    for d in query2dict_listing(query_file,
+            keys=keys, from_file=True):
+        total = 0
+        for key in ("dues", "dock", "kayak", "mooring"):
+            if not d[key]:
+                d[key] = 0
+            else:
+                d[key] = int(d[key])
+                total += d[key]
+        d['total'] = total
+        byID[d["ID"]] = d
     holder.working_data = byID
     return byID
 

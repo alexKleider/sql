@@ -219,26 +219,24 @@ def q_mailing(holder, data):
 
 def add_statement_entry(data):
     """
-    <data> is a dict with dues, dock, kayak and mooring keys as
-    appropriate. A 'statement' entry is added based on the above.
+    <data> is a dict with dues, dock, kayak and mooring keys.
+    A 'statement' entry is added based on the above.
     """
-    key_set = set(data.keys())
     statement = ['Statement:', ]
-    if 'dues' in key_set:
+    if data['dues']:
         statement.append(f"  Dues...... ${data['dues']}")
-    if 'dock' in key_set:
+    if data['dock']:
         statement.append(f"  Docking... ${data['dock']}")
-    if 'kayak' in key_set:
+    if data['kayak']:
         statement.append(f"  Kayak..... ${data['kayak']}")
-    if 'mooring' in key_set:
+    if data['mooring']:
         statement.append(f"  Mooring... ${data['mooring']}")
-    if 'total' in key_set:
+    if data['total']:
         statement.append(f"TOTAL.... ${data['total']}")
     if len(statement) > 1:
         data['statement'] = '\n'.join(statement)
     else:
         data['statement'] = "No statement available."
-
 
 
 def dict_w_statement(dic):

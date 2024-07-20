@@ -26,6 +26,7 @@ hierarchy = {
         "no email=>csv": [commands.no_email_cmd, ],
         "check_data_consistenchy":
                 [ck_data.consistency_report, ],
+        "owing": [commands.still_owing_cmd,],
             },
     "Data Entry":{
         "Status Update": [data_entry.change_status_cmd],

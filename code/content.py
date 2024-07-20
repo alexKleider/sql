@@ -239,10 +239,10 @@ terminated if dues are not paid by September 1st.
 """,
 
     # Send in early August:
-    penultimate_warning="""
+    August_mailing="""
 As we enter the month of August it means you've already enjoyed
-a month of Club membership and/or one of its benefits for free
-but this could end soon if you don't take action!
+a month of Club membership and/or one or more of its benefits
+for free but this could end soon if you don't take action!
 
 Club records indicate that your dues (+/or other fees) have
 as yet not been paid.  Please be aware that according to
@@ -635,10 +635,10 @@ content_types = dict(  # which_letter
         "funcs": (members.send_statement, ),
         "e_and_or_p": "usps",
         },
-    penultimate_warning={
+    August_mailing={
         "subject": "Membership soon to expire",
         "from": authors["membership"],
-        "body": letter_bodies["penultimate_warning"],
+        "body": letter_bodies["August_mailing"],
         "post_scripts": (
             post_scripts["remittance"],
             post_scripts["ref1_email_or_PO"],
