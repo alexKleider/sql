@@ -1,11 +1,13 @@
 /* File: Sql/statements.sql
-similar to Sql/owing.sql but more demographics
+Similar to Sql/owing.sql (but includes more demographics.)
 Note that this is used for a revised method of sending bills.
 The previous method collected all members first and then checked
 what was owing by each.
 This method picks out only those who owe money. (Membership is
 not checked!)
-*/
+This has the advantage of picking approved applicants
+who have not yet paid their prorated dues. */
+
 SELECT P.personID, P.last, P.first, P.suffix,
         P.email, P.address, P.town, P.state,
         P.postal_code, P.country,

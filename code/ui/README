@@ -1,0 +1,7 @@
+
+# File: code/ui/README
+
+This directory is for user interface code.
+See code/cl for user code logic
+and Secret/club.db for data.
+

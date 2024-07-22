@@ -1,0 +1,11 @@
+# File: code/README
+
+Mon 22 Jul 2024 03:06:35 PM PDT
+
+Added two directories to code directory:
+
+* ui for the user interface
+* cl for code logic
+
+Data remains in Secret/club.db, an Sqlite3 db file.
+
