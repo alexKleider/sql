@@ -11,6 +11,9 @@ except ImportError: import helpers
 try: from code import textual
 except ImportError: import textual
 
+try: from code import club
+except ImportError: import club
+
 """
 Handle adding data to the db.
 An ammalgamation of what used to be applicants.py
@@ -96,12 +99,28 @@ def add2tables(data, report=None):
     # Finally create entry in Applicants table...
     _ = routines.fetch_d_query(
             "Sql/applicant_entry_fd.sql", data, commit=True)
+    if fee_rcvd:
+        # make entry into Receipts table...
+        query = f"""INSERT INTO Receipts
+               (personID, date_received, date_acknowledged, ap_fee)
+            VALUES (data['personID'], "{data['fee_rcvd']}",
+                "{helpers.eightdigitdate}", club.applicant_fee);
+        """
+        print("Go ahead with the following query...")
+        print(query)
+        yn = input("OK? (y/n): ")
+        if yn and yn[0] in 'Yy':
+            routines.fetch(query, from_file=False, commit=True)
     helpers.add2report(report, [
             "{first} {last} {suffix} added as new applicant."
                 .format(**data),
             "Tables updated: People, Person_Status & Applicants.",
-            "Still need to mail welcome letter.",
-            "Also: need to make an entry into Receipts table prn",
+            "Still need to...",
+            "  ?make entry into Receipts table,",
+            "  mail welcome letter,",
+            "  update status from 2 to 3,",
+            "& create entry in gmail contacts.",
+            "Then check for data consistency.",
             ], also_print=True)
 
 

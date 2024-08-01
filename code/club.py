@@ -123,6 +123,7 @@ date_keys = applicantDB_keys[6:10]
 sponsor_keys = applicantDB_keys[2:4]
 
 yearly_dues = 200
+applicant_fee = 25
 n_months = {1:6, 2:5, 3:4, 4:3, 5:2, 6:1,
         7:12, 8:11, 9:10, 10:9, 11:8, 12:7}
 # n_months: index by month of # of months remaining in Club year.
