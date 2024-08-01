@@ -183,29 +183,34 @@ def get_gmail_record(g_rec):
     Returns a "g_dict" (only the info we need.)
     Client is yield_contacts.
     <g_rec> is a record from the gmail contacts file.
-    NB: google calls them 'Labels', referred to here as 'groups'.
+    NB: google calls them 'Labels'.
     "g_" prefix refers to google contact data.
-    Returns None if g_rec is without lables
+    Returns None if g_rec is without Lables
+    ### NOTE: Google changed keys in contacts ~2024/07 !!!!
+    ### Resulted in key_error !!!!
     """
     g_email = g_rec["E-mail 1 - Value"]
-    group_membership = (  # a list
-        g_rec["Group Membership"].split(" ::: "))
-    if (group_membership and
-            group_membership[-1] == '* myContacts'):
-        group_membership = group_membership[:-1]
-#       print("In get_gmail_record, group_membership: " +
-#           f"{group_membership}")
-        groups=set(group_membership)
-#       print(f"In get_gmail_record, groups: {groups}")
-        if "Retired" in groups:
-            groups = (groups - {"Retired"}) | {"LIST"}
+#   _ = input(f"{repr(g_rec.keys())}")
+#   if not "Group Membership" in g_rec.keys():
+    if not "Labels" in g_rec.keys():
+        return  # ignore gmail contacts that have no 'Label'
+    labels = (  # a list
+#       g_rec["Group Membership"].split(" ::: "))
+        g_rec["Labels"].split(" ::: "))
+    if (labels and
+            labels[-1] == '* myContacts'):
+        labels = labels[:-1]
+        labels = set(labels)
+#       print(f"In get_gmail_record, labels: {labels}")
+        if "Retired" in labels:
+            labels = (labels - {"Retired"}) | {"LIST"}
             print(f"{g_email}, {groups}")
         ret = dict(
-            first = g_rec["Given Name"],
-            last = g_rec["Family Name"],
+            first = g_rec["First Name"],
+            last = g_rec["Last Name"],
             suffix = g_rec["Name Suffix"],
             g_email=g_email,
-            groups=groups,
+            groups=labels,
             )
         return ret
 

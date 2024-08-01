@@ -120,13 +120,13 @@ if __name__ == "__main__":
         else:
             print("No choice made.")
             break
-    yn = input("Print report (y/n) or file name: ")
-    if yn:  # yn is either Y)es, N)o or a file name
-        if yn[0] in 'yY':
-            for line in report:
-                print(line)
-        elif not yn[0] in 'nN':
-            with open(yn, 'w') as outf:
+        yn = input("Print report (y/n) or file name: ")
+        if yn:  # yn is either Y)es, N)o or a file name
+            if yn[0] in 'yY':
                 for line in report:
-                    outf.write(line+'\n')
+                    print(line)
+            elif not yn[0] in 'nN':
+                with open(yn, 'w') as outf:
+                    for line in report:
+                        outf.write(line+'\n')
 

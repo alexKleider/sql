@@ -13,6 +13,9 @@ SELECT P.personID, P.last, P.first, P.suffix,
         LEFT JOIN Moorings AS M ON P.personID = M.personID
         LEFT JOIN Kayak_Slots AS KS ON KS.personID = P.personID
         LEFT JOIN Dock_Privileges AS DP ON DP.personID = P.personID
-        WHERE (D.dues_owed>0 or DP.cost > 0 or M.owing > 0 )
+        WHERE (D.dues_owed > 0
+            or DP.cost > 0 
+            or KS.slot_cost > 0 
+            or M.owing > 0 )
         ORDER BY P.last;
 

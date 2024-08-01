@@ -69,7 +69,7 @@ create your index. Neither SQLite (nor any other relational database
 I know of) can use composite indexes to optimize filtering when the
 head columns of the index are not specified in the search.
 
-SELECT FROM Table
+SELECT [DISTINCT] FROM Table
     GROUP BY
     ORDER BY
 INSERT INTO Table (...) VALUES (...);
