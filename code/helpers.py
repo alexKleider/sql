@@ -9,6 +9,7 @@ This file appears in
     ~/Git/Club/Utils
     ~/Git/Lib/code
     ~/Git/Sql/code
+TO DO: use uname -a to get system information
 """
 
 import os

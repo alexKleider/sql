@@ -365,6 +365,7 @@ def update_applicant_date_cmd(report=None):
         ["applicant_update_cmd 1st status change picked:",
         repr(picked)], also_print=True)
     picked["new_date"] = new_date
+    # TypeError: 'NoneType' object does not support item assignment
     update_query = """UPDATE Person_Status SET 
         end = "{new_date}" WHERE personID = {personID}
         AND statusID = {statusID}

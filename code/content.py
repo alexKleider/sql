@@ -258,6 +258,18 @@ Please pay promptly; we'd hate to loose you as a member.
 Details follow.
 {statement}""",
 
+    last_chance="""
+If you haven't yet paid your Club dues (&/or other fees,) time
+is running out. Membership is terminated if dues are not paid
+by September 1st which is fast approaching.
+
+Our treasurer, Angie Calpestri, asks that everyone be made aware
+that fees can be easily paid using Venmo (details below.)
+
+What follows is a statement of what Club records indicate must be
+paid if membership is to continue.
+{statement}""",
+
     # Send towards end of August:
     final_warning="""
 Club records indicate that your dues (+/or other fees) have
@@ -648,6 +660,20 @@ content_types = dict(  # which_letter
                          routines.assign_owing, ),
         "funcs": (members.send_statement, ),
         "e_and_or_p": "usps",
+        },
+    last_chance={
+        "subject": "URGENT - LAST CHANCE TO KEEP YOUR MEMBERSHIP",
+        "from": authors["membership"],
+        "body": letter_bodies["last_chance"],
+        "post_scripts": (
+            post_scripts["remittance"],
+            post_scripts["ref1_email_or_PO"],
+            post_scripts['venmo'],
+            ),
+        "holder_funcs": (club.set_include0_false,
+                         routines.assign_owing, ),
+        "funcs": (members.send_statement, ),
+        "e_and_or_p": "one_only",
         },
     final_warning={
         "subject": "Membership soon to expire",

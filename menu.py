@@ -16,6 +16,7 @@ from code import data_entry
 from code import ck_data
 from code import show
 from code import textual
+from code import listings
 
 hierarchy = {
     "Reports":{  # Text files created
@@ -26,6 +27,7 @@ hierarchy = {
         "no email=>csv": [commands.no_email_cmd, ],
         "check_data_consistenchy":
                 [ck_data.consistency_report, ],
+        "sponsors": [listings.sponsors, ],
         "owing": [commands.still_owing_cmd,],
             },
     "Data Entry":{

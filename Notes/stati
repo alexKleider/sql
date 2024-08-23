@@ -1,4 +1,5 @@
 
+sqlite> .read Sql/stati_contents.sql
 1|a-|Application received without fee
 2|a|Application complete but not yet acknowledged
 3|a0|No meetings yet
