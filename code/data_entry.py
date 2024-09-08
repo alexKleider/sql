@@ -102,7 +102,7 @@ def add2tables(data, report=None):
     if fee_rcvd:
         # make entry into Receipts table...
         query = f"""INSERT INTO Receipts
-               (personID, date_received, date_acknowledged, ap_fee)
+               (personID, date_received, acknowledged, ap_fee)
             VALUES (data['personID'], "{data['fee_rcvd']}",
                 "{helpers.eightdigitdate}", club.applicant_fee);
         """
@@ -116,8 +116,7 @@ def add2tables(data, report=None):
                 .format(**data),
             "Tables updated: People, Person_Status & Applicants.",
             "Still need to...",
-            "  ?make entry into Receipts table,",
-            "  mail welcome letter,",
+            "  mail welcome letter (mailing menu #20),",
             "  update status from 2 to 3,",
             "& create entry in gmail contacts.",
             "Then check for data consistency.",

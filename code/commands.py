@@ -164,7 +164,7 @@ def still_owing_cmd(report=None):
     dues and (dock_usage, kayak_storage & mooring) fees.
     """
     ret = ["Still owing csv being generated...", ]
-    f_name = "Secret/owing.csv"
+    f_name = f"Secret/owing{helpers.eightdigitdate4filename}.csv"
     print(f"Default output file is {f_name}...")
     csv_name = input(
         "Enter a different name or leave blank for default: ")
@@ -172,9 +172,13 @@ def still_owing_cmd(report=None):
     fieldnames = (
         "ID, first, last, suffix, dues, dock, kayak, mooring"
                                                 .split(', '))
-    helpers.dump2csv_file(routines.fetch("Sql/owing.sql"),
-            keys=fieldnames, file_name=csv_name)
+    res = routines.fetch("Sql/owing.sql")
+    n_owing = len(res)
+    helpers.dump2csv_file(res, keys=fieldnames,
+            file_name=csv_name)
     ret.append(f"...data dumped to {csv_name}.")
+    print(
+      f"There are {n_owing} entries in the 'still owing' list.")
     if report:
         report = ret
     return report

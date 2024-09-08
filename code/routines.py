@@ -476,27 +476,33 @@ def pick_id():
     """
     Returns a chosen personID or None.
     """
-    listing = id_by_name()
-    if not listing:
-        print("No matches")
-        return
-    print("Pick an ID from the following (0 to abort):")
-    choices = []
-    for entry in listing:
-        choices.append(entry.split()[0])
-        print("    " + f"{entry}")
     while True:
-        choice = input("Which ID do you want? (0 to abort): ")
-        if choice == "0":
-            print("Aborting!")
+        listing = id_by_name()
+        if not listing:
+            print("No matches")
             return
-        if choice in choices:
-            return int(choice)
-        else:
-            print("You made a non-listed choice!")
-            yn = input("Continue with '{choice}'? (yn): ")
-            if yn and yn[0] in "yY":
+        print("Pick an ID from the following (0 to abort):")
+        choices = []
+        for entry in listing:
+            choices.append(entry.split()[0])
+            print("    " + f"{entry}")
+        while True:
+            choice = input("Which ID do you want? (0 to abort): ")
+            if choice == "0":
+                print("Aborting!")
+                return
+            if choice in choices:
                 return int(choice)
+            else:
+                print("You made a non-listed choice!")
+                yn = input("Continue with '{choice}'? (yn): ")
+                try:
+                    choice = int(choice)
+                except ValueError:
+                    print("Must be a personID; starting over!")
+                    break
+                if yn and yn[0] in "yY":
+                    return int(choice)
 
 
 def get_commands(sql_file):
