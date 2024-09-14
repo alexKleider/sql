@@ -362,7 +362,7 @@ approved your application for Club membership.
 "Welcome aboard!"
 
 All that remains for your membership to take effect is payment
-of dues.  Please send a check for ${current_dues} to the Club
+of prorated dues.  Please send a check for ${current_dues} to the Club
 (address provided below.)
 
 Upon receipt of your membership dues, I'll send you more information

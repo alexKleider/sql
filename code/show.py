@@ -62,13 +62,17 @@ def get_numbers(listing, verbose=False):
         number of members in good standing
         a tuple of strings constituting a report
     """
-    m0 = m1 = 0
+    m0 = m1 = hon = inactive = 0
     for item in listing:
         status = item[9]
         if status == 11:
             m0 += 1
         elif status in {15, 17}:
             m1 += 1
+        elif status == 14:
+            hon += 1
+        elif status == 16:
+            inactive += 1
         else:
             _ = input(f"{repr(item)}")
             assert False, (
@@ -76,12 +80,15 @@ def get_numbers(listing, verbose=False):
                 " member status must be 11 or 15!")
 
     report = (
-            f"Total membership stands at {len(listing)}",
+            f"Total membership stands at {m0 + m1}",
             f"of whom {m1} are 'members in good standing' while",
             f"{m0} (indicated by an (*) asterix) are still",
              "within their first year of membership.",
              "Members indicated by a (^) caret have announced",
              "their intent to retire from the club.",
+            f"Also listed are {hon} honorary members, indicated by an",
+            f"'at' (@) sign and {inactive} inactive members, indicated by",
+             "a percent (%) sign.",
             )
     if verbose:
         for line in report:
@@ -125,15 +132,19 @@ COMMITTEE.
             first_letter = last_initial
             report.append("")
         status = item[9]
-        if status == 11:
-            prefix = '*'
-        elif status == 17:
-            prefix = '^'
-        elif status == 15:
+        if status == 15:   # Current Member
             prefix = ' '
+        elif status == 11:  # New Member (1st year)
+            prefix = '*'
+        elif status == 17:   # Retiring
+            prefix = '^'
+        elif status == 14:   # Honorary member
+            prefix = '@'
+        elif status == 16:   # Inactive member
+            prefix = '%'
         else:
             _ = input(f"Status: {status}")
-            assert False, 'Status must be 11, 15 or 17!'
+            assert False, 'Status must be 11, 15, 17, 14 or 16!'
         personID = item[-1]
         # adjust date prn
         jd = get_join_date(personID)

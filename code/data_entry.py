@@ -103,8 +103,8 @@ def add2tables(data, report=None):
         # make entry into Receipts table...
         query = f"""INSERT INTO Receipts
                (personID, date_received, acknowledged, ap_fee)
-            VALUES (data['personID'], "{data['fee_rcvd']}",
-                "{helpers.eightdigitdate}", club.applicant_fee);
+            VALUES ({data['personID']}, "{data['fee_rcvd']}",
+                "{helpers.eightdigitdate}", {club.applicant_fee});
         """
         print("Go ahead with the following query...")
         print(query)
