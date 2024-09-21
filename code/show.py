@@ -37,23 +37,48 @@ def get_listing_2f(query_file):
 
 
 def member_listing():
+    """
+    NOT USED   see get_listing_2f
+    Returns a list of lists item [10] of which is "begin" date.
+    """
     edd = helpers.eightdigitdate
     query = routines.import_query("Sql/mem4join_ff.sql")
     return routines.fetch(query.format(edd, edd),
             from_file=False)
 
 
-def get_join_date(personID):
+def modified_join_date(personID, status, jd):
     """
+    Deals with special case of recent members (who where first
+    year members for a year before becoming "members in good
+    standing") and inactive and honorary members.
     Provides date of joining the club (when became new member)
     for people who have sinced become member in good standing.
     """
-    res = routines.fetch("""SELECT begin FROM Person_Status
-        WHERE personID = {}
-        AND statusID = 11;""".format(personID),
-                        from_file=False)
-    if res:
-        return(res[0][0])
+    # First deal with those who might have spent a year as
+    # probatioinary members:
+    if status == 15:
+        res = routines.fetch(f"""SELECT begin, statusID
+            FROM Person_Status
+            WHERE personID = {personID}
+            AND statusID = 11;""", from_file=False)
+        if res:
+            jd = res[0][0]
+            return jd
+    # Now deal with inactive and honorary members:
+    if status in (14, 16):
+#       print(f"dealing with memberID {personID}")
+        res = routines.fetch(f"""SELECT begin, end
+            FROM Person_Status WHERE
+            personID = {personID} AND statusID = 15;""",
+            from_file=False)
+        if res:
+            if res[0][0]:  # "begin" field may be empty (unknown)
+                jd = res[0][0]
+            else:
+                jd = ''
+    return jd
+
 
 def get_numbers(listing, verbose=False):
     """
@@ -113,6 +138,8 @@ def create_membership_csv(listing):
 def show4web(listing):
     """
     Deals with members only (not applicants!)
+    <listing> list of lists: [10] is begin date
+    which may need modification- see modified_join_date
     """
     m0, m1, member_report  = get_numbers(listing)
     report = [f"""
@@ -147,13 +174,12 @@ COMMITTEE.
             assert False, 'Status must be 11, 15, 17, 14 or 16!'
         personID = item[-1]
         # adjust date prn
-        jd = get_join_date(personID)
-        if jd: 
-            item = item[:10] + (jd,) + item[11:]
+        join_date = item[10]
+        join_date = modified_join_date(personID, status, join_date)
         entry = str(prefix) + """{0} {1} {2} [{3}] [{8}]
 \t{4}, {5}, {6} {7}""".format(*item)
-        if item[10]:
-            entry = entry+" -joined: " + str(item[10])
+        if join_date:
+            entry = entry+" -joined: " + join_date
         report.append(entry)
     report.extend(["","", ])
     return report
@@ -162,7 +188,6 @@ COMMITTEE.
 def get_sponsor_first_last(sponsorID):
     query = f"""SELECT first, last, suffix
             FROM People WHERE personID = {sponsorID};"""
-#   _ = input(query)
     ret = routines.fetch(query,
             from_file=False)[0]
     if ret[2]: ret[1] += ret[2]
