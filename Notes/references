@@ -1,8 +1,16 @@
+File: references
 
 https://cs50.harvard.edu/sql/2024/notes/0/#fin
 
 Fundamentals of Relationships and Joins in SQLite:
 https://towardsdatascience.com/fundamentals-of-relationships-and-joins-in-sqlite-82ab47806d00
+* Inner joins only return data where the specified conditions are met for both tables in a query.
+* Left joins return all rows from the left table and rows with matching values in the right table. 
+** Right joins not supported in SQLite (any right join can be changed to a left join by
+changing the order of the tables in a query.
+** Full outer join is the combination of a left join and a right join. It includes all selected rows
+from the left and right tables, and returns ‘NULL’ values in rows where there is no matching value.
+SQLite also does not support full joins, but their behavior can be reproduced with ‘LEFT JOIN’ and ‘UNION ALL,’
 
 https://www.techonthenet.com/sqlite/joins.php  Best yet
 

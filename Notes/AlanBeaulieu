@@ -1,0 +1,18 @@
+File: AlanBeaylieu
+Notes from Learning SQL by Alan Beaulieu (O'Reilly)
+
+Query Clauses
+=============
+SELECT
+    in addition to column names, can include:
+    -literals
+    -expressions
+    -built-in function calls
+    -user-defined function calls
+FROM
+WHERE
+GROUP BY
+HAVING
+ORDER BY
+
+

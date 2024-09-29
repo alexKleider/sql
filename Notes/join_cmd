@@ -1,3 +1,7 @@
+File: join_cmd
+
+See file 'references' re joins supported by SQLite3
+
 SELECT 
     
 FROM

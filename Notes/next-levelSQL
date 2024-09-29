@@ -88,6 +88,7 @@ HAVING COUNT(*) > 5;
 
 Joins
 =====
+(See file 'references' re joins supported by SQLite3)
 
 -- Inner Join
 SELECT * FROM employees JOIN departments on employees.departmentID = departments.departmentID;

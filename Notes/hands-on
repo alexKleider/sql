@@ -1,0 +1,27 @@
+
+https://opensource.com/article/21/2/sqlite3-cheat-sheet
+
+
+Automatic creation of a unique number 'rowid' column
+so in my case it was not necessary to include a personID.
+Doing so just allowed me to use the "personID" name vs 'rowid'.
+
+Data types ("storage classes")
+    TEXT: a text string
+    INTEGER: a whole number
+    REAL: a floating point (unlimited decimal places) number
+    BLOB: binary data (for instance, a .jpeg or .webp image)
+    NULL: a null value
+
+ Can add the NOT NULL directive: name TEXT NOT NULL
+ SQLite includes a date and timestamp function (not a data type)
+ that generates either a string or integer (there is a default.)
+    ...> datestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+
+A PRAGMA statement:
+    sqlite> PRAGMA table_info(People);
+
+Possible to add (a) column(s) to a table:
+    > ALTER TABLE member ADD os INT;
+
+/home/alex/Downloads/cheat_sheet_sqlite_0.pdf

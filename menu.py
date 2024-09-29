@@ -114,21 +114,30 @@ if __name__ == "__main__":
         report = []
         res = main_menu(report=report)
         if res:
+            func_names = []
             for func in hierarchy[res[0]][res[1]]:
                routines.add2report(report,
                     f"executing {func.__name__}",
                     also_print=True)
+               func_names.append(func.__name__)
                func(report)
         else:
             print("No choice made.")
             break
-        yn = input("Print report (y/n) or file name: ")
-        if yn:  # yn is either Y)es, N)o or a file name
-            if yn[0] in 'yY':
+        file_name = (helpers.eightdigitdate + '-'
+                    + "_".join(func_names)
+                    + ".txt")
+        yn = input(
+            f"Send results to {file_name}? (y/n or other name) ")
+        if len(yn) > 1:
+            file_name = yn
+        if yn and yn in {'n', 'N'}:
+            for line in report:
+                print(line)
+            break
+        else:
+            with open(file_name, 'w') as outf:
                 for line in report:
-                    print(line)
-            elif not yn[0] in 'nN':
-                with open(yn, 'w') as outf:
-                    for line in report:
-                        outf.write(line+'\n')
+                    outf.write(line+'\n')
+            break
 
