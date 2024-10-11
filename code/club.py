@@ -27,7 +27,9 @@ bu_while_testing = ospath.join(ROOT, "Secret/temp.db")
 # then is used to restore the db (after which it is deleted.)
 ADDENDUM2REPORT_FILE = "Secret/addendum2report.txt"
 MAIL_DIR = ospath.join(ROOT, 'Secret/MailDir')
+AX_MAIL_DIR = ospath.join(ROOT, 'Secret/AxMailDir')
 EMAIL_JSON = ospath.join(ROOT, 'Secret/emails.json')
+AX_EMAIL_JSON = ospath.join(ROOT, 'Secret/ax_emails.json')
 CONTACTS_FILE = ospath.join(ROOT, "Secret/contacts.csv")
 LAST_REVIEW_DATE = ospath.join(ROOT, "Secret/last_review.date")
 # The above assumes one has 'exported' gmail contacts and moved
@@ -127,6 +129,7 @@ applicant_fee = 25
 n_months = {1:6, 2:5, 3:4, 4:3, 5:2, 6:1,
         7:12, 8:11, 9:10, 10:9, 11:8, 12:7}
 # n_months: index by month of # of months remaining in Club year.
+
 
 def t1():
     print('Running code/club...')

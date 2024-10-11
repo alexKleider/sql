@@ -550,13 +550,13 @@ def report_cmd(report=None):
     helpers.add2report(report,
         "Entering code.commands.report_cmd...")
     outfile = f"report{helpers.eightdigitdate}.txt"
-    n = len(show.member_listing())
+#   n = len(show.member_listing())
+    n = len(show.get_listing_2f("Sql/mem4join_ff.sql"))
     ret = []
     helpers.add_header2list(
         "Membership Report (prepared {})"
             .format(helpers.date),
         ret, underline_char='=')
-#   ret.append('')
     ret.append('Club membership currently stands at {}.'
                   .format(n))
     ret.extend(show.show_applicants_cmd()[:-1])

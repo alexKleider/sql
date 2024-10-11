@@ -36,6 +36,7 @@ def get_listing_2f(query_file):
     return routines.fetch(query, from_file=False)
 
 
+redact = '''
 def member_listing():
     """
     NOT USED   see get_listing_2f
@@ -45,6 +46,7 @@ def member_listing():
     query = routines.import_query("Sql/mem4join_ff.sql")
     return routines.fetch(query.format(edd, edd),
             from_file=False)
+'''
 
 
 def modified_join_date(personID, status, jd):
@@ -270,7 +272,8 @@ def show_cmd(report=None):
     helpers.add2report(report,
             "Entering code.show.show_cmd", also_print=True)
     member_part = show4web(
-            get_listing_2f("Sql/mem4join_ff.sql"))
+            get_listing_2f("Sql/list4join_ff.sql"))
+            # include honorary, inactive & retiring
     applicant_part = report_applicants(
             get_listing_2f("Sql/app4join_ff.sql"))
     ret = member_part + applicant_part

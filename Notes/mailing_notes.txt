@@ -1,0 +1,38 @@
+# File: mailing_notes.txt
+
+currently available:
+    code.commands.prepare_mailing_cmd()
+        -sets up holder (club.Holder())
+            Probably don't need a "holder"
+        -sets up mail_dir and email.json
+            use code.club.[AX_MAIL_DIR | AX_EMAIL_JSON]
+        -presents menu of content.ctypes
+            predeterminded by where it appears
+        and assigns to holder.which  [not needed]
+        -prepares templates (also assigns printer)
+            no need for printer info if only emails
+            combines:
+                salutation (ready for formatting)
+                body
+                email signature of sender
+                postscripts if any
+            assigns template to holder
+        -sets up holder.emails = [] ...but in current use case,
+        want to add to emails.json
+        -runs holder.which['holder_funcs'] (assigns
+        "working_data" == recipeints)
+        -runs holder.which['funcs'] on each item in
+        "working_data"
+        -dumps the emails to email.json
+        -checks mailing dir
+
+MY PLAN
+    set up an appendable json file for emails {  separate from
+    set up a mail dir                         {  emails.json
+                                              { & Secret/MailDir
+        temp.json
+        Secret/TempMail
+
+
+
+

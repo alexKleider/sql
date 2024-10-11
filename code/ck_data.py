@@ -60,7 +60,7 @@ queries = dict( # indexed by google contacts LABELs.
             FROM people as P
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
-                AND PS.statusID in (18, 27, 28)
+                AND PS.statusID in (27, 28)
                 AND (PS.end = '' OR PS.end > {})
                 AND NOT P.email = ''
             -- Terminated, No longer a member
@@ -110,7 +110,7 @@ queries = dict( # indexed by google contacts LABELs.
             FROM people as P
             JOIN Person_Status as PS
             WHERE PS.personID = P.personID
-                AND PS.statusID = 26
+                AND PS.statusID in (18, 26)
                 AND (PS.end = '' OR PS.end > {})
                 AND NOT P.email = ''
             ;""".format(helpers.eightdigitdate),
@@ -421,9 +421,8 @@ def ck_m_vs_g_data():
     compare(g_data, 'Committee', 'comittee_stati', report)
     # DockUsers
     compare(g_data, 'DockUsers', 'dock_user_stati', report)
-    # everyone
     # dropped
-#   compare(g_data, 'dropped', 'dropped_stati', report)
+    compare(g_data, 'dropped', 'dropped_stati', report)
     # GaveUpMembership
     compare(g_data, 'GaveUpMembership', 'quit_stati', report)
     # inactive

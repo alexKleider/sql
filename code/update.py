@@ -16,15 +16,16 @@ Prototyping a status_change_cmd
   update_status
     Insert an "end" date (prn)
     & Add a status entry
-Notes:
-    application comes in
-        +/- application fee
-    1st meeting
-    2nd meeting
-    3rd meeting
-    approval 
-    dues
-    am => m (one year later)
+The following are being prototyped in code/wip.py:
+Notes:                  functions:
+    application comes in      app0 or app0f
+        +/- application fee   appf if app0f
+    1st meeting               app1
+    2nd meeting               app2
+    3rd meeting               app3
+    approval                  appA
+    dues                      appD
+    am => m (one year later)  included in appD
 """
 
 from code import helpers

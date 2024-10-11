@@ -1,7 +1,7 @@
-/* Sql/mem4join_ff.sql */
+/* Sql/list4join_ff.sql */
 -- !! Requires formatting !!  (eightdigitdate x2)
 -- retrieves member demographics _with_ trailing statusID
--- includes _only_ active members.
+-- includes retiring, inactive & honorary members (if any.)
 -- personID is last item
 SELECT
     first, last, suffix, phone, address,
@@ -17,8 +17,9 @@ JOIN
     Person_Status AS PS
 ON
     P.personID = PS.personID
-WHERE( 
-    PS.statusID IN (11, 15)  -- only active members
+WHERE(
+    PS.statusID IN (11, 14, 15, 16, 17)
+            -- New, honorary, current, inactive & retiring
     AND ((PS.begin = '') OR (PS.begin <= {}))   -- today
     AND((PS.end = '') OR (PS.end > {}))   -- today
     )

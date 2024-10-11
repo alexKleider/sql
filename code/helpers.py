@@ -59,6 +59,32 @@ def eightdigitentry(prompt):
             print("Must be an eight digit entry!")
 
 
+def date_entry_w_default(prompt_preface=''):
+    """
+    new version of above: provides for a default of today.
+    Returns a valid 8 digit string or None
+    """
+    while True:
+        if not prompt_preface: prompt_preface = "New date "
+        today = eightdigitdate
+        try:
+            new_date = input(
+                f"{prompt_preface} (Rtn to accept default: {today},"
+                +"\nCtl-C to quit, or"
+                +"\nenter other date): ")
+        except KeyboardInterrupt:
+            return
+        if len(new_date) == 0:
+            new_date = today
+        if not (new_date.isdigit()
+                and
+                (len(new_date) == 8)):
+            print(
+            f"'{new_date}' is an invalid date. Must be 8 digits")
+        else:
+            return new_date
+
+
 def adjustyrby(yr, n):
     return str(int(yr[:4])+n) + yr[4:]
 
@@ -130,7 +156,7 @@ def test_present_listing4approval():
 def check_dir_exists(directory, create=True):
     """
     Check for a file called <directory>:
-    If it already exists: 
+    If it already exists:
         If it is not a directory: report and abort!
         If it exists and is a directory:
             report what's in it & offer to abort.
@@ -290,7 +316,7 @@ def get_datestamp(date=None):
     datetime.date.  If not provided, today's date is used.
     """
     if date:
-        if (isinstance(date,datetime.date) 
+        if (isinstance(date,datetime.date)
             or isinstance(date, datetime.datetime)):
             d = date
         else:
@@ -376,7 +402,7 @@ class Rec(dict):
     """
     def __init__(self, rec):
 #       self = dict(rec)  # this should work but doesn't!!
-        for key, value in rec.items():   #} use this method in 
+        for key, value in rec.items():   #} use this method in
             self[key] = value            #} place of what's above
 
     def __call__(self, fstr):
@@ -484,7 +510,7 @@ def save_db(new_db, outfile, key_list=None, report=None):
     """
     Saves data in <new_db> (a list of dicts) onto a csv file
     <outfile> with the keys specified by <key_list>.
-    If <report> is specified, it must be a list of strings to 
+    If <report> is specified, it must be a list of strings to
     which progress report is appended.
     If new_db is an empty list, does nothing
     """
@@ -998,7 +1024,7 @@ def clarify_cc(s, word2remove='sponsors'):
 
 def tofro_first_last(name, as_key=True):
     """
-    Parameter <name> is parsed and 
+    Parameter <name> is parsed and
     if of the form "John Doe":
         returns "Doe,John", or
             Doe, John if as_key==False
@@ -1375,7 +1401,17 @@ def test_Rec():
     print(d1 is d2)
     print(d2("Wife's name is {'2'}."))
 
+def ck_date_entry():
+    while True:
+        date = date_entry_w_default("Choose date")
+        if date == "00000000":
+            break
+        print(date)
+        print()
+
+
 if __name__ == "__main__":
 #   main()
-    test_Rec()
+#   test_Rec()
+    ck_date_entry()
 

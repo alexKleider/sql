@@ -12,6 +12,7 @@ window types:
 Currently working on setting up the Dues table
 for the upcoming year: delete non members and
 add dues to all members.
+NOTE: there's also a wip.py file in code directory.
 """
 
 import csv
