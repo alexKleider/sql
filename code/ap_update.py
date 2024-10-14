@@ -18,6 +18,17 @@ Notes:                  functions:
     dues                      appD
     am => m (one year later)  included in appD
 
+provides update_applicant_cmd(report=None) which
+    assigns "outfile" (to date not used!)
+    assigns ap_rec by calling select_applicant()
+    then calls update_applicant(ap_rec)
+    update_applicant(ap_rec):
+        looks for the first empty date field and
+        calls the appropriate function (see
+                ...applicant_updates = {...jjj
+    Does _not_ handle new applications:
+        see: code/data_entry.add_new_applicant_cmd
+
 Still 2 do:
 Need to be able to send/append letters/emails
     already handled elsewhere
@@ -54,7 +65,7 @@ def add_sponsor_data(applicant_record):
     if suffix: sponsor = sponsor + " " + suffix
     applicant_record['sponsor1'] = sponsor
     applicant_record['sponsor1email'] = res[0][4]
-    _ = input(f"sponsor1email being assigned {res[0][4]}")
+#   _ = input(f"sponsor1email being assigned {res[0][4]}")
     # 2nd sponsor:
     res = routines.fetch(query.format(
                         applicant_record["sponsor2ID"]),
@@ -64,7 +75,7 @@ def add_sponsor_data(applicant_record):
     if suffix: sponsor = sponsor + " " + suffix
     applicant_record['sponsor2'] = sponsor
     applicant_record['sponsor2email'] = res[0][4]
-    _ = input(f"sponsor1email being assigned {res[0][4]}")
+#   _ = input(f"sponsor1email being assigned {res[0][4]}")
 
     return applicant_record
 
@@ -117,6 +128,7 @@ def app0(applicant_record):
 def appf(ap_rec):
     """ Rare that fee comes after application but possible """
     # Postpone mailing part until others are done #
+    print("Running appf: add app fee received date")
     date = helpers.date_entry_w_default(
                 prompt_preface="Date fee received")
     query = f"""UPDATE Applicants SET fee_rcvd = "{date}"
@@ -146,6 +158,7 @@ def appf(ap_rec):
 def app1(applicant_record):
     """Provide credit for first meeting """
     # No need for mailing
+    print("Running app1: add 1st meeting date")
     date = helpers.date_entry_w_default(
                 prompt_preface="Date of 1st meeting")
     query = f"""UPDATE Applicants SET meeting1 = "{date}"
@@ -166,6 +179,7 @@ def app1(applicant_record):
 
 def app2(applicant_record):
     """Provide credit for second meeting """
+    print("Running app2: add 2nd meeting date")
     # No need for mailing
     date = helpers.date_entry_w_default(
                 prompt_preface="Date of 2nd meeting")
@@ -187,6 +201,7 @@ def app2(applicant_record):
 
 def app3(applicant_record):
     """Provide credit for third meeting """
+    print("Running app3: add 3rd meeting date")
     # No need for mailing
     date = helpers.date_entry_w_default(
                 prompt_preface ="Date of 3rd meeting")
@@ -243,6 +258,7 @@ def email(ap_rec):
 def appA(ap_rec):
     """Add board approval date """
     # Need to prepare mailing of notification & request for dues
+    print("Running appA: add board approval date")
     ap_rec["ctype"] = content.content_types[
             "request_inductee_payment"]
     prorated_dues = members.prorate(
@@ -284,6 +300,7 @@ def appA(ap_rec):
 
 def appD(ap_rec):
     """Add dues paid & became member date """
+    print("Running appD: add dues paid and became member date")
     date = helpers.date_entry_w_default(
             prompt_preface="Dues paid & notified date")
     amt_paid = int(input("Enter amount paid: "))
@@ -293,11 +310,13 @@ def appD(ap_rec):
                 personID ={ap_rec["personID"]};""",
         from_file=False)
     owed = int(res[0][0])
-    if not (int(amt_paid) == int(owed)):
+    if not amt_paid == owed:
         print(f"Paid: {amt_paid}; Expected: {owed}; aborting!")
         assert False   #follow a different path!
+    ap_rec["owed"] = owed
+    ap_rec["amt_paid"] = amt_paid
     ap_rec["ctype"] = content.content_types[
-                            "welcome2full_membership"]
+                            "first_dues_payment_welcome"]
     email(ap_rec)
     query = f"""UPDATE Applicants SET
                     dues_paid = "{date}",
@@ -359,7 +378,7 @@ def appN(ap_rec):
     pass
 
 applicant_updates = {
-    "app_rcvd": app0,
+#   "app_rcvd": app0,  # handled by 
     "fee_rcvd": appf,
     "meeting1": app1,
     "meeting2": app2,
@@ -369,16 +388,16 @@ applicant_updates = {
 #   "notified": appN,   # separate these
     }
 
-def update_applicant(applicant_record):
+def update_applicant(ap_rec):
     """
     Calls which ever procedure is appropriate
     for the first empty date field.
     """
     for date_key in date_keys:
-        if not applicant_record[date_key]:
+        if not ap_rec[date_key]:
             print(f"Need to update '{date_key}'...")
-            applicant_record = add_sponsor_data(applicant_record)
-            applicant_updates[date_key](applicant_record)
+            ap_rec = add_sponsor_data(ap_rec)
+            applicant_updates[date_key](ap_rec)
             show = [
                 f"Ran update for '{date_key}'.",
                 ]

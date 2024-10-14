@@ -61,6 +61,7 @@ that must be subsequently filled in by the '..._funcs'.
 
 # # single braces are for fields populated by the content_type data.
 # # double braces fields are populated by the record data.
+
 letter_bodies = dict(
 
     angie_print="""
@@ -381,6 +382,9 @@ Please send a check for ${current_dues} to the Club
 (address provided below.)""",
 
 
+    # following will eventually be redacted in favour of
+    # first_dues_payment_welcome
+
     welcome2full_membership="""
 As Membership Chair, it is my pleasure to welcome you as a new
 member to the Bolinas Rod and Boat Club!
@@ -419,6 +423,45 @@ meeting is an exception to this rule. You'll be receiving
 announcements from the Club Secretary. Please come and attend
 meetings and other functions to enjoy the camaraderie!""",
 
+    first_dues_payment_welcome="""
+Your dues payment of ${amt_paid} has been received so it is now
+my pleasure, as Membership Chair, to welcome you as a new member
+to the Bolinas Rod and Boat Club!
+
+As you may know, the Club has its own web site 'rodandboatclub.com'
+which is password protected. The password is 'fish' and although
+not a very closely guarded secret, please do not share it with non
+members.  By clicking on the "Membership" tab, you can find a
+listing of all your fellow members along with contact information.
+Please have a look and if you see any inaccuracies please let me
+know so corrections can be made.
+
+There is a wealth of history on our website: recordings of past
+'marine moments' along with photos of events, and forms for renting
+the club ~ lots to explore there.
+
+Members can (upon payment of a $25 deposit) get a key to the Club
+from "keeper of the keys" Ralph Cammicia.  This provides fishermen
+and boaters access to the docks (the use of which is a privilege
+for which there is an extra fee- see Docks and Yards Chair Don
+Murch about that) and also many take advantage of having this
+access to spend time on the balcony enjoying views of the lagoon
+and Bolinas Ridge.  Please be sure to lock up upon leaving.
+
+The Club is available for members to rent for private functions (if
+certain conditions are met.)  More information can be found on the
+web site: "Rules and Forms" and under that "Club Rentals".
+
+Please contact your sponsors or reach out to me if you have any
+questions about anything related to the Club. If I can't answer,
+I'll try to find someone who can.
+
+As you already know, general membership meetings are held on the
+first Friday of each month @ 7:30. The February Annual General
+meeting, held at 6pm, is an exception to this rule. You'll be
+receiving announcements from the Club Secretary. Please come and
+attend meetings and other functions to enjoy the camaraderie!""",
+
     expired_application="""
 With considerable regret it is my duty to inform you of the
 following:
@@ -453,7 +496,7 @@ to the Bolinas Rod & Boat Club, PO Box 248, Bolinas, CA 94924.""",
 
 
 ### !!!!!!!!!!!!!!!!!!!! POSTSCRIPTS !!!!!!!!!!!!!!!!! ##
-post_scripts = dict(
+post_scripts= dict(
 
     venmo="""
 An alternative to sending a check has been provided by our
@@ -922,6 +965,19 @@ content_types = dict(  # which_letter
         "post_scripts": (post_scripts["ref1_email_or_PO"],
                          ),
         "holder_funcs": (routines.assign_welcome2full_membership,),
+        "funcs": (members.q_mailing,),
+        "e_and_or_p": "one_only",
+        },
+
+    first_dues_payment_welcome={
+        # called by code/ap_update.appD
+        "subject": "You are a member!",
+        "from": authors["membership"],
+        "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
+        "body": letter_bodies["first_dues_payment_welcome"],
+        "post_scripts": (),
+        "holder_funcs": (),
         "funcs": (members.q_mailing,),
         "e_and_or_p": "one_only",
         },
