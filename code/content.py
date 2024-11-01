@@ -294,10 +294,10 @@ at rodandboatclub@gmail.com?
 
 Thanks,""",
 
-    waiting4application_fee="""
+    waiting4application_fee=f"""
 We've received your application which will be complete once the
-application fee ($25) has been received.  You are now listed in
-the Club data base.
+application fee (${club.applicant_fee}) has been received.
+You are now listed in the Club data base.
 
 The process has begun!""",
 
@@ -310,6 +310,26 @@ communicate further.
 
 In the mean time please keep in touch with your sponsors who
 have the duty to shepherd you through the application process.
+""",
+
+    app_fee_received="""
+Your application fee has been received so your application is
+now complete!
+
+As Membership Chair it is my pleasure to welcome you as a new
+applicant for membership in the Bolinas Rod and Boat Club.
+
+If they haven't already done so, please ask your sponsors to
+inform you of the purpose and rules of the Club (as required by
+our By-Laws.)
+
+To become eligible for membership (and not waste your application
+fee) you must attend a minimum of three meetings with in a six
+month period.  You may attend as the guest of any member; your
+sponsors are expected to introduce you.
+
+Looking forward to seeing each other at future meetings held at
+the Club: 83 Wharf Rd., Bolinas, CA 94924
 """,
 
     new_applicant_welcome="""
@@ -749,6 +769,18 @@ content_types = dict(  # which_letter
         "cc": "sponsors",
         "bcc": "alex@kleider.ca",
         "body": letter_bodies["new_applicant_welcome"],
+        "post_scripts": (),
+        "holder_funcs": (routines.assign_applicants2welcome,),
+        "funcs": (members.std_mailing_func, ),
+        "e_and_or_p": "one_only",
+        },
+
+    app_fee_received={
+        "subject": "BR&BC Application",
+        "from": authors["membership"],
+        "cc": "sponsors",
+        "bcc": "alex@kleider.ca",
+        "body": letter_bodies["app_fee_received"],
         "post_scripts": (),
         "holder_funcs": (routines.assign_applicants2welcome,),
         "funcs": (members.std_mailing_func, ),

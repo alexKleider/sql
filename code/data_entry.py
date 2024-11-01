@@ -21,8 +21,10 @@ and update.py
 
 Provides
     data_entry.add_new_applicant_cmd()
-    data_entry.change_status_cmd() (under development)
-    data_entry.applicant_update_cmd() (under development)
+    data_entry.update_applicant_date_cmd  almost done!
+    data_entry.change_status_cmd() (under development) NOT USED YET
+#   data_entry.applicant_update_cmd() # use this name for
+update_applicant_date_cmd.
 """
 app_query = """ -- current applicants
     SELECT P.personID, P.last, P.first, P.suffix,
@@ -406,6 +408,7 @@ def update_applicant_date_cmd(report=None):
 
 def change_status_cmd(report=None):
     """
+    NOT USED
     """
     if not report:
         report = []
@@ -440,15 +443,6 @@ def change_status_cmd(report=None):
     helpers.add2report(report,
         "...finished code/data_entry/change_status.cmd.",
         also_print=True)
-    return report
-
-
-def applicant_update_cmd():
-    """
-    """
-    report = ["Entering applicant_update_cmd...", ]
-    report.extend(["under development....",
-            "Leaving applicant_update_cmd",])
     return report
 
 

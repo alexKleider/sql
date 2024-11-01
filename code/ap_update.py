@@ -113,6 +113,47 @@ def applicant_record():
         return
 
 
+def email(ap_rec):
+    """
+    <ap_rec>:an applicant record with the following fields:
+        "ctype", "sponsor[1,2]email", "email"
+    as well as anyting needed fo format the letter body
+    pertinent to "ctype"/"content_type" filed.
+    The email is created and added to club.AX_EMAIL_JSON
+    defined in club module as 'Secret/ax_emails.json'.
+    """
+    # First prepare the email template:
+    template =  ["Dear {first} {last}{suffix},"]
+    ctype = content.content_types[ap_rec["ctype"]]
+    for key, value in ctype.items():
+        print(f"{key}: {value}")
+    _ = input()
+    template.append(ctype["body"])
+    template.append(ctype["from"]["email_signature"])
+    preface = "PS"
+    for ps in [ps for ps in ctype['post_scripts']]:
+        template.append('/n' + preface + ": " + ps)
+        preface = preface+"S"
+    ap_rec["template"] = '\n'.join(template)
+    sender = ctype["from"]["email"]
+    sponsors = ', '.join( [email for email in [
+            ap_rec["sponsor1email"], ap_rec["sponsor2email"]]
+            if email]  )
+    e_rec = {
+        "From": sender,
+        "Sender": sender,
+        "Reply-To": ctype["from"]["reply2"],
+        "To": ap_rec['email'],
+        "Cc": sponsors,
+        "Bcc": 'alex@kleider.ca',
+        "Subject": ctype["subject"],
+        "attachments": [],
+        "body": ap_rec["template"].format(**ap_rec),
+        }
+    helpers.add2json_file(e_rec, club.AX_EMAIL_JSON,
+            verbose=True)
+
+
 date_keys = [  # for each of these keys a function follows
     "app_rcvd", "fee_rcvd", "meeting1", "meeting2", "meeting3",
     "approved", "dues_paid", "notified", ]
@@ -131,28 +172,30 @@ def appf(ap_rec):
     print("Running appf: add app fee received date")
     date = helpers.date_entry_w_default(
                 prompt_preface="Date fee received")
+    queries = []
     query = f"""UPDATE Applicants SET fee_rcvd = "{date}"
                 WHERE personID = {ap_rec["personID"]}
                 AND notified = "" AND fee_rcvd = "";"""
-    print(query)
-    print("Still need to update Person_Status table!")
+    queries.append(query)
     query = f"""UPDATE Person_Status set end = "{date}"
                 WHERE personID = {ap_rec["personID"]}
                 AND statusID = 1;"""
-    print(query)
-    print("*** Need to GENERATE LETTER of acknowledgement***")
-    #     acknowledging receipt of application
-    print("...change status to 3:no meetings yet.")
+    queries.append(query)
     query = f"""INSERT INTO Person_Status
                 (personID, statusID, begin) VALUES
                 ({ap_rec["personID"]}, 3, "{date}")
-                ;"""
+                ;  -- statusID 3 = no meetings yet"""
+    queries.append(query)
     # make Receipts entry of app fee
     query = f"""INSERT INTO Receipts
         (personID, date_received, acknowledged, ap_fee) VALUES
         ({ap_rec["personID"]}, "{date}", "{date}", 25)
         ;"""
-    print(query)
+    queries.append(query)
+    ap_rec["ctype"] = "app_fee_received"
+    email(ap_rec)  # files the email
+    for query in queries:
+        print(query)
 
 
 def app1(applicant_record):
@@ -161,21 +204,22 @@ def app1(applicant_record):
     print("Running app1: add 1st meeting date")
     date = helpers.date_entry_w_default(
                 prompt_preface="Date of 1st meeting")
+    queries = []
     query = f"""UPDATE Applicants SET meeting1 = "{date}"
                 WHERE personID = {applicant_record["personID"]}
                 AND notified = "" AND meeting1 = "";"""
-    print(query)
-    print("Still need to update Person_Status table!")
+    queries.append(query)
     query = f"""UPDATE Person_Status set end = "{date}"
                 WHERE personID = {applicant_record["personID"]}
                 AND statusID = 3;"""  # end status 3: no meetings
-    print(query)
-    print("... change status to 4:one meeting.")
+    queries.append(query)
     query = f"""INSERT INTO Person_Status
                 (personID, statusID, begin) values
                 ({applicant_record["personID"]}, 4, "{date}")
-                ;"""
-    print(query)
+                ;  -- statusID 4 == one meeting"""
+    queries.append(query)
+    for query in queries:
+        print(query)
 
 def app2(applicant_record):
     """Provide credit for second meeting """
@@ -183,21 +227,22 @@ def app2(applicant_record):
     # No need for mailing
     date = helpers.date_entry_w_default(
                 prompt_preface="Date of 2nd meeting")
+    queries = []
     query = f"""UPDATE Applicants SET meeting2 = "{date}"
                 WHERE personID = {applicant_record["personID"]}
                 AND notified = "" AND meeting2 = "";"""
-    print(query)
-    print("Still need to update Person_Status table!")
+    queries.append(query)
     query = f"""UPDATE Person_Status set end = "{date}"
                 WHERE personID = {applicant_record["personID"]}
                 AND statusID = 4;"""  # end status 4: 1 meeting
-    print(query)
-    print("... change status to 5:two meetings.")
+    queries.append(query)
     query = f"""INSERT INTO Person_Status
                 (personID, statusID, begin) values
                 ({applicant_record["personID"]}, 5, "{date}")
-                ;"""
-    print(query)
+                ;  -- statusID 5 == two meetings"""
+    queries.append(query)
+    for query in queries:
+        print(query)
 
 def app3(applicant_record):
     """Provide credit for third meeting """
@@ -205,55 +250,22 @@ def app3(applicant_record):
     # No need for mailing
     date = helpers.date_entry_w_default(
                 prompt_preface ="Date of 3rd meeting")
+    queries = []
     query = f"""UPDATE Applicants SET meeting3 = "{date}"
                 WHERE personID = {applicant_record["personID"]}
                 AND notified = "" AND meeting3 = "";"""
-    print(query)
-    print("Still need to update Person_Status table!")
+    queries.append(query)
     query = f"""UPDATE Person_Status set end = "{date}"
                 WHERE personID = {applicant_record["personID"]}
                 AND statusID = 5;"""  # end of 2 meeting status
-    print(query)
-    print("...change status to 6:three meetings.")
+    queries.append(query)
     query = f"""INSERT INTO Person_Status
                 (personID, statusID, begin) values
                 ({applicant_record["personID"]}, 6, "{date}")
-                ;"""
-    print(query)
-
-def email(ap_rec):
-    """
-    <ap_rec>:an applicant record with the following fields:
-        "ctype", "sponsor[1,2]email", "email"
-    as well as anyting needed fo format the letter body.
-    The email is created and added to club.AX_EMAIL_JSON
-    defined in club module as 'Secret/ax_emails.json'.
-    """
-    # First prepare the email template:
-    template =  ["Dear {first} {last}{suffix},"]
-    template.append(ap_rec["ctype"]["body"])
-    template.append(ap_rec["ctype"]["from"]["email_signature"])
-    template.extend(content.get_postscripts(
-                ap_rec["ctype"]) )
-    ap_rec["template"] = '\n'.join(template)
-    sender = ap_rec["ctype"]["from"]["email"]
-    sponsors = ', '.join( [email for email in [
-            ap_rec["sponsor1email"], ap_rec["sponsor2email"]]
-            if email]  )
-    e_rec = {
-        "From": sender,
-        "Sender": sender,
-        "Reply-To": ap_rec["ctype"]["from"]["reply2"],
-        "To": ap_rec['email'],
-        "Cc": sponsors,
-        "Bcc": 'alex@kleider.ca',
-        "Subject": ap_rec["ctype"]["subject"],
-        "attachments": [],
-        "body": ap_rec["template"].format(**ap_rec),
-        }
-    helpers.add2json_file(e_rec, club.AX_EMAIL_JSON,
-            verbose=True)
-
+                ;   --change status to 6:three meetings """
+    queries.append(query)
+    for query in queries:
+        print(query)
 
 def appA(ap_rec):
     """Add board approval date """
@@ -268,32 +280,32 @@ def appA(ap_rec):
     ap_rec["current_dues"] = prorated_dues
     ap_rec["ctype"] = content.content_types[
                             "request_inductee_payment"]
-
     date = helpers.date_entry_w_default(
                 prompt_preface="Board approval date")
+    queries = []
     query = f"""UPDATE Applicants SET approved = "{date}"
                 WHERE personID = {ap_rec["personID"]}
                 AND notified = "" AND approved = "";"""
-    print(query)
+    queries.append(query)
     query = f"""UPDATE Person_Status set end = "{date}"
                 WHERE personID = {ap_rec["personID"]}
                 AND statusID = 6;"""  # end 6: 3 meeting status
-    print(query)
-    print("Still need to send acknowledgement")
-    print("*** GENERATE LETTER: voted in and fee request***")
-    print("and then change status to 8:inducted & notified.")
-    # If can send letters, no need for status 7
+    # sending letter so no need for status 7
     query = f"""INSERT INTO Person_Status
                 (personID, statusID, begin) values
                 ({ap_rec["personID"]}, 8, "{date}")
                 ;"""  # membership pending payment of dues
-    print(query)
-    print("AND")
+    queries.append(query)
     query = f"""INSERT INTO Dues
                 (personID, dues_owed) values
                 ({ap_rec["personID"]}, {prorated_dues})
                 ;"""
-    print(query)
+    queries.append(query)
+    for query in queries:
+        print(query)
+        yn = input("OK to commit above query? (y/n) ")
+        if yn and yn[0] in "yY":
+            routines.fetch(query, from_file=False, commit=True)
     ap_rec["ctype"] = "request_inductee_payment"
     email(ap_rec)  # files the email
 
@@ -318,18 +330,18 @@ def appD(ap_rec):
     ap_rec["ctype"] = content.content_types[
                             "first_dues_payment_welcome"]
     email(ap_rec)
+    queries = []
     query = f"""UPDATE Applicants SET
                     dues_paid = "{date}",
                     notified = "{date}"
                 WHERE personID = {ap_rec["personID"]}
                 AND notified = "" AND dues_paid = "";"""
-    print(query)
+    queries.append(query)
     query = f"""UPDATE Person_Status set end = "{date}"
                 WHERE personID = {ap_rec["personID"]}
                 AND statusID = 8   -- pending receipt of dues
                 ;"""
-    print(query)
-    print("AND")
+    queries.append(query)
     yr_later = int(date) + 10000
     query = f"""INSERT INTO Person_Status
                 (personID, statusID, begin, end) values
@@ -337,15 +349,13 @@ def appD(ap_rec):
                 "{date}", "{yr_later}")
                 -- first year of membership
                 ;"""
-    print(query)
-    print("AND")
+    queries.append(query)
     query = f"""INSERT INTO Person_Status
                 (personID, statusID, begin) values
                 ({ap_rec["personID"]}, 15, "{yr_later}")
                 -- member in good standing
                 ;"""
-    print(query)
-    print("Credit dues payment in Receipts...")
+    queries.append(query)
     prorated_dues = members.prorate(
                                 helpers.month,
                                 club.yearly_dues,
@@ -356,20 +366,20 @@ def appD(ap_rec):
                  ({ap_rec["personID"]}, "{date}",
                     {prorated_dues}, "{date}")
             ;"""
-    print(query)
-    print("Credit dues payment in Dues...")
+    queries.append(query)
     query = f"""UPDATE Dues SET
                 dues_owed = 0
                 WHERE personID = {ap_rec["personID"]}
                     AND dues_owed = {prorated_dues}
             ;"""
-    print(query)
-    print("*** GENERATE LETTER: welcome to new member***")
-    notices = [
-        "Still need to send out receipt ....",
-            ]
-    for line in notices[:-1]: print(line)
-    _ = input(notices[-1])
+    queries.append(query)
+    for query in queries:
+        print(query)
+        yn = input("OK to commit above query? (y/n) ")
+        if yn and yn[0] in "yY":
+            routines.fetch(query, from_file=False, commit=True)
+    ap_rec["ctype"] = "welcome2full_membership"
+    email(ap_rec)  # files the email
 
 
 def appN(ap_rec):

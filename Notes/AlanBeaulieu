@@ -1,6 +1,44 @@
 File: AlanBeaylieu
 Notes from Learning SQL by Alan Beaulieu (O'Reilly)
 
+Intro
+=====
+Keys:
+    Primary key
+        may be compound
+        may be "natural or surrogate (eg auto-assigned)
+"Redundant Data" Foreign Keys
+    information used (in "joins") to navigate to other tables
+
+
+SQL Statement Classes
+=====================
+Schema Statements- define  } the data
+Data Statements- manipulate} structures
+Transaction Statements- begin, end, rollback transactions
+
+Schema statement created data is stored in the data dictionary
+(metadata.)
+Data portion of SQL language consists of the SELECT, UPDATE,
+INSERT & DELETE commands.
+
+Most queries include at least the following three clauses:
+SELECT  /% one or more things %/
+FROM  /% one or more places */
+WHERE  /% one or more conditions apply */ ...
+
+also: INSERT & UPDATE
+
+To see how many rows are affected:
+Try sqlite3_changes() and/or sqlite3_total_changes()
+Look for
+# returned by select
+# created by insert
+# modified by update
+# removed by delete
+
+
+
 Query Clauses
 =============
 SELECT
