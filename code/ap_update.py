@@ -243,6 +243,9 @@ def app2(applicant_record):
     queries.append(query)
     for query in queries:
         print(query)
+        yn = input("OK to commit above query? (y/n) ")
+        if yn and yn[0] in "yY":
+            routines.fetch(query, from_file=False, commit=True)
 
 def app3(applicant_record):
     """Provide credit for third meeting """
@@ -378,7 +381,7 @@ def appD(ap_rec):
         yn = input("OK to commit above query? (y/n) ")
         if yn and yn[0] in "yY":
             routines.fetch(query, from_file=False, commit=True)
-    ap_rec["ctype"] = "welcome2full_membership"
+    ap_rec["ctype"] = "first_dues_payment_welcome"
     email(ap_rec)  # files the email
 
 

@@ -39,9 +39,6 @@ except ImportError: import members
 try: from code import multiple
 except ImportError: import multiple
 
-try: from code import commands
-except ImportError: import commands
-
 
 options = (  # menu below main menu item 12. Data Entry (Dates)
     "Applicants",    # app_rcvd, fee_rcvd, meeting1,2,3,
@@ -498,7 +495,7 @@ def receipts_cmd():
         f"{holder.email_json} and {holder.mail_dir}")
     holder.which = content.content_types["thank"]
     holder.direct2json_file = True
-    ret.extend(commands.assign_templates(holder))
+    ret.extend(content.assign_templates(holder))
     set_default_dates(holder)
     while True:
         res = add_receipt_entries(holder, ret)

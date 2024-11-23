@@ -23,16 +23,19 @@ if __name__ == '__main__':
     yn = input("Do you wish to see a report? (y/n): ")
     # 2do: report has to do with program progress
     #      data file output should be made independent of it.
+    report = ["Report generated using "]
+    report.append("=" * len(report[0]))
     while True:
         cmd = commands.get_command()
         if cmd: 
-            res = cmd()
+            res = cmd(report=report)
             if yn and yn[0] in 'Yy':
                 outfile = input(
                 "Send report to file (blank if to StdOut:) ")
                 if outfile:
                     with open(outfile, 'w') as outstream:
-                        outstream.write('\n'.join(res))
+#                       outstream.write('\n'.join(res))
+                        outstream.write('\n'.join(report))
                         print(
                             f"Results sent to {outstream.name}.")
                 else:

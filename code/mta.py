@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-# File: config.py
+# File: mta.py      ("--mta" command line option.)
+# used to be called "config.py" which conflicts
+# with the Python standard library
+# within Sql code base this is being moved onto the send_email
+# function rather than being imported. 
 
 """
 Provides infrastructure for send_emails.py in
@@ -8,7 +12,7 @@ the SQL code base and for send.py elsewhere.
 
 Three hard links:
 this file is used by the following code bases:
-    1. the ~/Git/Club/Utils: Pymail/config.py
+    1. the ~/Git/Club/Utils: mta.py (used to be: Pymail/config.py)
     2. the ~/Git/Lib: code/config.py
     2. the ~/Git/Sql: code/Pymail/config.py
 
@@ -29,7 +33,6 @@ def getpw(service):
         return f_obj.read().strip()
 
 
-# Plan to rename 'config' to 'mta' ("--mta" command line option.)
 # mta = dict(
 config = dict(
     sonic= {
@@ -84,8 +87,8 @@ config = dict(
 
 if __name__ == '__main__':
 
-#   print("Redacted for security reasons!!")
-#   sys.exit()
+    print("Passwords are redacted for security reasons!!")
+    sys.exit()
 
     ### For testing only: comment out above two lines.
     pws = set()

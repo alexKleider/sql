@@ -2,12 +2,10 @@
 
 # File: send_emails.py
 """
-Used to send an email using Python modules only.
-
 Provides send.  (when imported as a module)
 
 When run as __main__, sends emails found in the
-emails.json file defined by club.Holder().
+emails.json file defined by club.EMAIL_JSON.
 
 Have not yet implemented ability to use
 a second command line argument to specify
@@ -20,36 +18,92 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
-# from email.mime.base import MIMEBase
-# from email import encoders
 import mimetypes
 import hashlib
-#import json
 import time
 import random
+try: from code.club import EMAIL_JSON as json_email_file
+except ImportError: from club import EMAIL_JSON as json_email_file
+try: from code import helpers
+except ImportError: import helpers
 
-import config  # my accompanying "config.py" file;
-               # NOT config module from PyPy
-try:
-    from code import club
-except ImportError:
-    import club
-try:
-    from code import helpers
-except ImportError:
-    import helpers
 
-MIN_TIME_TO_SLEEP = 1   #} Seconds between
-MAX_TIME_TO_SLEEP = 5   #} email postings.
+def getpw(service):
+    """
+    Passwords are in highly restricted dot files.
+    Each file contains only the password.
+    """
+    with open(
+        os.path.expanduser('~/.pw.{}'.format(service)), 'r') as f_obj:
+        return f_obj.read().strip()
+
+
+mta_config = dict(  # mta configurations
+                    # Used to have a choice of mta's;
+                    # no longer so!
+    sonic= {   # No longer works, perhaps because
+               # we now have only an email account.
+        "host": "smtp://akleider@mail.sonic.net",
+        "port": "587",
+        "protocol": "smtp",
+        "auth": "on",
+        "tls_starttls": "on",
+        "user": "akleider@sonic.net",
+        "from": "akleider@sonic.net",
+        "password": getpw("sonic"),
+        "tls": "on",
+    },
+    easy= {  # the only currently viable option
+        "host": "mailout.easydns.com",
+        "tls_port": "587",
+        "ssl_port": "465",  # SSL deprecated predecessor to TLS
+#       "port": "2025",
+        "port": "587",
+        "protocol": "smtp",
+        "auth": "on",
+        "tls_starttls": "on",
+        "user": "kleider.ca",
+        "from": "alex@kleider.ca",
+        "password": getpw("easy"),
+        "tls": "on",
+    },
+# google no longer provides smtp services so 
+# the following two won't work!!
+    akg= {
+        "host": "smtp.gmail.com",
+        "port": "587",
+        "tls_port": "587",
+        "port": "587",
+        "ssl_port": "465",
+        "user": "alexkleider@gmail.com",
+        "from": "alexkleider@gmail.com",
+        "password": getpw("akg"),
+
+    },
+    clubg= {
+        "host": "smtp.gmail.com",
+        "port": "587",
+        "tls_port": "587",
+        "ssl_port": "465",
+        "user": "rodandboatclub@gmail.com",
+        "from": "rodandboatclub@gmail.com",
+        "password": getpw("clubg"),
+
+    },
+        )  # end of dict of mta configurations
+
+MIN_PAUSE = 1   #} Seconds between
+MAX_PAUSE = 5   #} email postings.
 
 def pause():
     """
     Provides a random interval between emails so that the
     MTA is less likely to think the process is automated.
-    Only used in the case of gmail.
+    Implemented when gmail was used so is probably no longer
+    necessary.
     """
-    time.sleep(random.randint(MIN_TIME_TO_SLEEP,
-                              MAX_TIME_TO_SLEEP))
+    time.sleep(random.randint(MIN_PAUSE,
+                              MAX_PAUSE))
 
 
 rfc5322 = {    # Here for reference, not used by the code.
@@ -197,48 +251,42 @@ def into_string(header_value):
         return ''
 
 
-def send(emails, mta='easy',
-                report_progress=True,
+def send(emails, mta='easy', report=None,
                             include_wait=True):
     """
     Sends emails using Python modules.
-    <emails> is a list of dicts each representing an email to
-    be sent. Each dict can have the following keys, some optional:
+    <emails> is a list of dicts (typically collected from a json
+    file.) Each dict represents an email to be sent and can have
+    the following keys, some optional:
     'body': a (possibly empty) string.
     'attachments': a list (possible empty) of file names.
     'From', 'Reply-To', 'To', 'Subject', ...
-    ...and possibly other commonly used fields defined by rfc5322.
-    ...Values are either strings or lists of strings;
-    in the latter case the values are converted into a single
-    comma separated string.
+    and possibly other commonly used fields defined by rfc5322.
+    Values are either strings or lists of strings in which case
+    the values are converted into a single comma separated string.
+    <include_wait> if True inserts a pause after each mailing.
     """
     n_emails = len(emails)
     counter = 0
-    print("Using {} as MTA...".format(mta))
-    server = config.config[mta]
+#   print("Using {} as MTA...".format(mta))
+#   _ = input(mta_config)
+    server = mta_config[mta]
     sender = server["from"]
-    if report_progress:
-        print("Initiating SMTP: {host} {port}".format(**server))
+    helpers.add2report(report,
+        "Initiating SMTP: {host} {port}".format(**server),
+        also_print=True)
     s = smtplib.SMTP(host=server['host'], port=server['port'])
     s.starttls()
     s.ehlo
-
     # Comment out one of the following two:
 #   testing = True     # Very INSECURE: use only for testing.
     testing = False    # This should be the default.
-    if report_progress:
-        if mta.endswith('g') and testing:
-            message = (
-                "Attempting login: {user} /w pw '{password}' ...")
-        else:
-            message = (
-                "Attempting login: {user} /w pw REDACTED ...")
-        print(message.format(**server))
     s.login(server['user'], server['password'])
-    response = input("... successful.  Continue? ")
-    if not response or not response[0] in 'yY':
+    helpers.add2report(report,
+        f"Successfully connected to {mta}", also_print=True)
+    response = input("... Continue? ")
+    if not (response and response[0] in 'yY'):
         sys.exit()
-
     try:
         for email in emails:
             email["Sender"] = sender
@@ -247,31 +295,32 @@ def send(emails, mta='easy',
             attachments = email['attachments']
             del email['body']
             del email['attachments']
-            if report_progress:
-                counter += 1
-                print("Sending email {} of {} ..."
-                    .format(counter, n_emails))
-                for key in email:
-                    print("\t{}: {}".format(key, email[key]))
-                    msg[key] = into_string(email[key])
+            counter += 1
+            helpers.add2report(report,
+                f"Sending email {counter} of {n_emails} ...",
+                also_print=True)
+            for key in email:
+                print(f"\t{key}: {email[key]}")
+                msg[key] = into_string(email[key])
             msg.attach(MIMEText(body, 'plain'))
-#           attach_many(attachments, msg)  ## Fails, 2b trouble sh.
+#           attach_many(attachments, msg) ## Fails, 2b trouble sh.
             for attachment in attachments:
                 attach(attachment, msg)
-
             try:
                 s.send_message(msg)
             except SMTPDataError:
-                print("FAILURE sending email #{} to {}"
-                      .format(n, email['To']))
+                helpers.add2report(report,
+                    "FAILURE sending email " +
+                    f"#{n} to {email['To']}",
+                    also_print=True)
                 continue
             if include_wait:
                 pause()
     except:
         s.quit()
-        if report_progress:
-            print("Pymail.send.send() failed sending to {}."
-                .format(email['To']))
+        helpers.add2report(report,
+            "Pymail.send.send() failed sending to {}."
+                .format(email['To']), also_print=True)
         raise
     s.quit()
 
@@ -282,13 +331,7 @@ def test_send():
     Here's hoping it goes well.
     Goog luck.
     """
-
-
     mta = "easy"
-    if not mta in config.config:
-        print("MTA server designation invalid.")
-        sys.exit()
-
     test_emails = [
         {
         'From': 'alex@kleider.ca',
@@ -302,15 +345,21 @@ def test_send():
         'body': test_body_1,
         },
     ]
-    send(test_emails, mta=mta)
+    send(test_emails, mta)
 
 def main():
     """
     """
-    holder = club.Holder()
-    data = helpers.get_json(holder.email_json)
-    send(data)
+    data = helpers.get_json(json_email_file)
+    send(data, report=[])
+#   test_send()
+
+def ck_pseudo_recipient():
+    _ = input("pseudo_recipient('ak', 'alexkleider@gmail.com')"
+        + " yields " +
+        f"{pseudo_recipient('ak', 'alexkleider@gmail.com')}")
 
 if __name__ == "__main__":
+#   ck_pseudo_recipient()
     main()
 

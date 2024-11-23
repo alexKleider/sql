@@ -23,7 +23,10 @@ with engine.connect() as conn:
     conn.commit()
 """
 
-import sqlalchemy
+
+
+try: from code import sqlalchemy
+except ImportError: import sqlalchemy
 
 try: from code import club
 except ImportError: import club

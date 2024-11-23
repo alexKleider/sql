@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 
 # File: code/data_entry.py
+"""
+Handle adding data to the db.
+An ammalgamation of what used to be applicants.py
+and update.py
+
+Provides
+    data_entry.add_new_applicant_cmd()
+    data_entry.update_applicant_date_cmd  almost done!
+    data_entry.change_status_cmd() (under development) NOT USED YET
+#   data_entry.applicant_update_cmd() # use this name for
+update_applicant_date_cmd.
+"""
+
+# File: code/data_entry.py
 
 try: from code import routines
 except ImportError: import routines
@@ -14,18 +28,10 @@ except ImportError: import textual
 try: from code import club
 except ImportError: import club
 
-"""
-Handle adding data to the db.
-An ammalgamation of what used to be applicants.py
-and update.py
+doit = False  # when False only prints queries
+              # when True runs queries
 
-Provides
-    data_entry.add_new_applicant_cmd()
-    data_entry.update_applicant_date_cmd  almost done!
-    data_entry.change_status_cmd() (under development) NOT USED YET
-#   data_entry.applicant_update_cmd() # use this name for
-update_applicant_date_cmd.
-"""
+
 app_query = """ -- current applicants
     SELECT P.personID, P.last, P.first, P.suffix,
         A.sponsor1ID, A.sponsor2ID, A.app_rcvd, A.fee_rcvd,
@@ -174,7 +180,7 @@ def file2app_data(file_content, report=None):
 
 
 def add_new_applicant_cmd(report=None):
-    """
+    """     a KEEPER!
     Provides ability to enter one new applicant into the db:
     Creats appropriage entries in "People", "Person_Status"
     and "Applicant" tables. 
@@ -183,12 +189,15 @@ def add_new_applicant_cmd(report=None):
         c. Send welcoming email
         b. End status 2 and begin status 3
     Returns a report (in the form of a list of lines.)
+    Used both by
+    1. menu.py: Data Entry => New Applicant   &
+    2. main.py: Choice 27. Enter new applicant data
     """
     if not report: report=[]
     helpers.add2report(report,
                         "Entering add_new_applicant_cmd...",
                         also_print=True)
-    data = textual.get_demographics(report=report)
+    data = textual.get_demographics(applicant=True, report=report)
     if not data: 
         helpers.add2report(report,
                         "...add_new_applicant aborted",
@@ -287,14 +296,17 @@ def query2update_applicant_table(personID, mapped_changes,
     # Could be a re-application...
     entries = routines.query2dict_listing(
             f"""SELECT * FROM Applicants
-            WHERE personID = {personID};""",
+            WHERE personID = {personID}
+            AND notified = "" ;""",
             routines.keys_from_schema("Applicants"))
-    if len(entries) > 1:
+    if len(entries) > 1:  # shouldn't happen in view of
+                          # notified="" clause in query.
         helpers.add2report(report,
             "More than one entry for this applicant!",
             also_print=True)
-    app_rcvd = entries[-1]["app_rcvd"]
-    # ...so pick the most recent entry
+        app_rcvd = entries[-1]["app_rcvd"]
+    else:    # ...so pick the most recent entry
+        app_rcvd = entries[0]["app_rcvd"]
     query = f"""UPDATE Applicants SET
             {{}}
             WHERE personID = {personID}
@@ -377,10 +389,9 @@ def update_applicant_date_cmd(report=None):
     if textual.yes_no(update_query,
             title="Execute query?"):
         routines.fetch(update_query, from_file=False,
-                        commit=True, verbose=True)
-        helpers.add2report(report, 
-            ["Following update_query executed:", update_query],
-                also_print=True)
+                    commit=True, verbose=True)
+    helpers.add2report(report, 
+        ["1st (update) query:", update_query], also_print=True)
     # next set up for new status entry:
     picked["statusID"] = int(picked["statusID"]) + 1
     # ^ we are assuming that new statusID incriments by 1^
@@ -390,16 +401,13 @@ def update_applicant_date_cmd(report=None):
         ({personID}, {statusID}, "{new_date}");
         """.format(**picked)
     helpers.add2report(report,
-        [f"2nd (insert) query:", insert_query],
-        also_print=True)
+        ["2nd (insert) query:", insert_query], also_print=True)
     if textual.yes_no(insert_query,
             title="Execute query?"):
         routines.fetch(insert_query, from_file=False,
-                        commit=True, verbose=True)
-        helpers.add2report(report,
-            ["Following insert_query executed:",
-                insert_query],
-                also_print=True)
+                    commit=True, verbose=True)
+    helpers.add2report(report, 
+        ["3rd (insert) query:", update_query], also_print=True)
     yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
         for line in report:

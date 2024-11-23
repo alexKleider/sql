@@ -99,7 +99,9 @@ def fetch(sql_source, db=db_file_name, params=None, data=None,
             query = source.read()
 #       _ = input(f"### Query begins next line\n{query}")
     else: query = sql_source
-#   print(query)
+    if verbose:
+        print("Query being called is...")
+        _ = input(query)
     db, cur = initDB(db)
     if data:
         cur.executemany(query, data)
@@ -582,7 +584,7 @@ def pick_People_record(header_prompt=None, report=None):
             helpers.add2report(report, 
                 "..non integer entered; restarting..",
                 also_print=True)
-            print(report[-1])
+            if report: print(report[-1])
             continue
         else:
             if ID == 0:

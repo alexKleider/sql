@@ -31,7 +31,7 @@ today = datetime.datetime.today()
 # sixdigitdate = today.strftime("%y%m%d")
 eightdigitdate = today.strftime("%Y%m%d")
 eightdigitdate4filename = today.strftime("%Y-%m-%d")
-timestamp = today.strftime("%Y-%m-%d_%H:%M")
+timestamp = today.strftime(         "%Y-%m-%d_%H:%M")
 timestamp4filename = today.strftime("%Y-%m-%d_%H-%M")
 month = today.month
 this_year = today.year
@@ -494,6 +494,7 @@ def add2report(report, line_or_list, also_print=False):
     where it should be removed.
     Supports many routines which have a named 'report' param.
     NOTE: must be lists, NOT tuples!!
+    ALSO NOTE: a list containing non strings would be a problem!!
     """
     if isinstance(report, list):
         if isinstance(line_or_list, str):
@@ -504,6 +505,7 @@ def add2report(report, line_or_list, also_print=False):
             if also_print:
                 for l in line_or_list: print(l)
         else:
+            print("'add2report' paramater neither str nor list!")
             assert False
 
 def save_db(new_db, outfile, key_list=None, report=None):
@@ -831,14 +833,15 @@ def add2json_file(data, json_file, verbose=True):
         json.dump(data2add, j_file)
 
 
-def get_json(file_name, report=False):
+def get_json(file_name, report=None):
     """
-    Reads 'file_name' and returns a dict.
+    JSON reads 'file_name': clients expect a list of dicts.
     Provides optional reporting.
     """
     with open(file_name, 'r') as f_obj:
-        if report:
-            print('Reading JSON file "{}".'.format(f_obj.name))
+        add2report(report,
+            f'Reading JSON file "{f_obj.name}".',
+            also_print=True)
         return json.load(f_obj)
 
 
@@ -1369,7 +1372,12 @@ def choose_and_run(proto_menu,
         print("  0: Quit")
         for key, value in menu.items():
             print(f"{key:>3}: {value}")
-        choice = int(input(prompt))
+        try:
+            choice = int(input(prompt))
+        except ValueError:
+            print("Must enter an integer " +
+                  f"0..{len(proto_menu.keys())}: ")
+            continue
         if choice == 0:
             print("Leaving menu!")
             break
@@ -1377,6 +1385,9 @@ def choose_and_run(proto_menu,
             return [
                 func for func in proto_menu.values()
                 ][choice-1](report=report)
+        else:
+            continue  # if choice > number of choices
+
 
 def main():
     print(timestamp)
@@ -1413,5 +1424,9 @@ def ck_date_entry():
 if __name__ == "__main__":
 #   main()
 #   test_Rec()
-    ck_date_entry()
+#   ck_date_entry()
+    print(f"today: {today}")
+    print(f"date: {date}")
+    print(f"eightdigitdate: {eightdigitdate}")
+    print(f"eightdigitdate4filename: {eightdigitdate4filename}")
 

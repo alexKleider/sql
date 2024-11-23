@@ -7,6 +7,8 @@ FROM People     AS P
 JOIN Applicants  AS A
 ON A.personID = P.personID
 WHERE A.notified = ""
+  AND A.meeting1 != ""
+  AND A.meeting2 != ""
   AND A.meeting3 != ""
   AND A.approved = ""
   AND A.notified = ""

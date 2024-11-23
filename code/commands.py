@@ -40,8 +40,8 @@ except ImportError: import data_entry
 try: from code import show
 except ImportError: import show
 
-try: from code import send_emails
-except ImportError: import send_emails
+try: from code import emailing
+except ImportError: import emailing
 
 
 def get_command():
@@ -69,7 +69,7 @@ Choose one of the following:  (* means don't use!)
         elif choice ==  '2': return show.show_applicants_cmd
         elif choice ==  '3': return show_names
         elif choice ==  '4': return report_cmd
-        elif choice ==  '5': return send_emails.main
+        elif choice ==  '5': return emailing.emails_cmd
         elif choice ==  '6': return no_email_cmd
         elif choice ==  '7': return get_non_member_stati_cmd
         elif choice ==  '8': return update_status_cmd
@@ -100,28 +100,6 @@ Choose one of the following:  (* means don't use!)
 # for add_dues:
 # UPDATE table SET value = value + 5 WHERE id = 1;
 
-def send_cmd():
-    """
-    Should be redacted!
-    Use ./send_emails.py
-    """
-    ret = [
-      "Send email functionality is not available from this menu.",
-      "Use './send_emails.py' instead.",
-      ]
-    for line in ret:
-        print(line)
-    return ret
-
-def payment_entry_cmd():
-    """
-    Redact- not used.
-    """
-    ret = ['"payment_entry_cmd" has been redacted.',
-            'For payment entry use 12. Data Entry (Dates)',
-            ]
-    for line in ret: print(line)
-    return(ret)
 
 def not_implemented():
     return ["Not implemented", ]
@@ -163,24 +141,28 @@ def still_owing_cmd(report=None):
     Creates a csv file of what is still owed including
     dues and (dock_usage, kayak_storage & mooring) fees.
     """
-    ret = ["Still owing csv being generated...", ]
+    helpers.add2report(report, 
+            "Still owing csv being generated...",
+            also_print=True)
     f_name = f"Secret/owing{helpers.eightdigitdate4filename}.csv"
-    print(f"Default output file is {f_name}...")
+    helpers.add2report(report,
+            f"Default output file is {f_name}...",
+            also_print=True)
     csv_name = input(
         "Enter a different name or leave blank for default: ")
     if not csv_name: csv_name = f_name
     fieldnames = (
-        "ID, first, last, suffix, dues, dock, kayak, mooring"
+        "ID, last, first, suffix, dues, dock, kayak, mooring"
                                                 .split(', '))
     res = routines.fetch("Sql/owing.sql")
     n_owing = len(res)
     helpers.dump2csv_file(res, keys=fieldnames,
             file_name=csv_name)
-    ret.append(f"...data dumped to {csv_name}.")
-    print(
-      f"There are {n_owing} entries in the 'still owing' list.")
-    if report:
-        report = ret
+    helpers.add2report(report,
+            f"...data dumped to {csv_name}.", also_print=True)
+    helpers.add2report(report, 
+      f"There are {n_owing} entries in the 'still owing' list.",
+      also_print=True)
     return report
 
 
@@ -494,37 +476,38 @@ def member_csv4angie():
 
 def for_angie(include_blanks=True):
     """
-    Returns a table of member and applicant names.
+    Returns a table of IDs, last, first & suffix for  members & applicants.
     """
-    query = """
-/* Sql/names_f.sql */
-SELECT first, last, suffix
-FROM People AS P
-JOIN Person_Status AS PS
-ON P.personID = PS.personID
-JOIN Stati as St
-ON St.statusID = PS.statusID
-WHERE 
-St.key IN ("m", "a-", "a" , "a0", "a1", "a2",
-        "a3", "ai", "ad", "av", "aw", "am")
-AND (PS.end = '' OR PS.end > {})
--- must insert today's date ^^ (helpers.todaysdate)
-ORDER BY P.last, P.first, P.suffix
-;
+    today = helpers.eightdigitdate
+    query = f"""
+        /* Sql/names_f.sql */
+        SELECT P.personID, P.first, P.last, P.suffix
+        FROM People AS P
+        JOIN Person_Status AS PS
+        ON P.personID = PS.personID
+        JOIN Stati as St
+        ON St.statusID = PS.statusID
+        WHERE 
+        St.key IN ("m", "a-", "a" , "a0", "a1", "a2",
+                "a3", "ai", "ad", "av", "aw", "am")
+        AND (PS.begin = "" OR PS.begin <= {helpers.eightdigitdate})
+        AND (PS.end = '' OR PS.end > {helpers.eightdigitdate})
+        ORDER BY P.last, P.first, P.suffix
+        ;
     """
-    keys = "first, last, suffix".split(', ')
+    keys = "personID, first, last, suffix".split(', ')
     report = ['', ]
     first_letter = 'A'
-    for d in routines.query2dict_listing(
-            query.format(helpers.eightdigitdate),
+    for d in routines.query2dict_listing( query,
             keys, from_file=False):
         if ((d['last'][:1] != first_letter)
         and (include_blanks)):
             first_letter = d['last'][:1]
             report.append("")
         if d['suffix']:
-            fstring = "{last}, {first} ({suffix})"
-        else: fstring = "{last}, {first}"
+            d['suffix'] = d['suffix'].strip()
+            fstring = "{personID:>3} {last}, {first} ({suffix})"
+        else: fstring = "{personID:>3} {last}, {first}"
         submission = fstring.format(**d)
         if submission != report[-1]:
             report.append(submission)
@@ -866,24 +849,10 @@ def get_emailing_dict(personID):
 
 
 def assign_templates(holder):
-    """ assign printer & templates..."""
-    ret = ["Assigning printer & templates...",
-           "within code.commands.assign_templates",]
-    menu = helpers.get_menu_dict(content.printers.keys())
-    print("Printer to use...")
-    for key, lpr in menu.items():
-        print(f"{key}: {lpr}")
-    index = int(input("Which printer to use? "))
-    lpr = menu[index]
-    ret.append(
-        f"          for 'printer'.. {index:>3}: {lpr}")
-    holder.lpr = content.printers[lpr]
-    holder.letter_template = content.prepare_letter_template(
-            holder.which,
-            holder.lpr)
-    holder.email_template = content.prepare_email_template(
-            holder.which)
-    return ret
+    """
+    assign_templates(holder) moved from commands to content!
+    """
+    _ = input(__doc__)
 
 def prepare_invoice(holder, personID):
     """
@@ -934,7 +903,7 @@ def prepare_mailing_cmd():
 #   _ = input(holder.which.keys())
     if {"cc", "bcc"} and set([key for key in holder.which.keys()]):
         holder.cc_sponsors = True
-    ret.extend(assign_templates(holder))
+    ret.extend(content.assign_templates(holder))
     # cc and bcc (incl sponsors) should be done in q_mailing
     # prepare holder for emails
     holder.emails = []
@@ -1176,7 +1145,6 @@ def old_receipts_cmd():  # to be redacted
         name.append(names[0])
         return ''.join(name)
 
-    today = helpers.eightdigitdate
     ret = ['Running commands.old_receipts_cmd...', ]
     print(ret[0])
     file_name = f"Secret/receipts-{today}.csv"
@@ -1233,7 +1201,7 @@ def receipts_cmd():
                 mapping['mooring'] )
         total += subtotal
     print(f"Total collected = ${total}")
-    file_name = f"receipts-{today}.csv"
+    file_name = f"receipts-{helpers.eightdigitdate4file}.csv"
 #   print(f"Sending data to {file_name}.")
     helpers.save_db(dicts, file_name, report=report)
     return report
@@ -1295,17 +1263,11 @@ def show_officers_cmd():
 
 
 if __name__ == "__main__":
+    assign_templates(None)
 #   for sponsor_name in (get_sponsor_name(45),
 #           get_sponsor_name(300)):
 #       print(repr(sponsor_name))
-    applicant_listing()
-#   with open("4Angie.csv", 'w', newline='') as csvfile:
-#       fieldnames = ('last', 'first')
-#           writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-#           writer.writeheader()
-#           for entry in for_angie():
-#               writer.writerow(
-#                   {'last': entry[0], 'first': entry[1]})
+#   applicant_listing()
 #   print(for_angie())
 #   try_applicants()
 #   print(get_emailing_dict(101))

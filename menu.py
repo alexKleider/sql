@@ -62,7 +62,7 @@ def main_menu(report=None):
     Provides choices based on what's in <hierarchy>.
     """
     routines.add2report(report,
-            "Begin main_menu...")
+            "Begin main_menu...", also_print=True)
     options = [key for key in hierarchy.keys()]
     layout = [
         [sg.Text("Make a Choice", size=(30,1),)],
@@ -104,7 +104,7 @@ def main_menu(report=None):
 
 
 if __name__ == "__main__":
-#   print(f"Running {helpers.get_os_release()}")
+    print(f"Running {helpers.get_os_release()}")
 #   print()
 #   if not textual.yes_no(
 #           f"Running {helpers.get_os_release()}",
@@ -124,11 +124,11 @@ if __name__ == "__main__":
         else:
             print("No choice made.")
             break
-        file_name = (helpers.eightdigitdate + '-'
+        file_name = (helpers.eightdigitdate + '-Report-'
                     + "_".join(func_names)
                     + ".txt")
         yn = input(
-            f"Send results to {file_name}? (y/n or other name) ")
+            f"Send report to {file_name}? (y/n or other name) ")
         if len(yn) > 1:
             file_name = yn
         if yn and yn in {'n', 'N'}:

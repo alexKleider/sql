@@ -651,7 +651,7 @@ content_types = dict(  # which_letter
             ),
         "holder_funcs": (routines.assign_just_me, ),
         "funcs": (members.std_mailing_func, ),
-        "e_and_or_p": "usps",
+        "e_and_or_p": "both",
         },
     first_notice={
         "subject": "Bolinas R&B Club fees coming due",
@@ -989,6 +989,8 @@ content_types = dict(  # which_letter
         "e_and_or_p": "one_only",
         },
     welcome2full_membership={
+        # will probably be redacted in favour of
+        # first_dues_payment_welcome
         "subject": "You are a member!",
         "from": authors["membership"],
         "cc": "sponsors",
@@ -1150,6 +1152,26 @@ def prepare_email_template(which_letter):
     ret.extend(get_postscripts(which_letter))
     return '\n'.join(ret)
 
+
+def assign_templates(holder):
+    # assign_templates(holder) moved from commands to content!
+    ret = ["Assigning printer & templates...",
+           "within code.content.assign_templates",]
+    menu = helpers.get_menu_dict(printers.keys())
+    print("Printer to use...")
+    for key, lpr in menu.items():
+        print(f"{key}: {lpr}")
+    index = int(input("Which printer to use? "))
+    lpr = menu[index]
+    ret.append(
+        f"          for 'printer'.. {index:>3}: {lpr}")
+    holder.lpr = printers[lpr]
+    holder.letter_template = prepare_letter_template(
+            holder.which,
+            holder.lpr)
+    holder.email_template = prepare_email_template(
+            holder.which)
+    return ret
 
 def contents():
     """

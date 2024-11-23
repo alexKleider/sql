@@ -314,8 +314,8 @@ def get_demographics(applicant=True, report=None):
     """
     Uses a GUI to collect all demographic data needed to create
     an entry into the People table AND (unless <applicant> is set
-    to <False>) also collect two sponsor names and app_rcvd and
-    fee_rcvd fields.
+    to <False>) also collect entries for two sponsor names and
+    app_rcvd and fee_rcvd fields.
     Caution: do not hit the minimize button ([_] top right
     corner!) This causes the system to hang!!!
     Returns a dict or None (if user aborts.)
@@ -922,20 +922,29 @@ def ck_yes_no():
         if not (yn and yn[0] in "yY"):
             break
 
+def ck_get_demographics():
+    data = get_demographics(
+            report=["ck_get_demographics report"],
+            applicant=True)
+    if isinstance(data, dict):
+        for key, value in data.items():
+            print(f"{key}: {value}")
+    else:
+        print(repr(data))
+
 
 if __name__ == "__main__":
+    ck_get_demographics()
 #   ck_yes_no()
 #   test_pick()
 #   show_fonts()
 #   test_a_show_stati()
 #   test_get_fields4()
 #   test_get_fields()
-    test_edit_person_status()
+#   test_edit_person_status()
 #   test_selectP_record()
 #   test_people_choices()
 #   test_choose()
-#   get_demographics(report=report,
-#           applicant=False)
 #   test_pick_person()
 #   test_create_dem_file()
 #   main1()
