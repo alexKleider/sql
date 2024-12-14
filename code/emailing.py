@@ -392,5 +392,6 @@ def ck_defaults():
 
 
 if __name__ == "__main__":
-    ck_defaults()
+#   ck_defaults()
+    main()
 

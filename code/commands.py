@@ -869,7 +869,7 @@ def prepare_invoice(holder, personID):
     return invoice
 
 
-def prepare_mailing_cmd():
+def prepare_mailing_cmd(report=None):
     """
     ck for 'cc', especially in response to 'sponsors'
     & assign holder.cc if needed
@@ -893,6 +893,7 @@ def prepare_mailing_cmd():
     response = helpers.get_menu_response(content.ctypes)
     if response == 0:
         ret.append("Quiting per your choice")
+        helpers.add2report(report, ret, also_print=True)
         return ret
     w_key = content.ctypes[response-1]  # which_key
     ret = [
@@ -943,6 +944,7 @@ def prepare_mailing_cmd():
     (... or using tar:
     $ tar -vczf 4Peter.tar.gz {0:}"""
             .format(holder.mail_dir))
+    helpers.add2report(report, ret, also_print=False)
     print("prepare_mailing completed..")
     return ret
 

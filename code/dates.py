@@ -523,7 +523,7 @@ def receipts_cmd():
     return ret
 
 
-def date_entry_cmd():
+def date_entry_cmd(report=None):
     ret = []
     choice = helpers.get_menu_response(
         options, header="Which table:", incl0Q=True)
@@ -534,7 +534,8 @@ def date_entry_cmd():
     elif choice == 3: ret.extend(person_status_cmd())
     elif choice == 4: ret.extend(receipts_cmd())
 
-    return ret
+    helpers.add2report(report, ret, also_print=False)
+    return report
 
 def observe():
     """
