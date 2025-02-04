@@ -56,7 +56,7 @@ hierarchy = {
             },
         }
 
-def main_menu(report=None):
+def main_menu(report=None, font=textual.font):
     """
     Returns a list of functions (usually a list of only one.)
     Provides choices based on what's in <hierarchy>.
@@ -70,7 +70,7 @@ def main_menu(report=None):
             key='CHOICE', size=(30, len(options)))],
         [sg.Button('SELECT',), sg.Button('CANCEL'),]
             ]
-    win = sg.Window("Main Menu", layout)
+    win = sg.Window("Main Menu", layout, font=font)
     e, v = win.read()
     win.close()
 #   routines.add2report(report,
@@ -89,7 +89,7 @@ def main_menu(report=None):
             key='CHOICE', size=(30, len(options)))],
         [sg.Button('SELECT',), sg.Button('CANCEL'),]
             ]
-    win = sg.Window(f"{hkey} Menu", layout)
+    win = sg.Window(f"{hkey} Menu", layout, font=font)
     e,v = win.read()
     win.close()
 #   routines.add2report(report,

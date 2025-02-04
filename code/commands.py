@@ -616,6 +616,8 @@ def leadership_cmd(report=None):
         ret.append(f.format(*tup))
     with open(outfile, 'w') as outf:
         outf.write('\n'.join(ret))
+#       print(f"\nData sent to {outf.name}.\n")
+        _ = input(f"\nData sent to {outf.name}.\n")
     report.append("Leader ship reported as ...")
     report.extend(ret)
     report.append("\nLeaving code.commands.leadership_cmd.")

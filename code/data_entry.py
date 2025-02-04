@@ -444,10 +444,16 @@ def change_status_cmd(report=None):
         personID = {personID};""")
     if not stati:
         helpers.add2report(report,
-            "... aborting change_status.cmd")
+            "No status enties... aborting change_status.cmd")
         return
-    for mapping in stati:
+    else:
+        print("for mapping in stati: print(repr(mapping)):")
+    current = {mapping for mapping in stati
+                            if mapping["end"] == ''}
+    for mapping in current:
         print(repr(mapping))
+
+
     helpers.add2report(report,
         "...finished code/data_entry/change_status.cmd.",
         also_print=True)

@@ -29,22 +29,27 @@ TO DO:
     reporting. Rename latter to former.
 """
 
-import PySimpleGUI as sg
-
 try:
     import routines
     import helpers
 except ImportError:
     from code import routines
     from code import helpers
+import PySimpleGUI as sg
+font_index = 1  # adjust for readability
+fonts = (          #  vv -- size parameter
+        ("Helvetica", 10),  # the default
+        ("Helvetica", 15),
+        ("Helvetica", 20),
+        ("Helvetica", 25),
+        )
+font= fonts[font_index]
+    # Above code only to adjust size for readability
+    #making text large enough to read.  Default size is 10.
 
 def yes_no(text, title="Run query?"):
-#   l = len(text) - len(title)
-#   if len(text) > l: l=len(text)
-#   title = title + ' '*l
     return sg.popup_yes_no(text,
-#           line_width = l,
-            title=title) == "Yes"
+            title=title, font=font) == "Yes"
 
 
 def valid_values(ev, allow_blanks=False):
@@ -79,7 +84,7 @@ def f2run():
     _ = input("Running function f2run")
 
     
-def a_show_stati(f2run):
+def a_show_stati(f2run, font=font):
     """
     A work in progress
     """
@@ -93,11 +98,12 @@ def a_show_stati(f2run):
                     pad=(1,(0,1)), font=("Free Courier", 7))]
         for item in res
         ])
-    window = sg.Window("For Info", layout,finalize=True)
+    window = sg.Window("For Info", layout,
+                       font=font, finalize=True)
     f2run()
     ret = window.read()
 
-def show_stati():
+def show_stati(font=font):
     """
     Provides an info box showing the stati:
     ...stays open until explicitly closed.
@@ -112,17 +118,19 @@ def show_stati():
                     pad=(1,(0,1)), font=("Free Courier", 7))]
         for item in res
         ])
-    window = sg.Window("For Info", layout,)
+    window = sg.Window("For Info", layout, font=font)
     ret = window.read()
 
 
-def get_fields(fields, header="Enter values for each key"):
+def get_fields(fields, header="Enter values for each key",
+               font=font):
     """
     Prompts user to supply values for each field.
     Returns None if user aborts, otherwise...
     Returns a dict keyed by <fields>,
     values are the entered (possibly empty) strings
     # Has been tested.
+    # Best to use <change_mapping> instead?
     """
     layout = [[sg.Text(header)],]
     layout.extend([
@@ -132,21 +140,22 @@ def get_fields(fields, header="Enter values for each key"):
             ])
     layout.append([sg.Button('OK'), sg.Button('Cancel')])
 
-    window = sg.Window('Enter values', layout,)
+    window = sg.Window('Enter values', layout, font=font)
 #   event, values = window.read()
     event, the_dict = window.read()
     window.close()
     if event in (None, "Cancel"):
         return
     return the_dict
-
+# end of get_fields
 
 def change_mapping(mapping,
             headers=["Correct or Enter new value(s)",
-                    "Choose from...",]):
+                    "Choose from...",], font=font):
     """
     Prompts user to change/enter mapping values.
-    Returns the modified dict or None if user aborts.
+    Returns a new/modified dict or None if user aborts.
+    <mapping> remains unchanged.
     """
     layout = [[sg.Text(headers[0])],]
     layout.extend([
@@ -156,7 +165,7 @@ def change_mapping(mapping,
             ])
     layout.append([sg.Button('OK'), sg.Button('Cancel')])
 
-    window = sg.Window(headers[1], layout,)
+    window = sg.Window(headers[1], layout, font=font)
     event, new_dict = window.read()
     window.close()
     if event in (None, "Cancel"):
@@ -165,10 +174,12 @@ def change_mapping(mapping,
 
 def change_or_add_values(mapping, report=None,
             headers=["Correct or Enter new value(s)",
-                    "Choose from...",]):
+                    "Choose from...",], font=font):
     """
     Prompts user to change/add mapping values.
     Returns the modified dict or None if user aborts.
+    Exactly the same code as <change_mapping> with addition of
+    <report>ing functionality.
     """
     helpers.add2report(report,
         "Entering code/textual.change_or_add_values...")
@@ -180,7 +191,7 @@ def change_or_add_values(mapping, report=None,
             ])
     layout.append([sg.Button('OK'), sg.Button('Cancel')])
 
-    window = sg.Window(headers[1], layout,)
+    window = sg.Window(headers[1], layout, font=font)
 #   event, values = window.read()
     event, new_dict = window.read()
     window.close()
@@ -224,7 +235,7 @@ def get_fields4(p_data, fields):
             ])
     layout.append([sg.Button('OK'), sg.Button('Cancel')])
 
-    window = sg.Window('Enter values', layout,)
+    window = sg.Window('Enter values', layout, font=font)
 #   event, values = window.read()
     ret = window.read()
     window.close()
@@ -310,7 +321,7 @@ note = """
 'SAVE' {'-INSERT-': False, '-UPDATE-': True, '-FIELDS-': ['begin', 'end']}
 """
 
-def get_demographics(applicant=True, report=None):
+def get_demographics(applicant=True, report=None, font=font):
     """
     Uses a GUI to collect all demographic data needed to create
     an entry into the People table AND (unless <applicant> is set
@@ -333,7 +344,7 @@ def get_demographics(applicant=True, report=None):
             ]    #  ...now and two Buttons:
     layout.append([sg.Button('OK'), sg.Button('Cancel')])
 
-    window = sg.Window('Enter demographics', layout,
+    window = sg.Window('Enter demographics', layout, font=font
 #               no_titlebar=True
                 )
     event, values = window.read()
@@ -386,7 +397,8 @@ def create_dem_file(data, report=None):
             else:
                 outf.write(value+'\n')
 
-def people_choices(header_prompt=None, report=None):
+def people_choices(header_prompt=None, report=None,
+                   font=font):
     """
     GUI method of getting a list of people records.
     Returns a listing of dicts keyed by ID, first, last
@@ -406,7 +418,7 @@ def people_choices(header_prompt=None, report=None):
                         sg.Button('Cancel')])
     window = sg.Window(
         'Enter hints using "%" as wild cards:',
-                                    layout)
+                                    layout, font=font)
     data = None
     event, values = window.read()
     if event == 'OK':
@@ -670,7 +682,7 @@ def test_choose():
 
 
 def pick_person(header="CHOOSE ONE",
-                subheader="Pick a person"):
+                subheader="Pick a person", font=font):
     """
     Returns a person record from the People table
         or None if user chooses to abort using [X].
@@ -691,7 +703,7 @@ def pick_person(header="CHOOSE ONE",
                             sg.Button('Cancel')])
         window = sg.Window(
             'Enter hints using "%" as wild cards:',
-            layout)
+            layout, font=font)
         while True:
             data = None
             event, values = window.read()
