@@ -3,21 +3,24 @@
 # File: psg.py
 
 """
+https://docs.pysimplegui.com/en/latest/documentation/quick_start/groups_of_apis/
 Coding Conventions:
     import PySimpleGUI as sg
     sg.popup('This is a popup')
     if event == 'Ok':
         name = values['-NAME-']
-https://docs.pysimplegui.com/en/latest/documentation/quick_start/groups_of_apis/
 Two groups of functions & objects within PySimpleGUI:
     Windowing Focused APIs
     Supporting APIs
 Windowing APIs: classes and function calls used
-    to put something visually on the screen.
+    ...to put something visually on the screen.
     The windowing APIs can be further divided into two categories
-        "Popup" Windows - super-easy, single-line function calls that display a window
-        Custom Windows - objects and functions to help you make windows you have complete control over
-        System Tray - access to the system tray so your program can run in the background and still be accessable
+        "Popup" Windows - super-easy, single-line function calls that
+                                                        display a window
+        Custom Windows - objects and functions to help you make windows
+                                            you have complete control over
+        System Tray - access to the system tray so your program can run
+                                in the background and still be accessable
 Supporting APIs: objects and functions that help with your entire application.
 """
 

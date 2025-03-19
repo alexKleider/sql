@@ -7,11 +7,12 @@ A place to prototype new code.
 from code import helpers
 from code import club
 from code import routines
-from code import helpers
 from code import members
+from code import show
 
 yearly = club.yearly_dues
 n_months = club.n_months
+today = helpers.eightdigitdate
 
 def prorate(month, yearly, n_months):
     assert isinstance(month, int)
@@ -116,8 +117,120 @@ def ck_distinct_query():
     print(f"Length of listing is {len(listing)}")
     print(f"Sent to {fname}")
 
+
+newbyquery = """-- provides the applicant data
+    SELECT P.personID, P.first, P.last, P.suffix,
+        P.phone, P.address, P.town, P.state, P.postal_code,
+        P.country, P.email,
+        A.sponsor1ID, P1.first, P1.last,
+        A.sponsor2ID, P2.first, P2.last,
+        A.app_rcvd, A.fee_rcvd, 
+        A.meeting1, A.meeting2, A.meeting3,
+        A.approved, A.dues_paid
+    FROM Applicants AS A
+    JOIN People AS P
+    ON P.personID = A.personID
+    JOIN People AS P1
+    ON P1.personID = A.sponsor1ID
+    JOIN People AS P2
+    ON P2.personID = A.sponsor2ID
+    WHERE A.notified = ""
+    ; """
+
+byappstatusquery = f"""-- provides ordering and consistency ck
+    SELECT P.personID, P.first, P.last, P.suffix,
+        PS.statusID, S.text
+    FROM People as P
+    JOIN Person_Status as PS ON PS.personID = P.personID
+    JOIN Stati as S on S.statusID = PS.statusID
+    WHERE (PS.begin = "" or PS.begin <= {today})
+        AND (PS.end = "" or PS.end > {today})
+        AND PS.statusID < 11
+    ORDER BY PS.statusID, P.last, P.first
+    ;"""
+
+def keysfromquery(query):
+    """
+    Converts "." to "_" so can be used in string formatting.
+    Crashes if unsuccessful!!
+    """
+    ib = query.find("SELECT")
+    ie = query.find("FROM")
+    if ib>0 and ie>0:
+        ib+= len("SELECT")
+        keys = [entry.strip() for entry in
+                query[ib:ie].strip().split(',')]
+        keys = [key.replace(".", "_") for key in keys]
+        return keys
+    else:
+        print("Unable to select keys from query!!!")
+        sys.exit()
+
+def show_newbie(mapping):
+    """
+    Assumes data came from newbyquery.
+    """
+    meetings = [mapping["A_meeting1"], mapping["A_meeting2"],
+                mapping["A_meeting3"]]
+    meetings = [meeting for meeting in meetings if meeting]
+    ret = [
+    """  {P_first} {P_last} {P_suffix}  {P_phone}  {P_email}
+      {P_address}, {P_town}, {P_state}, {P_postal_code}
+    Sponsors: {P1_first} {P1_last}, {P2_first} {P2_last}"""
+           .format(**mapping), ]
+    if meetings:
+        ret.append("    Meetings: " +
+                   ", ".join(meetings))
+    return ret
+    
+def newbies():
+    """
+    Returns an applicant report in the form of a sequence of strings.
+    main ("newbyquery") query gets all the info we need:
+    (ap_dict: a dict of dicts keyed by personID)
+    while "byappstatusquery" query provides us with the order
+    in which we wish to have it presented.
+    (ap_stati: a listing of dicts)
+    The two are compared as a consistency check!
+    """
+    main_keys = keysfromquery(newbyquery)
+    by_status_keys = keysfromquery(byappstatusquery)
+    qres1 = routines.fetch(newbyquery, from_file=False)
+    n = len(qres1)
+    if not n:
+        return ("No applicants to report", )
+    ap_dict = {}
+    for line in qres1:  # all current applicant data
+        ap_dict[line[0]] = {key: val for key, val  in
+                            zip(main_keys, line)}
+    qres2 = routines.fetch(byappstatusquery, from_file=False)
+    set1 = set([entry[0:4] for entry in qres1])
+    set2 = set([entry[0:4] for entry in qres2])
+    assert len(qres1) == len(qres2)  #{  concistency  }
+    assert set1 == set2              #{    checks     }
+    ap_stati = [ {key: val for key, val in
+                        zip(by_status_keys, line)} for line in qres2]
+    subheader = ""
+    report = [f"Applicants (Currently {n} in number)",]
+    report.append("="*len(report[-1]))
+    previousID = 0
+    for mapping in ap_stati:
+        if mapping["S_text"] != subheader: 
+            subheader = mapping["S_text"]
+            report.extend(["",
+                           mapping["S_text"],
+                            '-'*len(mapping["S_text"])])
+        report.extend(show_newbie(ap_dict[mapping["P_personID"]]))
+#       report.append(repr(ap_dict[mapping["P.personID"]]))
+    return report
+
+
 if __name__ == "__main__":
-    create_statement(7)
+    for line in newbies():
+        print(line)
+    
+
+#   create_statement(7)
 #   ck_distinct_query()
 #   show_proration()
 #   func2()

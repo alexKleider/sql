@@ -1229,7 +1229,7 @@ def show_stati_cmd():
     return ret
 
 
-def show_officers_cmd():
+def show_officers_cmd(report=None):
     """
     Creates a csv file:
     a listing of current officers and directors.

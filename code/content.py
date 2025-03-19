@@ -264,8 +264,7 @@ If you haven't yet paid your Club dues (&/or other fees,) time
 is running out. Membership is terminated if dues are not paid
 by September 1st which is fast approaching.
 
-Our treasurer, Angie Calpestri, asks that everyone be made aware
-that fees can be easily paid using Venmo (details below.)
+Fees can be paid using Venmo (details below.)
 
 What follows is a statement of what Club records indicate must be
 paid if membership is to continue.
@@ -519,8 +518,7 @@ to the Bolinas Rod & Boat Club, PO Box 248, Bolinas, CA 94924.""",
 post_scripts= dict(
 
     venmo="""
-An alternative to sending a check has been provided by our
-Treasurer, Angie Calpestry; details can be found here:
+An alternative to sending a check:
     https://account.venmo.com/u/bolinasrodandboatclub
 """,
 
