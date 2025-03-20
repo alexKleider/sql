@@ -318,26 +318,6 @@ def adjust_money_tables(data, ret):
     """Credits payments as appropriate"""
     pass
 
-def get_demographic_dict(personID):
-    """
-    If a valid personID is provided returns a dict
-    keyed by <keys> (see code below.)
-    If invalid personID: returns None
-    """
-    keys = ("personID first last suffix address town " +
-            "state postal_code country email")
-    key_listing = keys.split()
-    fields = ', '.join(key_listing)
-    query = f"""
-        SELECT {fields}
-        FROM People 
-        WHERE personID = {personID};
-    """
-    res = routines.fetch(query, from_file=False)
-    if not res or not res[0]:
-        return
-    return helpers.make_dict(key_listing, res[0])
-
     
 def add_receipt_entries(holder, report=None):
     """
@@ -376,7 +356,7 @@ def add_receipt_entries(holder, report=None):
                 yn = input("Try again or quit (q)?: ")
                 if yn and yn[0] in "qQ": return
                 else: continue
-            data = get_demographic_dict(payorID)
+            data = routines.get_demographic_dict(payorID)
             if not data:
                 print(f"'{payorID}' is an invalid payorID")
                 continue

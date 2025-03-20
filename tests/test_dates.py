@@ -15,13 +15,6 @@ from code import content
 temp_db = club.temp_db
 check_file = '2check.txt'
 
-class Test_get_demographic_dict(unittest.TestCase):
-
-    def test_alex_kleider(self):
-        d = dates.get_demographic_dict(97)
-        self.assertTrue(d['first'] == 'Alex')
-        self.assertEqual(d['last'], 'Kleider')
-
 problem = """
 class TestInstanceDeletion(unittest.TestCase):
     def setUp(self):

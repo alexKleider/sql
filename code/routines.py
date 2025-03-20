@@ -340,6 +340,32 @@ def get_ids_by_name(first, last, db=db_file_name):
     return res
 
 
+def query_keys(query):
+    """
+    Accepts a <query> and returns keys to the values expected to be
+    returned. The "." in "dot" keys (ie P.name) are converted to "_".
+    """
+    query = query.replace(";", " ")
+    ib = query.find("SELECT")
+    ie = query.find("FROM")
+    ls = len("SELECT")
+    if not(ib>=0 and ie>0 and ((ie - ib) > ls)):
+        print(f"not({ib}>=0 and {ie}>0 and (({ie} - {ib}) > {ls}))")
+        print("Unable to select keys from query!!!")
+        assert False
+    keystring = query[ib+len("SELECT"):ie].strip()
+    if keystring == "*":
+        begin = ie + len("FROM") + 1
+        end = query.find(" ", begin)
+        table = query[begin:end].strip()
+        return keys_from_schema(table)
+    nowhitespace = ''
+    for ch in keystring:
+        if ch.split():
+            nowhitespace = nowhitespace + ch
+    keys = nowhitespace.split(',')
+    return  [key.replace(".", "_") for key in keys]
+
 def get_people_fields_by_ID(db_file_name=db_file_name,
                                     fields=None):
     """
@@ -364,6 +390,27 @@ def get_people_fields_by_ID(db_file_name=db_file_name,
         ret[entry[0]] = entry[1:]
     return ret
 
+
+def get_demographic_dict(personID):
+    """
+    Moved from code/dates.py
+    If a valid personID is provided returns a dict
+    keyed by <keys> (see code below.)
+    If invalid personID: returns None
+    """
+    keys = ("personID first last suffix address town " +
+            "state postal_code country email")
+    key_listing = keys.split()
+    fields = ', '.join(key_listing)
+    query = f"""
+        SELECT {fields}
+        FROM People 
+        WHERE personID = {personID};
+    """
+    res = fetch(query, from_file=False)
+    if not res or not res[0]:
+        return
+    return helpers.make_dict(key_listing, res[0])
 
 def get_person_fields_by_ID(personID, fields=None):
     """
