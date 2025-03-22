@@ -1,7 +1,11 @@
 /* 
 File: Sql/venkat.sql
 
+Compare with newbyquery found in code/show.py:
+-it has explicit JOIN statements, this one does not.
+
 query = """
+
 */
         SELECT app.first, app.last,
                   sp1.first, sp1.last,
@@ -15,5 +19,4 @@ query = """
         AND   appln.sponsor2ID = sp2.personID
         ;
 --      """
-
 
