@@ -82,7 +82,7 @@ queries = dict( # indexed by google contacts LABELs.
                 AND PS.statusID in (11, 15, 17)
                 AND NOT P.email = ''
                 AND (PS.end = '' OR PS.end > {})
-                AND (PS.begin = '' OR PS.begin < {})
+                AND (PS.begin = '' OR PS.begin <= {})
             ;""".format(helpers.eightdigitdate,
                         helpers.eightdigitdate),
     Officers="""SELECT P.first, P.last, P.suffix
@@ -161,7 +161,7 @@ members4dues = """SELECT P.personID  -- must get rid
             WHERE PS.personID = P.personID
                 AND (PS.statusID in (11, 15)
                     AND (PS.end = '' OR PS.end > {})
-                    AND (PS.begin = '' OR PS.begin < {}))
+                    AND (PS.begin = '' OR PS.begin <= {}))
             ORDER BY P.personID
             ;""".format(helpers.eightdigitdate,
                         helpers.eightdigitdate) 
@@ -171,7 +171,7 @@ retirees =  """SELECT P.personID
             WHERE PS.personID = P.personID
                 AND (PS.statusID = 17   -- retiring
                     AND (PS.end = '' OR PS.end > {})
-                    AND (PS.begin = '' OR PS.begin < {}))
+                    AND (PS.begin = '' OR PS.begin <= {}))
             ORDER BY P.personID
             ;""".format(helpers.eightdigitdate,
                         helpers.eightdigitdate) 

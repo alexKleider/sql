@@ -1,0 +1,48 @@
+
+
+The Hand Off!!
+==============
+
+Dues
+----
+The following have credits regarding their dues (inadvertently
+paid twice or paid 100 instead of 200 and then corrected the
+situation by paying the full 200 (insead of 100).)
+    Knowles, Lauri, -200
+    Nicolaus, Wendel, -200
+    Korty, Jonathan, -100
+
+Kayak Storage
+-------------
+See the accompanying "kayak_data.csv" csv file.
+You can read it with any text editor (such as notepad) but may first
+have to rename it "kayak_data.txt" for your system to allow you to do
+that.
+Alternatively as a csv file you should be able to import it into a
+spread sheet of your own choosing if inclined to do so. YMMV
+
+
+Dock Usage
+----------
+See "dock.csv" file. Ditto about reading it.
+I have Leonardo Ferlinghetti still owing $25 for dock usage. I believe
+this is because the fee went up from 75 to $100 but he only paid the
+old fee.  Since his dues were paid this never became and issue; my
+oversite!
+
+Mooring Fee
+-----------
+See "moorings.csv" file. Ditto about reading it.
+Note: I never resolved the fact that Mark Dolen underpaid his docking
+fees by $70. This may be because Don charges by the foot (of boat
+length) and it may be that I didn't (still don't) have the correct
+cost/length recorded.
+Rupert Dixon and Thorny Smith have credits (of 8 and 10 dollars
+respectively) because they overpaid for dock usage last year.
+
+
+Warning
+=======
+Please check with Don regarding the (kayak, dock and mooring) fees!
+These are somewhat fluid as people come and go, etc.
+

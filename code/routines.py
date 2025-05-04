@@ -255,7 +255,8 @@ def table2csv(table, fname):
             dictwriter.writerow(mapping)
 
 def query2csv(query, fname):
-    keys = keys_from_query(query)
+#   keys = keys_from_query(query)
+    keys = query_keys(query)
     with open(fname, 'w', newline='') as stream:
         dictwriter = csv.DictWriter(stream, keys)
         dictwriter.writeheader()

@@ -207,7 +207,7 @@ def occupied_moorings_cmd():
     return ret
 
 
-def all_moorings_cmd():
+def all_moorings_cmd(report=None):
     """
     All moorings: all_moorings_cmd
     Creates a csv file re all club moorings, occupied or not.
