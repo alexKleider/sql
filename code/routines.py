@@ -160,16 +160,19 @@ def keys_from_schema(table, brackets=(0,0)):
     # item[1] is the column/key.
 
 
-def looseSQLcomments(sql):
-    b = sql.find("/*")
+def looseSQLcomments(query_text):
+    """
+    Removes comments (/*...*/ and --....) from an sql query.
+    """
+    b = query_text.find("/*")
     while b > -1:
-        e = sql.find("*/")
+        e = query_text.find("*/")
         if not e > b:
             print("!!!Unmatched /*..*/ in looseSQLcomments!!!")
             assert False
-        sql = sql[:b] + sql[e+2:]
-        b =sql.find("/*")
-    lines = sql.split(sep="\n")
+        query_text = query_text[:b] + query_text[e+2:]
+        b =query_text.find("/*")
+    lines = query_text.split(sep="\n")
     ret = []
     for line in lines:
         i = line.find("--")
@@ -177,8 +180,8 @@ def looseSQLcomments(sql):
             line = line[:i]
         if line:
             ret.append(line)
-    sql = "\n".join(ret)
-    return sql
+    query_text = "\n".join(ret)
+    return query_text
     
 
 def keys_from_query(query):
@@ -205,7 +208,9 @@ def keys_from_query(query):
 
 def dicts_from_query(query, keys=None):
     """
-    Yields dicts.
+    A generator function yielding dicts.
+    If <keys> are not provided, uses <keys_from_query()>.
+    Use query2dict_listing if a list is needed.
     """
     if not keys:
         keys = keys_from_query(query)
