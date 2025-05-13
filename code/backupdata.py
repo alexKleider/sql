@@ -19,12 +19,22 @@ now = helpers.timestamp4filename
 src = club.db_file_name
 dst = f"Secret/{now}.db"
 
+def ck_existence(filename):
+    if os.path.exists(filename):
+        return True
+    print("File 'filename' doesn't exist!")
+
 def copy4backup(src, dst):
     while True:
         print("Options are Q)uit, C)opy, M)ove...")
+        if not os.path.exists(src):
+            print("Source file 'filename' doesn't exist!")
+            return
         response = input(
-                f"Q(uit or C(opy or M(ove  {src} to {dst}? (c/m/q): ")
-        if response:
+                f"Q)uit, C)opy or M)ove {src} to {dst}?: ")
+        if not response:
+            continue
+        else:
             if response[0] in 'cC':
                 shutil.copyfile(src, dst)
                 print(f"{src} copied to {dst}.")
