@@ -412,11 +412,19 @@ def display_fees_by_person_cmd():
     return ret
 
 
-def create_member_csv_cmd():
+def member_listing():
+    with open("Sql/member_listing_f.sql", 'r') as stream:
+        query = stream.read()
+        query = query.format(helpers.eightdigitdate,
+                             helpers.eightdigitdate)
+        _ = input(query)
+        return routines.fetch(query, from_file=False)
+    
+def create_member_csv_cmd(report=None):
     csv_file_name = input("Name of member csv file to create: ")
     ret = [f"You've chosen to create '{csv_file_name}'.", ]
-    keys = ("first, last, suffix, phone, address, " +
-            "town, state, postal_code, email").split(", ")
+    keys = ("ID, first, last, suffix, email, address, " +
+            "town, state, postal_code, phone").split(", ")
     with open(csv_file_name, 'w', newline='') as csv_stream:
         writer = csv.DictWriter(csv_stream, fieldnames=keys)
         writer.writeheader()
