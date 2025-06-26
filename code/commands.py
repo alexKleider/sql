@@ -417,12 +417,12 @@ def member_listing():
         query = stream.read()
         query = query.format(helpers.eightdigitdate,
                              helpers.eightdigitdate)
-        _ = input(query)
+#       _ = input(query)
         return routines.fetch(query, from_file=False)
     
 def create_member_csv_cmd(report=None):
-    csv_file_name = input("Name of member csv file to create: ")
-    ret = [f"You've chosen to create '{csv_file_name}'.", ]
+    csv_file_name = (
+    f"membership_{helpers.eightdigitdate4filename}.csv")
     keys = ("ID, first, last, suffix, email, address, " +
             "town, state, postal_code, phone").split(", ")
     with open(csv_file_name, 'w', newline='') as csv_stream:
@@ -430,8 +430,8 @@ def create_member_csv_cmd(report=None):
         writer.writeheader()
         for listing in member_listing():
             writer.writerow(helpers.make_dict(keys, listing))
-    ret.append(f"Data sent to {csv_file_name}.")
-    return ret
+    helpers.add2report(report, f"Data sent to {csv_file_name}.")
+    return report
 
 
 def get_sponsor_name(sponsorID):

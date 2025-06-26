@@ -29,6 +29,8 @@ hierarchy = {
                 [ck_data.consistency_report, ],
         "sponsors": [listings.sponsors, ],
         "owing": [commands.still_owing_cmd,],
+        "Create member CSV file":
+               [commands.create_member_csv_cmd],
             },
     "Data Entry":{
         "Status Update": [data_entry.change_status_cmd],
