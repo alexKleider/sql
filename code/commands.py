@@ -434,6 +434,35 @@ def create_member_csv_cmd(report=None):
     return report
 
 
+def applicant_file_dump_cmd(report=None):
+    """Dumps all info contained in the Applicants table."""
+    query = """-- provides _all_ the applicant table data
+        SELECT P.personID, P.first, P.last, P.suffix,
+            P.phone, P.address, P.town, P.state, P.postal_code,
+            P.country, P.email,
+            A.sponsor1ID, P1.first, P1.last,
+            A.sponsor2ID, P2.first, P2.last,
+            A.app_rcvd, A.fee_rcvd, 
+            A.meeting1, A.meeting2, A.meeting3,
+            A.approved, A.dues_paid
+        FROM Applicants AS A
+        JOIN People AS P
+        ON P.personID = A.personID
+        JOIN People AS P1
+        ON P1.personID = A.sponsor1ID
+        JOIN People AS P2
+        ON P2.personID = A.sponsor2ID
+        ; """
+    listing = routines.fetch(query, from_file=False)
+    helpers.dump2csv_file(listing, keys=("ID", "first", "last",
+        "suffix", "phone", "address", "town", "state",
+        "postal_code", "country", "email",
+        "sID1", "sfirst1", "slast1",
+        "sID2", "sfirst2", "slast2", "applied", "paid",
+        "meeting1", "meeting2", "meeting3", "approved",
+        "dues_paid",),       file_name="all_applicants.csv")
+
+
 def get_sponsor_name(sponsorID):
     query = f"""SELECT first, last, suffix
                 FROM People 

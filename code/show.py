@@ -222,7 +222,6 @@ def keysfromquery(query):
         print("Unable to select keys from query!!!")
         sys.exit()
 
-
 def show_newbie(mapping):
     """
     Assumes data came from newbyquery.
@@ -251,6 +250,7 @@ def report_applicants():  # developed within try.py as "newbies()"
     (ap_stati: a listing of dicts)
     The two are compared as a consistency check!
     """
+    main_keys = keysfromquery(newbyquery)
     main_keys = keysfromquery(newbyquery)
     by_status_keys = keysfromquery(byappstatusquery)
     qres1 = routines.fetch(newbyquery, from_file=False)
@@ -281,6 +281,7 @@ def report_applicants():  # developed within try.py as "newbies()"
         report.extend(show_newbie(ap_dict[mapping["P_personID"]]))
 #       report.append(repr(ap_dict[mapping["P.personID"]]))
     return report
+
 
 def show_applicants_cmd(report=None):
     helpers.add2report(report,
