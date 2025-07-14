@@ -17,8 +17,9 @@
 import sys
 import datetime
 
-try: from code import routines
-except ImportError: import routines
+#try: from code import routines
+#except ImportError: import routines
+from code import routines
 
 
 today = datetime.datetime.today()

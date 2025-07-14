@@ -22,11 +22,12 @@ import mimetypes
 import hashlib
 import time
 import random
-try: from code.club import EMAIL_JSON as json_email_file
-except ImportError: from club import EMAIL_JSON as json_email_file
-try: from code import helpers
-except ImportError: import helpers
-
+#try: from code.club import EMAIL_JSON as json_email_file
+#except ImportError: from club import EMAIL_JSON as json_email_file
+#try: from code import helpers
+#except ImportError: import helpers
+from code.club import EMAIL_JSON as json_email_file
+from code import helpers
 
 def getpw(service):
     """

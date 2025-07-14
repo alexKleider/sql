@@ -1,0 +1,21 @@
+
+"""
+This code is being written with the goal of collecting the names of
+all methods in each module and then checking each module where the
+method in question is _not_ defined for the existence of a call or
+reference to that module and providing a listing of the line numbers
+for each.
+
+Data Structuring:
+master[filename][func_name][filename][list_of_locations]
+  master:
+    dict keyed by 'code_file_names'
+      values are dicts keyed by the names of functions defined there.
+        values are dicts keyed by 'codefile_name" (all but the file in
+        which the function was defined) (We don't locate functions used
+        in the file in which they are declared. (subject to chane))
+            values are listings of the locations where the function
+            is called or referenced in the file.
+
+Tests found in tests/test_utils_scan.py.
+"""

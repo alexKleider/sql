@@ -231,7 +231,7 @@ def choose_applicant(report=None):
     # set up mapping for the menu function
     mapping = {}
     for entry in res:
-        if entry['suffix']: suffix = f' [{suffix.strip()}]'
+        if entry['suffix']: suffix = f' [{entry["suffix"].strip()}]'
         else: suffix = ''
         key = (f'{entry["personID"]:>4d} {entry["last"]}, '
             + f'{entry["first"]}' + suffix)
