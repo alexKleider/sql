@@ -25,18 +25,14 @@ with engine.connect() as conn:
 
 
 
-try: from code import sqlalchemy
-except ImportError: import sqlalchemy
+import club
+import sqlalchemy
 
-try: from code import club
-except ImportError: import club
-
-# print(sqlalchemy.__version__)
+print(sqlalchemy.__version__)
+_ = input()
 
 AlchemyDB = "sqlite+pysqlite:///" + club.DB
-
-query = "SELECT statusID, key, text FROM Stati;"
-
+# engine = create_engine("sqlite+pysqlite:///:memory:", echo=True)
 
 def alch(sql_source,
         dic=None,   # a single dict for 'getting'
@@ -63,6 +59,10 @@ def alch(sql_source,
 
 def task1():
     query = "SELECT statusID, key, text FROM Stati;"
+    header = "Listing of Stati"
+    underline = "=" * len(header)
+    print(header)
+    print(underline)
     for entry in alch(query, from_file=False):
         for key in entry.keys():
             print(f"{entry[key]:<12}",end='')
@@ -100,6 +100,10 @@ def get_dues(owing_only=False):
     return alch(query, from_file=False)
 
 def show_dues_owing():
+    header = "Dues Owing"
+    underline = "=" * len(header)
+    print(header)
+    print(underline)
     for d in get_dues():
         print(f"{repr(d)}")
 
@@ -110,6 +114,10 @@ def get_dock_fees_owed():
     return alch(query, from_file=False)
 
 def show_dock_fees_owed():
+    header = "Dock Fees Owing"
+    underline = "=" * len(header)
+    print(header)
+    print(underline)
     for d in get_dock_fees_owed():
         print(f"{repr(d)}")
 
@@ -120,6 +128,10 @@ def get_kayak_fees_owed():
     return alch(query, from_file=False)
 
 def show_kayak_fees_owed():
+    header = "Kayak Storage Fees Owed"
+    underline = "=" * len(header)
+    print(header)
+    print(underline)
     for d in get_kayak_fees_owed():
         print(f"{repr(d)}")
 
@@ -131,11 +143,16 @@ def get_mooring_fees_owed():
     return alch(query, from_file=False)
 
 def show_mooring_fees_owed():
+    header = "Mooring Fees Owed"
+    underline = "=" * len(header)
+    print(header)
+    print(underline)
     for d in get_mooring_fees_owed():
         print(f"{repr(d)}")
 
 if __name__ == '__main__':
     print("Running alchemy.py")
+    print("******************")
     show_dues_owing()
     _ = input()
     show_dock_fees_owed()

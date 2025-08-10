@@ -184,10 +184,12 @@ def looseSQLcomments(query_text):
     return query_text
     
 
-def keys_from_query(query):
+def keys_from_query(query, replace_periods=False):
     """
     Returns a listing of keys requested in the query
     Able to deal with "SELECT * FROM .." queries.
+    If 'replace_periods' is set to True: replace with "_"
+    otherwise remove prefix and period.
     """
     query = looseSQLcomments(query)
     nselect = query.find("SELECT")
@@ -202,8 +204,11 @@ def keys_from_query(query):
         if ch.split():
             nowhitespace = nowhitespace + ch
     keys = nowhitespace.split(",")
-    splitkeys = [key.split('.') for key in keys]
-    return [key[-1] for key in splitkeys]
+    if replace_periods:
+        return [key.replace('.', '_') for key in keys]
+    else:
+        splitkeys = [key.split('.') for key in keys]
+        return [key[-1] for key in splitkeys]
 
 
 def dicts_from_query(query, keys=None):
