@@ -133,13 +133,12 @@ rfc5322 = {    # Here for reference, not used by the code.
    "keywords": "Keywords: ", # phrase *("," phrase) CRLF
     }
 
-
+redact = '''
 def get_bytes(text):
     """
     Not used. Can be redacted.
     """
     return hashlib.sha224(bytes(text, 'utf-8')).hexdigest()
-
 
 def get_py_header(header):
     """
@@ -147,6 +146,27 @@ def get_py_header(header):
     """
     return rfc5322[header.replace('-', '_')]
 
+def attach1(attachment, msg):
+    """
+    Not used.  Not understood- should probably be redacted.
+    """
+    # Open PDF file in binary mode
+    with open(filename, "rb") as attachment:
+        # Add file as application/octet-stream
+        # Email client can usually download this automatically
+        # as attachment
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(attachment.read())
+
+    # Encode file in ASCII characters to send by email
+    encoders.encode_base64(part)
+
+    # Add header as key/value pair to attachment part
+    part.add_header(
+        "Content-Disposition",
+        f"attachment; filename= {filename}",
+    )
+'''
 
 def pseudo_recipient(plus_name, g_email):
     """
@@ -214,27 +234,6 @@ def attach_many(attachments, msg):
                             filename=os.path.basename(attachment))
         msg.attach(attachment)
 
-def attach1(attachment, msg):
-    """
-    Not used.  Not understood- should probably be redacted.
-    """
-    # Open PDF file in binary mode
-    with open(filename, "rb") as attachment:
-        # Add file as application/octet-stream
-        # Email client can usually download this automatically
-        # as attachment
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(attachment.read())
-
-    # Encode file in ASCII characters to send by email
-    encoders.encode_base64(part)
-
-    # Add header as key/value pair to attachment part
-    part.add_header(
-        "Content-Disposition",
-        f"attachment; filename= {filename}",
-    )
-
 
 def into_string(header_value):
     """
@@ -268,7 +267,6 @@ def send(emails, mta='easy', report=None,
     <include_wait> if True inserts a pause after each mailing.
     """
     n_emails = len(emails)
-    counter = 0
 #   print("Using {} as MTA...".format(mta))
 #   _ = input(mta_config)
     server = mta_config[mta]
@@ -288,15 +286,19 @@ def send(emails, mta='easy', report=None,
     response = input("... Continue? ")
     if not (response and response[0] in 'yY'):
         sys.exit()
+    counter = 0
+    print("Entering the 'try' statement...")
     try:
         for email in emails:
+            counter += 1
+            print(f"Attempting to send email #{counter} " +
+                    f"to {email['To']}")
             email["Sender"] = sender
             msg = MIMEMultipart()
             body = email['body']
             attachments = email['attachments']
             del email['body']
             del email['attachments']
-            counter += 1
             helpers.add2report(report,
                 f"Sending email {counter} of {n_emails} ...",
                 also_print=True)
@@ -355,12 +357,12 @@ def main():
     send(data, report=[])
 #   test_send()
 
-def ck_pseudo_recipient():
+def tester():
     _ = input("pseudo_recipient('ak', 'alexkleider@gmail.com')"
         + " yields " +
         f"{pseudo_recipient('ak', 'alexkleider@gmail.com')}")
 
 if __name__ == "__main__":
-#   ck_pseudo_recipient()
     main()
+#   tester()
 

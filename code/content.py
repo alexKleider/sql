@@ -644,10 +644,12 @@ content_types = dict(  # which_letter
         "subject": "This is a test.",
         "from": authors["ak"],
         "body": letter_bodies["for_testing"],
+        "bcc": ("alex@kleider.ca","akleider@sonic.net",),
         "post_scripts": (
             post_scripts['forgive_duplicate'],
             ),
         "holder_funcs": (routines.assign_just_me, ),
+            # assign_just_me picks my email from club.db
         "funcs": (members.std_mailing_func, ),
         "e_and_or_p": "both",
         },
@@ -754,7 +756,7 @@ content_types = dict(  # which_letter
         "subject": "BR&BC Application",
         "from": authors["membership"],
         "cc": "sponsors",
-        "bcc": "alex@kleider.ca",
+        "bcc": ("alex@kleider.ca","cbsolution@att.net",),
         "body": letter_bodies["applicant_fee_pending"],
         "post_scripts": (),
         "holder_funcs": (routines.assign_applicant_fee_pending,),
@@ -800,7 +802,7 @@ content_types = dict(  # which_letter
     request_inductee_payment={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
-        "cc": "sponsors",
+        "cc": ("sponsors", "cbsolution@att.net",),
         "bcc": "alex@kleider.ca",
         "body": letter_bodies["request_inductee_payment"],
         "post_scripts": (
@@ -1038,6 +1040,7 @@ content_types = dict(  # which_letter
     )
 # ... end of content_types.
 ctypes = sorted([key for key in content_types.keys()])
+# ctypes is used by code.commands.prepare_mailing_cmd
 
 printers = dict(
     # tuples in the case of envelope windows.

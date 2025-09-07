@@ -3,6 +3,9 @@
 # File code/emailing.py
 
 """
+I DON'T THINK THIS IS BEING USED.
+MAILING CODE IS SELF CONTAINED IN send_emails.py
+
 Provides email related functionality:
     display_cmd   &
     send_cmd
@@ -266,15 +269,18 @@ def send(emails, agent='easy', report=None,
     response = input("... Continue? ")
     if not (response and response[0] in 'yY'):
         sys.exit()
+    print("Entering the 'try' statement...")
+    counter = 0
     try:
         for email in emails:
+            counter += 1
+            print(f"Attempting to send email #{counter}...")
             email["Sender"] = sender
             msg = MIMEMultipart()
             body = email['body']
             attachments = email['attachments']
             del email['body']
             del email['attachments']
-            counter += 1
             helpers.add2report(report,
                 f"Sending email {counter} of {n_emails} ...",
                 also_print=True)

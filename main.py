@@ -27,9 +27,11 @@ if __name__ == '__main__':
     report.append("=" * len(report[0]))
     while True:
         cmd = commands.get_command()
+        print(f"got a command: {cmd.__name__}")
         if cmd: 
-            res = cmd(report=report)
+            print("checking if want a report...")
             if yn and yn[0] in 'Yy':
+                res = cmd(report=report)
                 outfile = input(
                 "Send report to file (blank if to StdOut:) ")
                 if outfile:
@@ -43,6 +45,10 @@ if __name__ == '__main__':
                         "No file selected; output to stdout...")
                     for line in res:
                         print(repr(line))
+            else:
+                print(
+                  "...running command without generating a report.")
+                res = cmd()
         else:
             print("No valid command provided.")
         response = input(

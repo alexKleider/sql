@@ -11,12 +11,14 @@ There is a Rich extension called Textual that has widgets etc,
 but it seems to be based on CSS/HTML and I didn't like the mixed
 mode of programming it required.
 
+# memtions "urwid":
 The package I was thinking of was urwid. A GUI like framework with
 menus, dialogs windows etc. Event driven (no need to create your
 own loop) and seems powerful - but I've only played with it...
 
 > I've been playing with PySimpleGUI
 
+# also "dialog" module: [1]
 I've used that too. Did you check out the 'dialog' module that I
 mentioned in the book. It does a lot of what simplegui does but
 all in the console. And you can test it out from an OS shell
@@ -30,3 +32,13 @@ b) totally useless if running an app over ssh on a server for example.
 --
 Alan G
 Author of the Learn to Program web site
+
+[1]
+This is quite common for wrappers around system utilities.
+In fact, I just checked my curses book and I even say
+on page 109:
+"You need dialog to be installed on your OS, but
+most Linux systems include it."
+Glad you got it working OK :-)
+--
+Alan G

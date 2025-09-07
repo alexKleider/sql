@@ -235,6 +235,8 @@ def query2dict_listing(query, keys=False,
     way the user can generate the listing.
     Fails if len(keys)!=length of tupples
     """
+    if from_file:
+        query = import_query(query)
     ret = []
     if not keys:
         keys = keys_from_query(query)
@@ -247,6 +249,7 @@ def query2dict_listing(query, keys=False,
 
 def query2dicts(query, from_file=False):
     """
+    SHOULD BE REDACTED in favour of query2dict_listing()
     Returns a (possibly empty) list of dicts.
     """
     if from_file:
