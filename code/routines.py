@@ -77,6 +77,11 @@ def add2report(report, line, also_print=False):
                 for l in line: print(l)
 
 
+note2self = """
+# might want to make "partial function"(s) out of the fetch function:
+https://www.kdnuggets.com/partial-functions-in-python-a-guide-for-developers
+"""
+
 def fetch(sql_source, db=db_file_name, params=None, data=None,
                     from_file=True, commit=False,
                     verbose=False):
@@ -144,22 +149,6 @@ def fetch_d_query(sql_file_name, data, commit=False):
     return fetch(query, from_file=False, commit=commit)
 
 
-def keys_from_schema(table, brackets=(0,0)):
-    """
-    query comes from: https://stackoverflow.com/questions/11996394/is-there-a-way-to-get-a-schema-of-a-database-from-within-python
-    <brackets> provides ability to ignore first brackets[0]
-    and last brackets[1] primary keys such as 'personID' (in
-    which case it can be set to (1,0).
-    Tested in tests/test_routines.py
-    """
-    query =  f"pragma table_info({table})"
-    res = fetch(query, from_file=False)
-    begin = brackets[0]
-    end = len(res) - brackets[1]
-    return  [item[1] for item in res[begin:end]]
-    # item[1] is the column/key.
-
-
 def looseSQLcomments(query_text):
     """
     Removes comments (/*...*/ and --....) from an sql query.
@@ -183,6 +172,22 @@ def looseSQLcomments(query_text):
     query_text = "\n".join(ret)
     return query_text
     
+
+def keys_from_schema(table, brackets=(0,0)):
+    """
+    query comes from: https://stackoverflow.com/questions/11996394/is-there-a-way-to-get-a-schema-of-a-database-from-within-python
+    <brackets> provides ability to ignore first brackets[0]
+    and last brackets[1] primary keys such as 'personID' (in
+    which case it can be set to (1,0).
+    Tested in tests/test_routines.py
+    """
+    query =  f"pragma table_info({table})"
+    res = fetch(query, from_file=False)
+    begin = brackets[0]
+    end = len(res) - brackets[1]
+    return  [item[1] for item in res[begin:end]]
+    # item[1] is the column/key.
+
 
 def keys_from_query(query, replace_periods=False):
     """
