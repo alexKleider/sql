@@ -6,4 +6,10 @@ The first Friday of February each year:
     2028 4th
     2029 2nd
     2030 1st
+    2031 7th
+    2032 6th
+    2033 4th
+
+decreases by 1 after each year that isn't a leap year,
+if after a leap year, decreases by 2
 

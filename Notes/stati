@@ -1,5 +1,5 @@
 
-sqlite> .read Sql/stati_contents.sql
+statusID|key|text
 1|a-|Application received without fee
 2|a|Application complete but not yet acknowledged
 3|a0|No meetings yet
@@ -23,11 +23,11 @@ sqlite> .read Sql/stati_contents.sql
 21|z2_vp|VicePresident
 22|z3_sec|Secretary
 23|z4_treasurer|Treasurer
-24|z5_d_odd|Director- odd year Feb
-25|z6_d_even|Director- even year Feb
+24|z5_d_odd|Director-odd yr
+25|z6_d_even|Director-even yr
 26|zae|Application expired or withdrawn
 27|zzz|No longer a member
-28|zzd|Died recently
+28|zzd|Deceased
 29|mc|Membership Chair
 30|com|Committee member
 

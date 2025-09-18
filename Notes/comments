@@ -1,8 +1,0 @@
-Whithin an SQL query:
-/*
-This is a comment
-*/
-and
--- this is a comment
-but this isn't   -- even though this is a comment
-
