@@ -87,7 +87,7 @@ def set_include0_false(holder):
     """
     holder.include0 = False
 
-
+redact = '''
 ## No longer need the followng ..keys tuples
 ## since use relational data base (SQLite3.)
 peopleDB_keys = (
@@ -123,6 +123,7 @@ appl_keys = (peopleDB_keys[:8] +
 # not sure the next two are being used!!
 date_keys = applicantDB_keys[6:10]
 sponsor_keys = applicantDB_keys[2:4]
+'''
 
 yearly_dues = 200
 applicant_fee = 25

@@ -21,4 +21,9 @@ Tue 29 Aug 2023 03:45:51 PM PDT
     For some time now Club affairs have been handled
     using this code base exclusively.
 
-    See the HOWTO file for details.
+
+The ERD.txt file outlines the sql data base schema
+(which has changed from time to time and may continue
+to do so. For this reason the file can be updated 
+using the erd.py code.)
+

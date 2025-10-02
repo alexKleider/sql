@@ -140,6 +140,7 @@ def sponsor2email(holder, data, email_dic):
         # change 'cc' to copy 
         # change cc to recipients
         if copy in holder.which.keys():
+            _ = input(holder.which[copy])
             recipients = holder.which[copy].split(',')
             if "sponsors" in recipients:
 #               _ = input(f"must [B]cc sponsors in {recipients}")

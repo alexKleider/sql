@@ -756,7 +756,7 @@ content_types = dict(  # which_letter
         "subject": "BR&BC Application",
         "from": authors["membership"],
         "cc": "sponsors",
-        "bcc": ("alex@kleider.ca","cbsolution@att.net",),
+        "bcc": "alex@kleider.ca,cbsolution@att.net",
         "body": letter_bodies["applicant_fee_pending"],
         "post_scripts": (),
         "holder_funcs": (routines.assign_applicant_fee_pending,),
@@ -802,7 +802,7 @@ content_types = dict(  # which_letter
     request_inductee_payment={
         "subject": "Welcome to the Bolinas Rod & Boat Club",
         "from": authors["membership"],
-        "cc": ("sponsors", "cbsolution@att.net",),
+        "cc": "sponsors,cbsolution@att.net",
         "bcc": "alex@kleider.ca",
         "body": letter_bodies["request_inductee_payment"],
         "post_scripts": (
@@ -1080,8 +1080,10 @@ printers = dict(
    )
 # ## ... end of printers (dict specifying printer being used.)
 
+redact = '''
 def assign_printer(holder):
     """
+    Redundant??
     """
     # there's a bug here that hasn't been resolved
     # inline code used in code.command.prepare_mailing
@@ -1095,6 +1097,7 @@ def assign_printer(holder):
         print(f"{key}: {lpr}")
     index = int(input("Which printer will you be using: "))
     holder.printer = menu[index]
+'''
 
 def get_postscripts(which_letter):
     """

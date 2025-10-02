@@ -907,7 +907,6 @@ def prepare_invoice(holder, personID):
     invoice.append(f"        Total: ${total}")
     return invoice
 
-
 def prepare_mailing_cmd(report=None):
     """
     ck for 'cc', especially in response to 'sponsors'
