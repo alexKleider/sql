@@ -5,12 +5,11 @@
 # *.[oa]
 # *~
 
-applicants*.txt
 *.db
 *.json
 __pycache__
+try*
 Secret
-report*
 *2check*
 2*
 4*
@@ -27,4 +26,5 @@ junk
 testcode.py
 hacking.py
 *.swp
+src/*html
 
