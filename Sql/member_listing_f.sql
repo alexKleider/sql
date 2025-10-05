@@ -12,8 +12,8 @@ ON
     P.personID = PS.personID
 WHERE
 (PS.statusID in (11, 15))
-AND (PS.begin = '' OR PS.begin <= {})
-AND (PS.end = '' OR PS.end > {})
+AND (PS.begin = '' OR PS.begin <= '{}')
+AND (PS.end = '' OR PS.end > '{}')
 ORDER BY
     P.last, P.first, P.suffix
 ;
