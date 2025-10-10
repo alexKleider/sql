@@ -179,7 +179,7 @@ def pseudo_recipient(plus_name, g_email):
     """
     parts = g_email.split('@')
     assert len(parts) == 2
-    return parts[0] + '+' + plus_name + '@' + parts[1]
+    return plus_name + '+' + parts[0] + '@' + parts[1]
 
 
 def attach(attachment, msg):
@@ -363,6 +363,6 @@ def tester():
         f"{pseudo_recipient('ak', 'alexkleider@gmail.com')}")
 
 if __name__ == "__main__":
-    main()
-#   tester()
+#   main()
+    tester()
 

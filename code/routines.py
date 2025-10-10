@@ -62,21 +62,6 @@ def assure_only1response(listing):
         sys.exit()
 
 
-def add2report(report, line, also_print=False):
-    """
-    This has been copied into code.helpers and should
-    be removed from this code base (code.routines).
-    """
-    if isinstance(report, list):
-        if isinstance(line, str):
-            report.append(line)
-            if also_print: print(line)
-        elif isinstance(line, list):
-            report.extend(line)
-            if also_print:
-                for l in line: print(l)
-
-
 note2self = """
 # might want to make "partial function"(s) out of the fetch function:
 https://www.kdnuggets.com/partial-functions-in-python-a-guide-for-developers

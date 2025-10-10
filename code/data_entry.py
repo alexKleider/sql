@@ -328,6 +328,7 @@ def update_applicant_date_cmd(report=None):
     helpers.add2report(report,
             "Enterning update_applicant_date_cmd...",
             also_print=True)
+#           also_print=False)
     chosen_applicant = choose_applicant(report)
     if not chosen_applicant:
         helpers.add2report(report,
@@ -344,7 +345,7 @@ def update_applicant_date_cmd(report=None):
         if textual.yes_no(query,
                 title="Execute query?"):
             routines.fetch(query, from_file=False,
-                            commit=True, verbose=True)
+                            commit=True, verbose=False)
             helpers.add2report(report,
                 ["Following query has been executed:", query],
                                             also_print=True)
@@ -386,12 +387,15 @@ def update_applicant_date_cmd(report=None):
     helpers.add2report(report,
         [f"1st (update) query:", repr(update_query)],
         also_print=True)
+#       also_print=False)
     if textual.yes_no(update_query,
             title="Execute query?"):
         routines.fetch(update_query, from_file=False,
-                    commit=True, verbose=True)
+                    commit=True, verbose=False)
     helpers.add2report(report, 
-        ["1st (update) query:", update_query], also_print=True)
+        ["1st (update) query:", update_query],
+                       also_print=True)
+#                      also_print=False)
     # next set up for new status entry:
     picked["statusID"] = int(picked["statusID"]) + 1
     # ^ we are assuming that new statusID incriments by 1^
@@ -401,13 +405,17 @@ def update_applicant_date_cmd(report=None):
         ({personID}, {statusID}, "{new_date}");
         """.format(**picked)
     helpers.add2report(report,
-        ["2nd (insert) query:", insert_query], also_print=True)
+        ["2nd (insert) query:", insert_query],
+                       also_print=True)
+#                      also_print=False)
     if textual.yes_no(insert_query,
             title="Execute query?"):
         routines.fetch(insert_query, from_file=False,
-                    commit=True, verbose=True)
+                    commit=True, verbose=False)
     helpers.add2report(report, 
-        ["3rd (insert) query:", update_query], also_print=True)
+        ["3rd (insert) query:", update_query],
+                       also_print=True)
+#                      also_print=False)
     yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
         for line in report:
