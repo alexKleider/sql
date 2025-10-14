@@ -65,7 +65,7 @@ def main_menu(report=None, font=textual.font):
     Returns a list of functions (usually a list of only one.)
     Provides choices based on what's in <hierarchy>.
     """
-    routines.add2report(report,
+    helpers.add2report(report,
             "Begin main_menu...", also_print=True)
     options = [key for key in hierarchy.keys()]
     layout = [
@@ -77,10 +77,10 @@ def main_menu(report=None, font=textual.font):
     win = sg.Window("Main Menu", layout, font=font)
     e, v = win.read()
     win.close()
-#   routines.add2report(report,
+#   helpers.add2report(report,
 #           f"e: {repr(e)}, v: {repr(v)}")
     if e == 'CANCEL' or not v or not v["CHOICE"]:
-        routines.add2report(report,
+        helpers.add2report(report,
             "Cancelled or no choice made; aborting main menu",
             also_print=True)
         return
@@ -96,10 +96,10 @@ def main_menu(report=None, font=textual.font):
     win = sg.Window(f"{hkey} Menu", layout, font=font)
     e,v = win.read()
     win.close()
-#   routines.add2report(report,
+#   helpers.add2report(report,
 #           f"e: {repr(e)}, v: {repr(v)}")
     if e == 'CANCEL' or not v or not v["CHOICE"]:
-        routines.add2report(report,
+        helpers.add2report(report,
             "Cancelled or no choice made; aborting sub menu",
             also_print=True)
         return
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         if res:
             func_names = []
             for func in hierarchy[res[0]][res[1]]:
-               routines.add2report(report,
+               helpers.add2report(report,
                     f"executing {func.__name__}",
                     also_print=True)
                func_names.append(func.__name__)
