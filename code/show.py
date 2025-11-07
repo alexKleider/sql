@@ -16,6 +16,7 @@ Goal still to be achieved:
     option to create a CSV file of the data.
 """
 
+import sys
 import csv
 try: import helpers, routines
 except ImportError: from code import helpers, routines
@@ -264,8 +265,28 @@ def report_applicants():  # developed within try.py as "newbies()"
     qres2 = routines.fetch(byappstatusquery, from_file=False)
     set1 = set([entry[0:4] for entry in qres1])
     set2 = set([entry[0:4] for entry in qres2])
-    assert len(qres1) == len(qres2)  #{  concistency  }
-    assert set1 == set2              #{    checks     }
+    if len(qres1) != len(qres2):  # concistency  check
+        print("Inconsistency!!!!  The same people should")
+        print("be in each of the following 2 lists... ")
+        for item in qres1:
+            print(item[:4])
+        print()
+        for item in qres2:
+            print(item)
+        print("!!! Could it be that none of the entries for one of")
+        print("!!! the people is without an 'end' entry?????")
+        _ = input("!!! Aborting execution !!!")
+        sys.exit()
+    if len(set1) != len(set2):     # consistency check
+        print("Inconsistency!!!!  The same people should")
+        print("be in each of the following 2 sets... ")
+        for item in set1:
+            print(item)
+        print()
+        for item in set2:
+            print(item)
+        _ = input("!!! Aborting execution !!!")
+        sys.exit()
     ap_stati = [ {key: val for key, val in
                         zip(by_status_keys, line)} for line in qres2]
     subheader = ""
@@ -303,7 +324,7 @@ def show_applicants_cmd(report=None):
 
 def show_cmd(report=None):
     helpers.add2report(report,
-            "Entering code.show.show_cmd", also_print=True)
+            "Entering code.show.show_cmd", also_print=False)
     member_part = show4web(
             get_listing_2f("Sql/list4join_ff.sql"))
             # include honorary, inactive & retiring
