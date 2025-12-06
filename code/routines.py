@@ -606,12 +606,12 @@ def pick_People_record(header_prompt=None, report=None):
         last = input("Last name (partial or blank): ")
         if first and last:
             query2use = like_query.format(
-                f"first LIKE '{first}%' AND last LIKE '{last}%'")
+                f"""first LIKE "{first}%" AND last LIKE "{last}%" """)
         elif first:
             query2use = like_query.format(
-                    f"first LIKE '{first}%'")
+                    f"""first LIKE "{first}%" """)
         elif last:
-            query2use = like_query.format(f"last LIKE '{last}%'") 
+            query2use = like_query.format(f"""last LIKE "{last}%" """) 
         else:  # no entry provided
             query2use = listing = None
         if query2use:

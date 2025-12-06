@@ -795,7 +795,7 @@ def dump2json_file(data, json_file, verbose=True):
         if verbose:
             print('Dumping (json) data to "{}".'.format(
                   json_file_obj.name))
-        json.dump(data, json_file_obj)
+        json.dump(data, json_file_obj, indent=2)
 
 
 def add2json_file(data, json_file, verbose=True):
@@ -830,7 +830,7 @@ def add2json_file(data, json_file, verbose=True):
         if verbose:
             print('Dumping (json) data to "{}".'.format(
                   j_file.name))
-        json.dump(data2add, j_file)
+        json.dump(data2add, j_file, indent=2)
 
 
 def get_json(file_name, report=None):

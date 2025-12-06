@@ -197,17 +197,21 @@ def add_new_applicant_cmd(report=None):
     helpers.add2report(report,
                         "Entering add_new_applicant_cmd...",
                         also_print=True)
-    data = textual.get_demographics(applicant=True, report=report)
-    if not data: 
-        helpers.add2report(report,
-                        "...add_new_applicant aborted",
-                        also_print=True)
-        return
-    routines.add_sponsorIDs(data)
-    add2tables(data, report=report)  # adds to three tables:
-            #1. People
-            #2. Person_Status
-            #3. Applicants
+    while True:  # allow entry of >1 applicant
+        data = textual.get_demographics(applicant=True, report=report)
+        if not data: 
+            helpers.add2report(report,
+                            "...add_new_applicant aborted",
+                            also_print=True)
+            return
+        routines.add_sponsorIDs(data)
+        add2tables(data, report=report)  # adds to three tables:
+                #1. People
+                #2. Person_Status
+                #3. Applicants
+        yn = input("Add another applicant? (y/n): ")
+        if yn and yn[0] in "nN":
+            break
     return report
 
 
@@ -317,18 +321,8 @@ def query2update_applicant_table(personID, mapped_changes,
     query = query.format(entries)
     return query
 
-def update_applicant_date_cmd(report=None):
-    """
-    Choice of applicants,
-    Current entries for applicant chosen with option to change,
-    confirm and execute changes to Applicant table
-    confirm and execute update to Person_Status table
-    confirm and execute new entry to Person_Status table
-    """
-    helpers.add2report(report,
-            "Enterning update_applicant_date_cmd...",
-            also_print=True)
-#           also_print=False)
+
+def applicant_date_update(report):
     chosen_applicant = choose_applicant(report)
     if not chosen_applicant:
         helpers.add2report(report,
@@ -375,6 +369,7 @@ def update_applicant_date_cmd(report=None):
         ("{personID:>3d} {last}, {first} {suffix}" +
         " {statusID} {begin} {end}"),
         header="Choose Status Entry to Update",report=report)
+    _ = input(f"{picked=}")
     helpers.add2report(report,
         ["applicant_update_cmd 1st status change picked:",
         repr(picked)], also_print=True)
@@ -416,6 +411,23 @@ def update_applicant_date_cmd(report=None):
         ["3rd (insert) query:", update_query],
                        also_print=True)
 #                      also_print=False)
+
+def update_applicant_date_cmd(report=None):
+    """
+    Choice of applicants,
+    Current entries for applicant chosen with option to change,
+    confirm and execute changes to Applicant table
+    confirm and execute update to Person_Status table
+    confirm and execute new entry to Person_Status table
+    """
+    helpers.add2report(report,
+            "Enterning update_applicant_date_cmd...",
+            also_print=True)
+#           also_print=False)
+
+    applicant_date_update(report)
+    #=============================================
+    #============================
     yn = input("Show report? y/n: ")
     if yn and yn[0] in "yY":
         for line in report:

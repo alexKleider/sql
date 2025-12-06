@@ -2,6 +2,10 @@
 
 # File: src/getHTML.py
 
+"""
+Won't work regarding the website's membership listing
+because of the password protection!!
+"""
 
 import requests
 import glbls

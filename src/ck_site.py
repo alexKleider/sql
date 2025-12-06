@@ -11,6 +11,8 @@ Club's web site and retrieves member (?and applicant?) names.
 
 Expect to find the web site data (membership page) @
 html_file == "~/www/members.html"
+For testing purposes: 
+/home/alex/Git/Sql/src/memb.html
 """
 
 import re
@@ -21,10 +23,12 @@ sys.path.insert(0, os.path.split(sys.path[0])[0])
 from code import routines
 from code import helpers
 
+html_file = "/home/alex/Git/Sql/src/memb.html"
 html_file = "/home/alex/www/members.html"
 eightdigitdate = helpers.eightdigitdate
 
 def f(name):
+    """returns the second item in an iterable <name)"""
     return name.split()[1]
 
 def html_listing(fname=None):
@@ -55,12 +59,21 @@ def html_listing(fname=None):
 ([A-Z][a-zA-Z]*\ [A-Z][a-zA-Z]*(\ [A-Z][a-zA-Z]*)?)
 </strong><br>\ Phone:
     """, re.VERBOSE)
+    # modify to account for possibility of...
+    # *, ^, @, % as a prefix   and
+    # _, (, ), ' within a name.
+    pat = re.compile(r"""
+<p\ class=""\ style="white-space:pre-wrap;"><strong>
+(?P<prefix>[@^*%]?)
+(?P<name>([A-Z][_()'éa-zA-Z]*\ [A-Z][a-zA-Z]*(\ [A-Z][-_()'a-zA-Z]*)?))
+\ ?</strong><br>\ Phone:""", re.VERBOSE)
 
-    m = pat.findall(source)
+    m = pat.finditer(source)
 
     if m:
-        listing = [item[0] for item in m]
+        listing = [item["name"] for item in m]
         print(f"Found {len(listing)} names in {fname}")
+#       _ = input(listing)
         listing.sort(key=f)
 #       print(listing)
         return listing

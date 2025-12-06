@@ -233,11 +233,14 @@ def show_newbie(mapping):
     ret = [
     """  {P_first} {P_last} {P_suffix}  {P_phone}  {P_email}
       {P_address}, {P_town}, {P_state}, {P_postal_code}
-    Sponsors: {P1_first} {P1_last}, {P2_first} {P2_last}"""
+    Sponsors: {P1_first} {P1_last}, {P2_first} {P2_last}
+    Applied {A_fee_rcvd}"""
            .format(**mapping), ]
     if meetings:
         ret.append("    Meetings: " +
                    ", ".join(meetings))
+    if mapping["A_approved"]:
+        ret.append(f'    Approved {mapping["A_approved"]}')
     return ret
 
 
@@ -257,7 +260,7 @@ def report_applicants():  # developed within try.py as "newbies()"
     qres1 = routines.fetch(newbyquery, from_file=False)
     n = len(qres1)
     if not n:
-        return ("No applicants to report", )
+        return ["No applicants to report", ]
     ap_dict = {}
     for line in qres1:  # all current applicant data
         ap_dict[line[0]] = {key: val for key, val  in
@@ -301,6 +304,11 @@ def report_applicants():  # developed within try.py as "newbies()"
                             '-'*len(mapping["S_text"])])
         report.extend(show_newbie(ap_dict[mapping["P_personID"]]))
 #       report.append(repr(ap_dict[mapping["P.personID"]]))
+#   print()
+#   print("Report applicants returning:")
+#   for item in report:
+#       print("\t"+item)
+#   _ = input()
     return report
 
 

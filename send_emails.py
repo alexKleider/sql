@@ -296,9 +296,9 @@ def send(emails, mta='easy', report=None,
             email["Sender"] = sender
             msg = MIMEMultipart()
             body = email['body']
-            attachments = email['attachments']
             del email['body']
-            del email['attachments']
+#           attachments = email['attachments']
+#           del email['attachments']
             helpers.add2report(report,
                 f"Sending email {counter} of {n_emails} ...",
                 also_print=True)
@@ -307,8 +307,8 @@ def send(emails, mta='easy', report=None,
                 msg[key] = into_string(email[key])
             msg.attach(MIMEText(body, 'plain'))
 #           attach_many(attachments, msg) ## Fails, 2b trouble sh.
-            for attachment in attachments:
-                attach(attachment, msg)
+#           for attachment in attachments:
+#               attach(attachment, msg)
             try:
                 s.send_message(msg)
             except SMTPDataError:
@@ -340,11 +340,11 @@ def test_send():
         'From': 'alex@kleider.ca',
         'Reply-To': 'alexkleider@gmail.com',
         'To': ['akleider@sonic.net',
-            pseudo_recipient('ak', 'alexkleider@gmail.com'),
+#           pseudo_recipient('ak', 'alexkleider@gmail.com'),
             ],
         'Subject': 'TEST Reply-To',
-        'attachments': [
-        '/home/alex/Notes/Books/to-consider',],
+#       'attachments': [
+#       '/home/alex/Notes/Books/to-consider',],
         'body': test_body_1,
         },
     ]
@@ -353,8 +353,14 @@ def test_send():
 def main():
     """
     """
-    data = helpers.get_json(json_email_file)
-    send(data, report=[])
+    in_file = input(
+        f"Blank if {json_email_file} or enter another: ")
+    if not in_file:
+        in_file = json_email_file
+    yn = input(f"OK to get json data from {in_file} (y/n)?")
+    if yn and yn[0] in "yY":
+        data = helpers.get_json(in_file)
+        send(data, report=[])
 #   test_send()
 
 def tester():
@@ -363,6 +369,7 @@ def tester():
         f"{pseudo_recipient('ak', 'alexkleider@gmail.com')}")
 
 if __name__ == "__main__":
-#   main()
-    tester()
+    main()
+#   tester()
+#   test_send()
 
