@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # File: code/data_entry.py
+
 """
 Handle adding data to the db.
 An ammalgamation of what used to be applicants.py
@@ -13,8 +14,6 @@ Provides
 #   data_entry.applicant_update_cmd() # use this name for
 update_applicant_date_cmd.
 """
-
-# File: code/data_entry.py
 
 try: from code import routines
 except ImportError: import routines

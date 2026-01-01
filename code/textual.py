@@ -35,6 +35,8 @@ try:
 except ImportError:
     from code import routines
     from code import helpers
+
+#=======================================
 import PySimpleGUI as sg
 font_index = 1  # adjust for readability
 fonts = (          #  vv -- size parameter
@@ -46,13 +48,14 @@ fonts = (          #  vv -- size parameter
 font= fonts[font_index]
     # Above code only to adjust size for readability
     #making text large enough to read.  Default size is 10.
+#=======================================
 
-def yes_no(text, title="Run query?"):
+def yes_no(text, title="Run query?"):   # tk done
     return sg.popup_yes_no(text,
             title=title, font=font) == "Yes"
 
 
-def valid_values(ev, allow_blanks=False):
+def valid_values(ev, allow_blanks=False):  # redacted?
     """
     <ev> is what's returned by sg's window.read()
     Returns a dict if values are valid, 
@@ -68,7 +71,7 @@ def valid_values(ev, allow_blanks=False):
             return "Missing value(s)"
     return the_dict
 
-def show_fonts():
+def show_fonts():  # redacted?
     couriers = ["BPG Courier", "GPL&GNU",
                 "BPG Courier", "S GPL&GNU",
                 "Courier 10 Pitch",
@@ -80,11 +83,11 @@ def show_fonts():
             print(font)
     
 
-def f2run():
+def f2run():  # redacted?
     _ = input("Running function f2run")
 
     
-def a_show_stati(f2run, font=font):
+def a_show_stati(f2run, font=font):  # redacted?
     """
     A work in progress
     """
@@ -103,7 +106,7 @@ def a_show_stati(f2run, font=font):
     f2run()
     ret = window.read()
 
-def show_stati(font=font):
+def show_stati(font=font):   # used?
     """
     Provides an info box showing the stati:
     ...stays open until explicitly closed.
@@ -122,7 +125,8 @@ def show_stati(font=font):
     ret = window.read()
 
 
-def get_fields(fields, header="Enter values for each key",
+def get_fields(fields, 
+               header="Enter values for each key",
                font=font):
     """
     Prompts user to supply values for each field.
@@ -364,7 +368,7 @@ def get_demographics(applicant=True, report=None, font=font):
         assert False, f"!Unexpected event: {repr(event)}!"
 
 
-def create_dem_file(data, report=None):
+def create_dem_file(data, report=None):   # needed???
     """
     Creates a "flDem.txt" file.
     Uses data collected by get_demographics()

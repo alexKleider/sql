@@ -34,14 +34,14 @@ except ImportError: import dates
 try: from code import fees
 except ImportError: import fees
 
-try: from code import data_entry
-except ImportError: import data_entry
-
 try: from code import show
 except ImportError: import show
 
 try: from code import emailing
 except ImportError: import emailing
+
+try: from code import data_entry
+except ImportError: import data_entry
 
 
 def get_command():
