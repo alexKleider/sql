@@ -533,6 +533,9 @@ def consistency_report(report=None):
     report.extend(ck_members_vs_dues())
     return report
 
+def verify_data_consistency_cmd():
+    pass
+
 
 def ck_gather_contacts_data(members_and_applicants_filter):
     data = gather_contacts_data()

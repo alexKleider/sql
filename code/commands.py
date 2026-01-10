@@ -40,8 +40,11 @@ except ImportError: import show
 try: from code import emailing
 except ImportError: import emailing
 
-try: from code import data_entry
-except ImportError: import data_entry
+try: from code import ck_data
+except ImportError: import ck_data
+
+#try: from code import data_entry
+#except ImportError: import data_entry
 
 
 def get_command():
@@ -63,6 +66,7 @@ Choose one of the following:  (* means don't use!)
  24. Still owing csv           25. Membership < 1 year
  26. Fees (owing or not) csv   27. Enter new applicant data
  28. Show stati                29. Create leadership csv file
+ 30. Check data consistency
 ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show.show_cmd
@@ -95,6 +99,7 @@ Choose one of the following:  (* means don't use!)
             return data_entry.add_new_applicant_cmd
         elif choice == '28': return show_stati_cmd
         elif choice == '29': return show_officers_cmd
+        elif choice == '30': return ck_data_consistency_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -1300,6 +1305,17 @@ def show_officers_cmd(report=None):
         ret.append(f"...results sent to {stream.name}")
         print(f"File {stream.name} created.")
     return ret
+
+def ck_data_consistency_cmd(report=None):
+    report_file = "data_ck.txt"
+    report = ck_data.consistency_report()
+    if report:
+        with open(report_file, 'w') as outf:
+            for line in report:
+                outf.write(line + '\n')
+        print(f"consistency report sent to {report_file}")
+    else:
+        print("No consistency report generated!")
 
 
 if __name__ == "__main__":

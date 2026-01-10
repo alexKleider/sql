@@ -340,7 +340,7 @@ inform you of the purpose and rules of the Club (as required by
 our By-Laws.)
 
 To become eligible for membership (and not waste your application
-fee) you must attend a minimum of three meetings with in a six
+fee) you must attend a minimum of three meetings within a six
 month period.  You may attend as the guest of any member; your
 sponsors are expected to introduce you.
 
