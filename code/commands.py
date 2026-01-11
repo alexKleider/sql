@@ -100,6 +100,7 @@ Choose one of the following:  (* means don't use!)
         elif choice == '28': return show_stati_cmd
         elif choice == '29': return show_officers_cmd
         elif choice == '30': return ck_data_consistency_cmd
+        elif choice == '31': return show_long_timers_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -1317,6 +1318,16 @@ def ck_data_consistency_cmd(report=None):
     else:
         print("No consistency report generated!")
 
+def show_long_timers_cmd(report=None):
+    """
+    """
+    n2show = input("How many to include? ")
+    if not n2show.isdigit():
+        print("Old timer command aborted.")
+        return
+    listing = old_timers(n2show)
+    keys=("first", "last", "joined")
+    yn = input("Send data to old_timers.csv")
 
 if __name__ == "__main__":
     assign_templates(None)

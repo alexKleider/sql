@@ -45,6 +45,14 @@ FORMFEED = chr(ord('L') - 64)  # '\x0c'
 
 CURRENT_CENTURY = '20'
 
+def add_yr(year):
+    """
+    <year> is a string of integer characters in yyyymmdd format.
+    Returns a similar string but one year later
+    """
+    yr = str(int(year[:4]) + 1) + year[4:]
+    return yr
+
 
 def eightdigitentry(prompt):
     """
