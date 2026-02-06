@@ -11,6 +11,8 @@ Google Drive. (rodandboatclub@gmail.com)
 The code base is a git repository.
 It provides the <Holder> class which serves largely to keep
 track of Club related global values.
+Currently ( Fri Feb  6 10:58:37 AM PST 2026) making HOLDER an
+exportable global.
 Allow only one instance at a time.
 """
 
@@ -80,6 +82,8 @@ class Holder(object):
             self.__dict__[key] = None
         self.dec_n_instances()
         del self
+
+HOLDER = Holder()
 
 def set_include0_false(holder):
     """

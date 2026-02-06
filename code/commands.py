@@ -25,9 +25,6 @@ except ImportError: import club
 try: from code import content
 except ImportError: import content
 
-try: from code import alchemy
-except ImportError: import alchemy
-
 try: from code import dates
 except ImportError: import dates
 
@@ -393,7 +390,7 @@ def display_fees_by_person_cmd():
     ret = ['Extra fees being charged',
            '========================',
            ]
-    holder = club.Holder()
+    holder = club.Holder
     get_fees_by_person(holder)
     ret = []
     for person in holder.working_data.values():
@@ -925,7 +922,7 @@ def prepare_mailing_cmd(report=None):
     Move holder.email listing into a json file (if not empty.)
     Delete mail_dir if it's empty
     """
-    holder = club.Holder()
+    holder = club.HOLDER
     ret = []
     # give user opportunity to abort if files are still present:
     print("Checking for left over files (must be deleted!) ...")

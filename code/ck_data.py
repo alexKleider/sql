@@ -41,7 +41,7 @@ LABELS = set("""applicant dropped Committee DockUsers everyone
  GaveUpMembership inactive Kayak LIST Moorings Officers
  Outer_Basin_Moorers_2023 secretary""".split())
 
-holder = club.Holder()
+holder = club.HOLDER
 
 # The following queries are for comparison with Google
 # contacts 'Labels' i.e. those without email are excluded
