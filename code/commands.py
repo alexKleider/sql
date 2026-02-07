@@ -664,12 +664,14 @@ def leadership_cmd(report=None):
     return ret
 
 
-def get_non_member_stati():
+def get_non_member_stati(tocsv=False,
+                         stati2include=None):
     """
     Returns a list of dicts.
     Anyone who has a status other than that of member.
     This includes past members, officers, applicants (current
     or expired,) ...
+    ## Still need to implement the "tocsv" part ##
     """
     keys = ("ID, first, last, suffix, begin, status, end"
             ).split(', ')
@@ -683,7 +685,8 @@ def get_non_member_stati():
     return ret
 
 
-def get_non_member_stati_cmd():  # get_non_member_stati.sql
+def get_non_member_stati_cmd(tocsv=False,  # get_non_member_stati.sql
+                             stati2include=None):
     """
     Option to send to a csv file.
     Returns a header followed by a listing of all
@@ -693,7 +696,7 @@ def get_non_member_stati_cmd():  # get_non_member_stati.sql
     which is still a work in progress and will likely be 
     rewritten completely.
     """
-    res = get_non_member_stati()
+    res = get_non_member_stati(tocsv, stati2include)
     n = len(res)
     ret = [
 #    13:  34     Angie Calpestri       z4_treasurer
@@ -835,15 +838,20 @@ _code_ = """
             break
             """
 
+def update_applicant_status_cmd():
+    pass
+
 def update_status_cmd():
     # First give user a look at what stati there are to change
-    stati = get_non_member_stati_cmd(tocsv=False)
+    stati = get_non_member_stati_cmd(tocsv=False, stati2include=None)
     print('\n'.join(stati))
     # ...Then present oportunity to pick a name not listed.
     yesorno = input("Do you need another person's ID? (y/n): ")
     if yesorno and yesorno[0] in 'yY':
         print('\n'.join(routines.id_by_name()))
     personID = int(input("personID who's status to change: "))
+    if personID = 0:
+        print("personID 0 aborts command!")
     personInfo = routines.fetch('Sql/find_by_ID.sql',
             params = (personID, ))[0]
     print(personInfo)
