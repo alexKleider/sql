@@ -8,7 +8,6 @@
 *.db
 *.json
 __pycache__
-try*
 Secret
 *2check*
 2*
