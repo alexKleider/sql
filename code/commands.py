@@ -67,8 +67,8 @@ Choose one of the following:  (* means don't use!)
  26. Fees (owing or not) csv   27. Enter new applicant data
  28. Show stati                29. Create leadership csv file
  30. Check data consistency    31. Show Oldtimers
+#32. Update Applicant Status
 ...... """)
-#32. Update Applicant Attendance
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show.show_cmd
         elif choice ==  '2': return show.show_applicants_cmd
@@ -903,12 +903,6 @@ def get_emailing_dict(personID):
             params=(personID, )   )
 
 
-def assign_templates(holder):
-    """
-    assign_templates(holder) moved from commands to content!
-    """
-    _ = input(__doc__)
-
 def prepare_invoice(holder, personID):
     """
     holder.owed_by_id has already been assigned
@@ -1340,7 +1334,7 @@ def show_long_timers_cmd(report=None):
     yn = input("Send data to old_timers.csv")
 
 if __name__ == "__main__":
-    assign_templates(None)
+    _ = input(__doc__)
 #   for sponsor_name in (get_sponsor_name(45),
 #           get_sponsor_name(300)):
 #       print(repr(sponsor_name))

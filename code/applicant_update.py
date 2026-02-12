@@ -11,8 +11,11 @@ Will also be writing to other tables such as:
     ...
 """
 
-import helpers
-import routines
+try: from code import routines
+except ImportError: import routines
+
+try: from code import helpers
+except ImportError: import helpers
 
 cur_applicants_query = """
     SELECT P.personID, P.first, P.last,
@@ -43,10 +46,12 @@ def cur_app_dicts():
     return [dict(d) for d in gen]
 
 def insert_new_applicant():
+    """ NOT USED yet """
     pass
 
 def current_applicants():
     """
+    NOT USED
     Returns a (possibly empty) listing tuples:
     one for each applicant.
     """
@@ -54,7 +59,7 @@ def current_applicants():
 
 
 def matchID2applicant(appID, applicants):
-    """
+    """   NOT USED!!
     Returns <applicant> with ID <appID>
     or None if no applicants or no match
     <applicants> is a list of dicts or iterables.
@@ -167,14 +172,19 @@ def last_full_key(applicant):
             return last_key
 
 key2status = {
-#       "A_app_rcvd":
-        "A_fee_rcvd": 3,  #|a0|No meetings yet
-        "A_meeting1": 4,  #|a1|Attended one meeting
-        "A_meeting2": 5,  #|a2|Attended two meetings
-        "A_meeting3": 6,  #|a3|Attended three (or more) meetings
-        "A_approved": 7,  #|ai|Inducted, needs to be notified
-#       "A_dues_paid":
-#       "A_notified":
+    # Date to add:  |     Status to update:
+        "A_app_rcvd": 1,  #1|a-|Application received without fee
+#                 2|a|Application complete but not yet acknowledged
+        "A_fee_rcvd": 3,  #3|a0|No meetings yet
+        "A_meeting1": 4,  #4|a1|Attended one meeting
+        "A_meeting2": 5,  #5|a2|Attended two meetings
+        "A_meeting3": 6,  #6|a3|Attended three (or more) meetings
+        "A_approved": 7,  #7|ai|Inducted, needs to be notified
+#       "A_dues_paid":8,  #8|ad|Inducted & notified, .....
+#       "A_notified": 9,  #9|av|Vacancy pending payment of dues
+#                         #10|aw|Inducted & notified, awaiting vacancy
+#                         #11|am|New Member
+
         }
 #       7|ai|Inducted, needs to be notified
 
