@@ -13,6 +13,9 @@ import csv
 import shutil
 import sqlite3
 
+try: from code import applicant_update
+except ImportError: import applicant_update
+
 try: from code import routines
 except ImportError: import routines
 
@@ -63,8 +66,9 @@ Choose one of the following:  (* means don't use!)
  24. Still owing csv           25. Membership < 1 year
  26. Fees (owing or not) csv   27. Enter new applicant data
  28. Show stati                29. Create leadership csv file
- 30. Check data consistency
+ 30. Check data consistency    31. Show Oldtimers
 ...... """)
+#32. Update Applicant Attendance
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show.show_cmd
         elif choice ==  '2': return show.show_applicants_cmd
@@ -98,6 +102,7 @@ Choose one of the following:  (* means don't use!)
         elif choice == '29': return show_officers_cmd
         elif choice == '30': return ck_data_consistency_cmd
         elif choice == '31': return show_long_timers_cmd
+        elif choice == '32': return applicant_update.add_meetings_cmd
         else: print("Not implemented")
 
 # for add_dues:
@@ -850,7 +855,7 @@ def update_status_cmd():
     if yesorno and yesorno[0] in 'yY':
         print('\n'.join(routines.id_by_name()))
     personID = int(input("personID who's status to change: "))
-    if personID = 0:
+    if personID == 0:
         print("personID 0 aborts command!")
     personInfo = routines.fetch('Sql/find_by_ID.sql',
             params = (personID, ))[0]

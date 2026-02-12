@@ -101,6 +101,15 @@ def get_os_release():
         assignments = info.read()
     return assignments.split('\n')[0].split('=')[1][1:-1]
 
+def print_header(header, symbol='=', bracket=False):
+    l = len(header)
+    if bracket:
+        print(symbol*l)
+    print(header)
+    print (symbol*l)
+
+
+
 
 def verify(notice, report=None):
     """
