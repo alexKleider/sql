@@ -67,8 +67,7 @@ Choose one of the following:  (* means don't use!)
  26. Fees (owing or not) csv   27. Enter new applicant data
  28. Show stati                29. Create leadership csv file
  30. Check data consistency    31. Show Oldtimers
-#32. Update Applicant Status
-...... """)
+ 32. Update Applicant Status    ...... """)
         if ((not choice) or (choice  ==   '0')): sys.exit()
         elif choice ==  '1': return show.show_cmd
         elif choice ==  '2': return show.show_applicants_cmd
@@ -102,7 +101,7 @@ Choose one of the following:  (* means don't use!)
         elif choice == '29': return show_officers_cmd
         elif choice == '30': return ck_data_consistency_cmd
         elif choice == '31': return show_long_timers_cmd
-        elif choice == '32': return applicant_update.add_meetings_cmd
+        elif choice == '32': return applicant_update.add_app_date_cmd
         else: print("Not implemented")
 
 # for add_dues:

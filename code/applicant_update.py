@@ -82,8 +82,8 @@ def matchID2applicant(appID, applicants):
 
 def rtn_applicantID(current_applicants):
     """
-    Returns an applicant ID or
-    none if none selected/available.
+    Returns users chosen applicant ID or
+    None if none selected/available.
     """
     if not current_applicants:
         _ = input("No applicants! (Rtn to continue) ")
@@ -114,6 +114,7 @@ def rtn_applicant(applicants):
     <applicants> can be a list of dicts or tuples.
     Returns the chosen  dict or tuple, or
     None if no choice made.
+    ?unused
     """
     if not applicants:
         print("No applicants provided to match!")
@@ -158,18 +159,18 @@ def applicant2update(app_dicts):
         if apID == applicant["P_personID"]:
             return applicant
 
-
-def first_empty_key(applicant):
+def keys2update2fill_tuple(applicant):
+    """
+    Returns a tuple of the keys of the last full
+    and first empty value in the <applicant> dict.
+    """
+    key2update = None
     for key, val in applicant.items():
-        if not applicant[key]:
-            print(f"first_empty_key returning {key}")
-            return key
-def last_full_key(applicant):
-    for key, val in applicant.items():
-        if val: last_key = key
-        if not applicant[key]:
-            print(f"last_full_key returning {key}: {val}")
-            return last_key
+        if val:
+            key2update = key[2:]
+        else:
+#           print(f"last_full_key returning {key}: {val}")
+            return (key2update, key[2:])  #  key is the empty_key
 
 key2status = {
     # Date to add:  |     Status to update:
@@ -184,43 +185,44 @@ key2status = {
 #       "A_notified": 9,  #9|av|Vacancy pending payment of dues
 #                         #10|aw|Inducted & notified, awaiting vacancy
 #                         #11|am|New Member
-
         }
-#       7|ai|Inducted, needs to be notified
 
-def upgrade_applicant(applicant, date):
+def update_applicant(applicant, date):
     """
     <applicant> must be a dict!
     We'll provide options to upgrade to a higher status
     such as adding a meeting.
+    Applicant table keys are: personID|sponsor1ID|sponsor2ID|
+    app_rcvd|fee_rcvd|
+    meeting1|meeting2|meeting3|
+    approved|dues_paid|notified
     """
-    print("Begin upgrade_applicant()")
-    key2update = last_full_key(applicant)
-    key2fill = first_empty_key(applicant)
-    header = f"Data Entry ({key2fill[2:]})"
+    print("Begin update_applicant()")
+    key2update, key2fill = keys2update2fill_tuple(applicant)
+    header = f"Data Entry ({key2fill})"
     helpers.print_header(header, bracket=True)
     print( f"""
           Updating {applicant["P_personID"]} 
           {applicant["P_first"]} {applicant["P_last"]}  
-          {key2fill[2:]}
+          {key2fill}
           """)
     new_date = input(f"Rtn to accept <{date}> or enter other date: ")
     if new_date: date = new_date
-    q1 =f"""UPDATE Applicants SET {key2fill[2:]} = "{date}" WHERE
+    q1 =f"""UPDATE Applicants SET {key2fill} = "{date}" WHERE
     personID = {applicant["P_personID"]};"""
     print()
     print(q1)
     print()
     q2 = f"""UPDATE Person_Status SET end = "{date}"
             WHERE personID = {applicant["P_personID"]}
-            AND statusID = {key2status[key2update]}
+            AND statusID = {key2update}
             ;"""
     print(q2)
     print()
     q3 = f"""
             INSERT INTO Person_Status (personID, statusID, begin)
             VALUES ({applicant["P_personID"]}, 
-                    {key2status[key2fill]},
+                    {key2fill},
                     "{date}")
         ;"""
     print(q3)
@@ -234,10 +236,15 @@ def upgrade_applicant(applicant, date):
         routines.fetch(q2, from_file=False, commit=True)
         routines.fetch(q3, from_file=False, commit=True)
 
-def add_meetings_cmd():
+def add_app_date_cmd():
+    """
+    Provides for addition of a date to the Applicant table
+    and updated entries to the Person_Status table.
+    """
     date = helpers.eightdigitdate
     while True:
-        yn = input("Credit applicant with a meeting? (y/n) ")
+        yn = input(
+            "Add date to an entry in the Applicant table? (y/n) ")
         if not (yn and yn[0] in 'yY'):
             return
         print()
@@ -245,10 +252,10 @@ def add_meetings_cmd():
         app2update = applicant2update(cur_apps)
         if not app2update:
             continue
-        upgrade_applicant(app2update, date)
+        update_applicant(app2update, date)
 
 
 if __name__ == "__main__":
-    add_meetings_cmd()
+    add_app_date_cmd()
 
 
