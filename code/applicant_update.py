@@ -17,30 +17,14 @@ except ImportError: import routines
 try: from code import helpers
 except ImportError: import helpers
 
-cur_applicants_query = """
-    SELECT P.personID, P.first, P.last,
-        A.sponsor1ID, S1.first, S1.last,
-        A.sponsor2ID, S2.first, S2.last,
-        A.app_rcvd, A.fee_rcvd,
-        A.meeting1, A.meeting2, A.meeting3,
-        A.approved, A.dues_paid, A.notified
-    FROM people as P,
-        Applicants as A,
-        people as S1,
-        people as S2
-    WHERE P.personID = A.personID
-    AND A.sponsor1ID = S1.personID
-    AND A.sponsor2ID = S2.personID
-    AND A.notified = ""
-    ;
-    """
 
-def cur_app_dicts():
+def cur_app_dicts(query, from_file=False):
     """
     Returns a (possibly empty) listing of dicts:
     one for each applicant.
     """
-    gen = routines.dicts_from_query(cur_applicants_query,
+    gen = routines.dicts_from_query(query,
+                                    from_file=from_file,
                                     keys=None,
                                     replace_periods=True)
     return [dict(d) for d in gen]
@@ -49,13 +33,15 @@ def insert_new_applicant():
     """ NOT USED yet """
     pass
 
+redact = '''
 def current_applicants():
     """
     NOT USED
     Returns a (possibly empty) listing tuples:
     one for each applicant.
     """
-    return routines.fetch(cur_applicants_query, from_file=False)
+    return routines.fetch(cur_applicants_query, from_file=True)
+'''
 
 
 def matchID2applicant(appID, applicants):
@@ -248,7 +234,8 @@ def add_app_date_cmd():
         if not (yn and yn[0] in 'yY'):
             return
         print()
-        cur_apps = cur_app_dicts()
+        cur_apps = cur_app_dicts("Sql/cur_applicants.sql",
+                                 from_file=True)
         app2update = applicant2update(cur_apps)
         if not app2update:
             continue

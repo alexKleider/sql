@@ -201,12 +201,16 @@ def keys_from_query(query, replace_periods=False):
         return [key[-1] for key in splitkeys]
 
 
-def dicts_from_query(query, keys=None, replace_periods=False):
+def dicts_from_query(query, from_file=False,
+                     keys=None, replace_periods=False):
     """
     A generator function yielding dicts.
     If <keys> are not provided, uses <keys_from_query()>.
     Use query2dict_listing if a list is needed.
     """
+    if from_file:
+        with open(query, 'r') as q_file:
+            query = q_file.read()
     if not keys:
         keys = keys_from_query(query,
                                replace_periods=replace_periods)
